@@ -1,0 +1,11 @@
+runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+autogen,1,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,2.752
+autogen,2,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,1.465
+autogen,3,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,2.455
+autogen,4,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,2.362
+autogen,5,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,1.472
+autogen,6,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,1.376
+autogen,7,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,1.535
+autogen,8,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,7.005
+autogen,9,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,13.342
+autogen,10,groq,structural_max_turns_hit,4,540,931,172.41,391,0,0,9.518

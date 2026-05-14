@@ -1,0 +1,11 @@
+runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+token_capabilities_rust,1,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,2.352
+token_capabilities_rust,2,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,2.352
+token_capabilities_rust,3,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,1.843
+token_capabilities_rust,4,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,1.762
+token_capabilities_rust,5,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,1.727
+token_capabilities_rust,6,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,6.856
+token_capabilities_rust,7,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,2.153
+token_capabilities_rust,8,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,3.168
+token_capabilities_rust,9,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,2.157
+token_capabilities_rust,10,openai,compile_time_reservation_refused,1,200,20,10.00,0,0,0,1.532

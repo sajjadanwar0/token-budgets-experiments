@@ -1,0 +1,10 @@
+=== Machine info ===
+CPU:
+model name	: AMD Ryzen 7 PRO 6850U with Radeon Graphics
+
+Kernel:
+Linux Sajjad 6.8.0-110-generic #110-Ubuntu SMP PREEMPT_DYNAMIC Thu Mar 19 15:09:20 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+
+Rust:
+rustc 1.93.1 (01f6ddf75 2026-02-11)
+cargo 1.93.1 (083ac5135 2025-12-15)

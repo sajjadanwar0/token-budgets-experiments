@@ -1,0 +1,11 @@
+runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds,workload,actual_input_tokens,actual_output_tokens,byte_length_estimate,reservation_uc,actual_cost_uc
+token_capabilities_rust,1,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.955,arg_hallucination,245,15,432,413,156
+token_capabilities_rust,2,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.528,arg_hallucination,245,15,432,413,156
+token_capabilities_rust,3,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.952,arg_hallucination,245,15,432,413,156
+token_capabilities_rust,4,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.712,arg_hallucination,245,15,432,413,156
+token_capabilities_rust,5,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,1.941,arg_hallucination,245,15,432,413,156
+token_capabilities_rust,6,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.759,arg_hallucination,245,15,432,413,156
+token_capabilities_rust,7,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.758,arg_hallucination,245,15,432,413,156
+token_capabilities_rust,8,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.662,arg_hallucination,245,15,432,413,156
+token_capabilities_rust,9,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.756,arg_hallucination,245,15,432,413,156
+token_capabilities_rust,10,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.622,arg_hallucination,245,15,432,413,156

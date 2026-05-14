@@ -1,0 +1,11 @@
+runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+token_capabilities_rust,1,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,2.454
+token_capabilities_rust,2,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,1.844
+token_capabilities_rust,3,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,1.740
+token_capabilities_rust,4,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,1.538
+token_capabilities_rust,5,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,3.675
+token_capabilities_rust,6,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,1.856
+token_capabilities_rust,7,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,1.636
+token_capabilities_rust,8,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,1.576
+token_capabilities_rust,9,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,3.134
+token_capabilities_rust,10,anthropic,compile_time_reservation_refused,1,2000,862,43.10,0,0,0,3.249

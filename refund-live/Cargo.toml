@@ -1,0 +1,55 @@
+[package]
+name = "refund-live"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1"
+budget-typed-cap = { path = "../budget-typed-cap" }
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[[bin]]
+name = "refund-live"
+path = "src/main.rs"
+
+[[bin]]
+name = "refund-live-1000"
+path = "src/bin/refund-live-1000.rs"
+
+[[bin]]
+name = "a1-adversarial"
+path = "src/bin/a1-adversarial.rs"
+
+[[bin]]
+name = "refund-live-multi"
+path = "src/bin/refund-live-multi.rs"
+
+[[bin]]
+name = "a1-adversarial-n100"
+path = "src/bin/a1-adversarial-n100.rs"
+
+[[bin]]
+name = "multi-turn-session"
+path = "src/bin/multi-turn-session.rs"
+
+[[bin]]
+name = "reasoning-eval"
+path = "src/bin/reasoning-eval.rs"
+
+[[bin]]
+name = "react-agent-bench"
+path = "src/bin/react-agent-bench.rs"
+
+[features]
+tiktoken = ["budget-typed-cap/tiktoken"]
+
+[[bin]]
+name = "compare-estimators"
+path = "src/bin/compare-estimators.rs"
+
+[[bin]]
+name = "compare-estimators-openai"
+path = "src/bin/compare-estimators-openai.rs"

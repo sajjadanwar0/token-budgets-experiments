@@ -1,0 +1,48 @@
+   Compiling refund-live v0.1.0 (/home/neo/RustroverProjects/refund-live)
+warning: type alias `B` is never used
+  --> src/bin/compare-estimators-openai.rs:27:6
+   |
+27 | type B = Budget<BUDGET_CAP>;
+   |      ^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `refund-live` (bin "compare-estimators-openai") generated 1 warning
+    Finished `release` profile [optimized] target(s) in 1.33s
+     Running `target/release/compare-estimators-openai`
+=== Compare estimators (OpenAI gpt-4o-mini): ByteLength vs Tiktoken ===
+N = 100 per estimator, max_tokens = 256
+Tokenizer match: cl100k_base IS gpt-4o-mini's tokenizer (soundness contract holds).
+
+[1/2] Running ByteLength estimator...
+  ByteLength progress: 10/100
+  ByteLength progress: 20/100
+  ByteLength progress: 30/100
+  ByteLength progress: 40/100
+  ByteLength progress: 50/100
+  ByteLength progress: 60/100
+  ByteLength progress: 70/100
+  ByteLength progress: 80/100
+  ByteLength progress: 90/100
+  ByteLength progress: 100/100
+  ByteLength done in 6.4 min
+
+[2/2] Running Tiktoken cl100k_base estimator...
+  Tiktoken progress: 10/100
+  Tiktoken progress: 20/100
+  Tiktoken progress: 30/100
+  Tiktoken progress: 40/100
+  Tiktoken progress: 50/100
+  Tiktoken progress: 60/100
+  Tiktoken progress: 70/100
+  Tiktoken progress: 80/100
+  Tiktoken progress: 90/100
+  Tiktoken progress: 100/100
+  Tiktoken done in 6.4 min
+
+=== Summary (OpenAI gpt-4o-mini, max_tokens=256) ===
+Estimator                     N   over-res   min marg   p50 marg   p95 marg
+byte-length                 100      1.95x     1.085x      1.80x     20.64x
+tiktoken/cl100k_base        100      1.83x     1.016x      1.69x     19.24x
+
+Wrote 200 rows to compare_estimators_openai.csv

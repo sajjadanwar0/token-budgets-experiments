@@ -1,0 +1,46 @@
+warning: variable `sum_f` is assigned to, but never used
+   --> src/bin/refund-live-multi.rs:246:9
+    |
+246 |     let mut sum_f = 0u128;
+    |         ^^^^^^^^^
+    |
+    = note: consider using `_sum_f` instead
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: value assigned to `sum_f` is never read
+   --> src/bin/refund-live-multi.rs:332:9
+    |
+332 |         sum_f += refund_amount as u128;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: `refund-live` (bin "refund-live-multi") generated 2 warnings
+    Finished `release` profile [optimized] target(s) in 0.13s
+     Running `target/release/refund-live-multi`
+=== Provider: ollama-llama3.2 | model: llama3.2 | max_tokens: 1024 | N: 300 ===
+Endpoint: http://localhost:11434/v1/chat/completions
+Rates: 1 nc/in_tok, 1 nc/out_tok
+   0 reserve=      1153 actual=        74 refund=      1079 in=  34 out=  40 ms=  3002 x= 15.58
+  25 reserve=      1143 actual=       251 refund=       892 in=  33 out= 218 ms= 14837 x=  4.55
+  50 reserve=      1154 actual=       134 refund=      1020 in=  34 out= 100 ms=  6923 x=  8.61
+  75 reserve=      1153 actual=       158 refund=       995 in=  34 out= 124 ms=  8707 x=  7.30
+ 100 reserve=      1155 actual=        77 refund=      1078 in=  34 out=  43 ms=  3191 x= 15.00
+ 125 reserve=      1148 actual=       182 refund=       966 in=  31 out= 151 ms= 10682 x=  6.31
+ 150 reserve=      1155 actual=        96 refund=      1059 in=  34 out=  62 ms=  4057 x= 12.03
+ 175 reserve=      1143 actual=       148 refund=       995 in=  33 out= 115 ms=  7141 x=  7.72
+ 200 reserve=      1153 actual=        68 refund=      1085 in=  34 out=  34 ms=  2230 x= 16.96
+ 225 reserve=      1153 actual=       419 refund=       734 in=  34 out= 385 ms= 23904 x=  2.75
+ 250 reserve=      1154 actual=        98 refund=      1056 in=  34 out=  64 ms=  4035 x= 11.78
+ 275 reserve=      1148 actual=       193 refund=       955 in=  31 out= 162 ms=  9934 x=  5.95
+ 299 reserve=      1150 actual=        84 refund=      1066 in=  33 out=  51 ms=  3241 x= 13.69
+
+=== Summary: ollama-llama3.2 | mt=1024 | N=300 ===
+Wall time:        51.2 min
+Successful:       300 (1 capped)
+A1 violations:    0
+API errors:       0
+Over-reservation: 6.128x
+Margin: min=1.090x p50=6.694x mean=8.399x p95=17.833x max=31.432x
+Wrote 300 rows to refund_live_ollama_llama3_2_1024_300.csv

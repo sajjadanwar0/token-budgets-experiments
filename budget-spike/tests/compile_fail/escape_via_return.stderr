@@ -1,0 +1,5 @@
+error[E0515]: cannot return reference to local variable `b`
+ --> tests/compile_fail/escape_via_return.rs:5:5
+  |
+5 |     &b // ERROR: cannot return reference to local variable `b`
+  |     ^^ returns a reference to data owned by the current function

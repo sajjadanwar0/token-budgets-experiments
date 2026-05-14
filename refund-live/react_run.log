@@ -1,0 +1,7 @@
+   Compiling budget-typed-cap v0.1.0 (/home/neo/RustroverProjects/budget-typed-cap)
+   Compiling refund-live v0.1.0 (/home/neo/RustroverProjects/refund-live)
+    Finished `release` profile [optimized] target(s) in 1.52s
+     Running `target/release/react-agent-bench`
+Task   0 'What's 17 * 23, and is the result prime?': iter=3 tool=2 cost=$0.0041 margin_tight=2.214x ✓
+Task   1 'Compute the area of a triangle with base': iter=2 tool=1 cost=$0.0014 margin_tight=4.202x ✓
+Task   2 'What year was the Eiffel Tower completed': iter=2 tool=1 cost=$0.0016 margin_tight=3.275x ✓

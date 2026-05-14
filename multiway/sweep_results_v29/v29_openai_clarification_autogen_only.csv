@@ -1,0 +1,11 @@
+runtime,run_id,provider,workload,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+autogen,1,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,13.023
+autogen,2,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,6.557
+autogen,3,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,13.93
+autogen,4,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,6.404
+autogen,5,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,7.731
+autogen,6,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,5.532
+autogen,7,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,5.94
+autogen,8,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,6.559
+autogen,9,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,7.175
+autogen,10,openai,clarification,structural_max_turns_hit,4,540,173,32.04,0,367,0,25.619

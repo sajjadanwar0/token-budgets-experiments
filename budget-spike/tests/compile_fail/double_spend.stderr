@@ -1,0 +1,15 @@
+error[E0382]: use of moved value: `b`
+ --> tests/compile_fail/double_spend.rs:6:20
+  |
+4 |     let b = Budget::new(1_000);
+  |         - move occurs because `b` has type `budget_spike::Budget`, which does not implement the `Copy` trait
+5 |     let (b2, _) = b.spend(100, || ()).unwrap();
+  |                     ----------------- `b` moved due to this method call
+6 |     let (_b3, _) = b.spend(100, || ()).unwrap(); // ERROR: use of moved value `b`
+  |                    ^ value used here after move
+  |
+note: `budget_spike::Budget::spend` takes ownership of the receiver `self`, which moves `b`
+ --> src/lib.rs
+  |
+  |     pub fn spend<L, T>(self, amount: u64, label: L) -> Result<(Budget, T), BudgetError>
+  |                        ^^^^

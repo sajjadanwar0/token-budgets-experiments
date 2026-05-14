@@ -1,0 +1,11 @@
+runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds,workload,actual_input_tokens,actual_output_tokens,byte_length_estimate,reservation_uc,actual_cost_uc
+token_capabilities_rust,1,openai,completed_no_cap_hit,2,540,67,12.41,0,0,0,2.930,clarification,207,60,1193,419,67
+token_capabilities_rust,2,openai,completed_no_cap_hit,2,540,68,12.59,0,0,0,5.050,clarification,207,61,1193,419,68
+token_capabilities_rust,3,openai,completed_no_cap_hit,2,540,66,12.22,0,0,0,4.908,clarification,207,58,1193,419,66
+token_capabilities_rust,4,openai,completed_no_cap_hit,2,540,67,12.41,0,0,0,3.817,clarification,207,60,1193,419,67
+token_capabilities_rust,5,openai,completed_no_cap_hit,2,540,68,12.59,0,0,0,4.127,clarification,207,61,1193,419,68
+token_capabilities_rust,6,openai,completed_no_cap_hit,2,540,67,12.41,0,0,0,4.514,clarification,207,60,1193,419,67
+token_capabilities_rust,7,openai,completed_no_cap_hit,2,540,67,12.41,0,0,0,3.340,clarification,207,60,1193,419,67
+token_capabilities_rust,8,openai,completed_no_cap_hit,2,540,67,12.41,0,0,0,4.647,clarification,207,60,1193,419,67
+token_capabilities_rust,9,openai,completed_no_cap_hit,2,540,68,12.59,0,0,0,4.899,clarification,207,61,1193,419,68
+token_capabilities_rust,10,openai,completed_no_cap_hit,2,540,67,12.41,0,0,0,3.518,clarification,207,60,1193,419,67

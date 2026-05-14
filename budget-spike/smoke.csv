@@ -1,0 +1,3 @@
+runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+token_capabilities_rust,1,openai,compile_time_reservation_refused,2,540,67,12.41,0,0,0,5.763
+token_capabilities_rust,2,openai,compile_time_reservation_refused,2,540,67,12.41,0,0,0,2.921

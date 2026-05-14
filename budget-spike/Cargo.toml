@@ -1,0 +1,71 @@
+[package]
+name = "budget-spike"
+version = "0.2.0"
+authors = ["Sajjad Khan"]
+edition = "2024"
+rust-version = "1.85"
+description = "Token Capabilities: compile-time cost control for LLM agent systems via affine resource types."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/sajjadanwar0/token-capabilities"
+readme = "README.md"
+keywords = ["llm", "budget", "affine-types", "agent", "rust"]
+categories = ["api-bindings", "rust-patterns"]
+
+[features]
+default = []
+tracing = ["dep:tracing"]
+tiktoken = ["dep:tiktoken-rs"]
+tokio-tests = ["dep:futures"]
+full = ["tracing", "tiktoken", "tokio-tests"]
+
+[dependencies]
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "sync", "time"] }
+async-trait = "0.1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+tracing = { version = "0.1", optional = true }
+tiktoken-rs = { version = "0.6", optional = true }
+futures = { version = "0.3", optional = true, default-features = false, features = ["std"] }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1"
+trybuild = "1"
+tokio = { version = "1", features = ["full", "test-util", "macros"] }
+mockito = "1"
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+futures = { version = "0.3", default-features = false, features = ["std"] }
+tiktoken-rs = "0.6"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+
+[[bench]]
+name = "spend_overhead"
+harness = false
+
+[[bench]]
+name = "end_to_end"
+harness = false
+required-features = ["tiktoken"]
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+
+[profile.bench]
+inherits = "release"
+debug = true
+strip = "none"
+
+[profile.test]
+opt-level = 1
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

@@ -1,0 +1,6 @@
+runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+autogen,1,openai,structural_max_turns_hit,4,540,173,32.04,0,367,0,8.787
+autogen,2,openai,structural_max_turns_hit,4,540,173,32.04,0,367,0,6.759
+autogen,3,openai,structural_max_turns_hit,4,540,173,32.04,0,367,0,6.372
+autogen,4,openai,structural_max_turns_hit,4,540,173,32.04,0,367,0,5.505
+autogen,5,openai,structural_max_turns_hit,4,540,173,32.04,0,367,0,5.102

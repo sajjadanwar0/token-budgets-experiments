@@ -1,0 +1,51 @@
+warning: unused import: `Context`
+  --> src/bin/multi-turn-session.rs:11:14
+   |
+11 | use anyhow::{Context, Result};
+   |              ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `refund-live` (bin "multi-turn-session") generated 1 warning (run `cargo fix --bin "multi-turn-session" -p refund-live` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.17s
+     Running `target/release/multi-turn-session`
+Session 0: scenario=trip_planning turns=12/12 actual=$0.0608 viol=0
+Session 10: scenario=rust_learning turns=12/12 actual=$0.0514 viol=0
+S20 T6 HTTP 529 <unknown status code>
+Session 20: scenario=essay_revision turns=12/12 actual=$0.0215 viol=0
+S21 T2 HTTP 529 <unknown status code>
+S21 T4 HTTP 529 <unknown status code>
+S21 T9 HTTP 529 <unknown status code>
+S22 T0 HTTP 529 <unknown status code>
+S22 T1 HTTP 529 <unknown status code>
+S22 T2 HTTP 529 <unknown status code>
+S22 T4 HTTP 529 <unknown status code>
+Session 30: scenario=tech_compare turns=12/12 actual=$0.0656 viol=0
+Session 40: scenario=trip_planning turns=12/12 actual=$0.0614 viol=0
+S48 T10 err: error sending request for url (https://api.anthropic.com/v1/messages)
+Session 50: scenario=rust_learning turns=12/12 actual=$0.0467 viol=0
+S51 T1 err: error sending request for url (https://api.anthropic.com/v1/messages)
+Session 60: scenario=essay_revision turns=12/12 actual=$0.0232 viol=0
+Session 70: scenario=tech_compare turns=12/12 actual=$0.0656 viol=0
+Session 80: scenario=trip_planning turns=12/12 actual=$0.0586 viol=0
+Session 90: scenario=rust_learning turns=12/12 actual=$0.0458 viol=0
+
+=== Multi-turn session aggregate ===
+Wall time:           97.9 min
+Sessions:            100 (target 100)
+Turns completed:     1200 (across all sessions)
+Total A1 violations: 0 (0.000%)
+Sessions exhausting budget early: 0 (0.0%)
+Total spent:         $4.6044
+
+Per-scenario stats:
+  trip_planning         N= 13  avg_turns=12.0  avg_cost=$0.0595  exhausted=0
+  code_debug            N= 13  avg_turns=12.0  avg_cost=$0.0645  exhausted=0
+  rust_learning         N= 13  avg_turns=12.0  avg_cost=$0.0473  exhausted=0
+  podcast_brainstorm    N= 13  avg_turns=12.0  avg_cost=$0.0279  exhausted=0
+  essay_revision        N= 12  avg_turns=12.0  avg_cost=$0.0242  exhausted=0
+  math_problem          N= 12  avg_turns=12.0  avg_cost=$0.0475  exhausted=0
+  tech_compare          N= 12  avg_turns=12.0  avg_cost=$0.0631  exhausted=0
+  recipe_iter           N= 12  avg_turns=12.0  avg_cost=$0.0330  exhausted=0
+Wrote multi_turn_sessions.csv (100 sessions)
+Wrote multi_turn_turns.csv (1190 turns)

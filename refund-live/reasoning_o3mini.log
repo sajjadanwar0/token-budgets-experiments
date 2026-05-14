@@ -1,0 +1,33 @@
+    Finished `release` profile [optimized] target(s) in 0.14s
+     Running `target/release/reasoning-eval`
+=== Reasoning model live eval: o3-mini ===
+max_completion_tokens: 4096
+reasoning_effort:      medium
+N: 100, budget cap: $100
+  0 reserve=  18218200 actual=    941600 in=  28 comp=  207 (reason=  64, vis= 143) ms= 7909 x=19.35
+ 10 reserve=  18218200 actual=    858000 in=  28 comp=  188 (reason=  64, vis= 124) ms= 3412 x=21.23
+ 20 reserve=  18218200 actual=    840400 in=  28 comp=  184 (reason=  64, vis= 120) ms= 3051 x=21.68
+ 30 reserve=  18218200 actual=   1166000 in=  28 comp=  258 (reason= 128, vis= 130) ms= 4115 x=15.62
+ 40 reserve=  18218200 actual=    827200 in=  28 comp=  181 (reason=  64, vis= 117) ms= 3224 x=22.02
+ 50 reserve=  18218200 actual=    858000 in=  28 comp=  188 (reason=  64, vis= 124) ms= 3258 x=21.23
+ 60 reserve=  18218200 actual=    871200 in=  28 comp=  191 (reason=  64, vis= 127) ms= 2506 x=20.91
+ 70 reserve=  18218200 actual=    858000 in=  28 comp=  188 (reason=  64, vis= 124) ms= 4775 x=21.23
+ 80 reserve=  18218200 actual=    541200 in=  28 comp=  116 (reason=   0, vis= 116) ms= 2595 x=33.66
+ 90 reserve=  18218200 actual=   1117600 in=  28 comp=  247 (reason= 128, vis= 119) ms= 9086 x=16.30
+ 99 reserve=  18278700 actual=   9350000 in=  28 comp= 2118 (reason=1984, vis= 134) ms=17933 x= 1.95
+
+=== Reasoning model summary: o3-mini | mct=4096 | effort=medium ===
+Wall time:        10.0 min
+Successful:       100
+A1 violations:    0
+API errors:       0
+
+Actual cost:      $0.2082
+Reasoning cost:   $0.1197 (58.4% of output spend)
+Over-reservation: 8.765x
+
+Margin: min=1.955x p50=10.199x mean=10.980x p95=21.233x max=33.663x
+
+Reasoning fraction by call:
+  reasoning/completion ratio min=0.00% mean=50.78% max=93.67%
+Wrote 100 rows to reasoning_o3_mini_4096_100.csv

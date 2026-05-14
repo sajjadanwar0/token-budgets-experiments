@@ -1,0 +1,2 @@
+runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds,workload,actual_input_tokens,actual_output_tokens,byte_length_estimate,reservation_uc,actual_cost_uc
+token_capabilities_rust,1,groq,compile_time_reservation_refused,1,540,156,28.89,0,0,0,0.952,arg_hallucination,245,15,432,413,156

@@ -1,0 +1,11 @@
+runtime,run_id,provider,workload,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+litellm_proxy,1,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,5.408
+litellm_proxy,2,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,1.433
+litellm_proxy,3,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,2.374
+litellm_proxy,4,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,8.279
+litellm_proxy,5,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,1.84
+litellm_proxy,6,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,2.257
+litellm_proxy,7,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,1.23
+litellm_proxy,8,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,3.547
+litellm_proxy,9,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,2.189
+litellm_proxy,10,groq,lang001,litellm_budget_exceeded_after_call,3,540,609,112.78,69,0,238,1.637

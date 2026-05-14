@@ -1,0 +1,11 @@
+runtime,run_id,provider,workload,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+litellm_proxy,1,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,5.813
+litellm_proxy,2,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,1.991
+litellm_proxy,3,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,1.361
+litellm_proxy,4,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,1.389
+litellm_proxy,5,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,1.964
+litellm_proxy,6,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,1.228
+litellm_proxy,7,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,1.403
+litellm_proxy,8,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,2.079
+litellm_proxy,9,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,1.23
+litellm_proxy,10,anthropic,lang001,litellm_budget_exceeded_after_call,1,540,906,167.78,366,0,906,1.434

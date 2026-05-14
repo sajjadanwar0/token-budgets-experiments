@@ -1,0 +1,11 @@
+runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds,workload,actual_input_tokens,actual_output_tokens,byte_length_estimate,reservation_uc,actual_cost_uc
+token_capabilities_rust,1,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.545,clarification,255,15,431,412,162
+token_capabilities_rust,2,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.686,clarification,255,15,431,412,162
+token_capabilities_rust,3,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.671,clarification,255,15,431,412,162
+token_capabilities_rust,4,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.337,clarification,255,15,431,412,162
+token_capabilities_rust,5,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.506,clarification,255,15,431,412,162
+token_capabilities_rust,6,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.623,clarification,255,15,431,412,162
+token_capabilities_rust,7,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.561,clarification,255,15,431,412,162
+token_capabilities_rust,8,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.302,clarification,255,15,431,412,162
+token_capabilities_rust,9,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.309,clarification,255,15,431,412,162
+token_capabilities_rust,10,groq,compile_time_reservation_refused,1,540,162,30.00,0,0,0,0.536,clarification,255,15,431,412,162

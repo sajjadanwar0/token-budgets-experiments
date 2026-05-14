@@ -1,0 +1,97 @@
+    Finished `bench` profile [optimized] target(s) in 0.23s
+     Running benches/spend_overhead.rs (target/release/deps/spend_overhead-c2664567a9b8f2fd)
+Gnuplot not found, using plotters backend
+Benchmarking construction/budget_new
+Benchmarking construction/budget_new: Warming up for 3.0000 s
+Benchmarking construction/budget_new: Collecting 100 samples in estimated 5.0000 s (6.4B iterations)
+Benchmarking construction/budget_new: Analyzing
+construction/budget_new time:   [662.41 ps 664.86 ps 667.40 ps]
+                        change: [+1.3434% +1.5953% +1.8381%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 11 outliers among 100 measurements (11.00%)
+  5 (5.00%) high mild
+  6 (6.00%) high severe
+Benchmarking construction/u64_baseline
+Benchmarking construction/u64_baseline: Warming up for 3.0000 s
+Benchmarking construction/u64_baseline: Collecting 100 samples in estimated 5.0000 s (7.5B iterations)
+Benchmarking construction/u64_baseline: Analyzing
+construction/u64_baseline
+                        time:   [664.84 ps 667.19 ps 669.95 ps]
+                        change: [+1.2731% +1.7066% +2.1090%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 9 outliers among 100 measurements (9.00%)
+  3 (3.00%) high mild
+  6 (6.00%) high severe
+
+Benchmarking spend_success/budget_spend_ok
+Benchmarking spend_success/budget_spend_ok: Warming up for 3.0000 s
+Benchmarking spend_success/budget_spend_ok: Collecting 100 samples in estimated 5.0000 s (5.6B iterations)
+Benchmarking spend_success/budget_spend_ok: Analyzing
+spend_success/budget_spend_ok
+                        time:   [892.45 ps 893.59 ps 894.83 ps]
+                        change: [+0.3551% +0.5076% +0.6527%] (p = 0.00 < 0.05)
+                        Change within noise threshold.
+Found 8 outliers among 100 measurements (8.00%)
+  1 (1.00%) low mild
+  6 (6.00%) high mild
+  1 (1.00%) high severe
+Benchmarking spend_success/u64_subtract
+Benchmarking spend_success/u64_subtract: Warming up for 3.0000 s
+Benchmarking spend_success/u64_subtract: Collecting 100 samples in estimated 5.0000 s (5.5B iterations)
+Benchmarking spend_success/u64_subtract: Analyzing
+spend_success/u64_subtract
+                        time:   [902.91 ps 905.46 ps 909.83 ps]
+                        change: [-0.5047% +0.3964% +1.1558%] (p = 0.39 > 0.05)
+                        No change in performance detected.
+Found 7 outliers among 100 measurements (7.00%)
+  6 (6.00%) high mild
+  1 (1.00%) high severe
+Benchmarking spend_success/u64_checked_sub
+Benchmarking spend_success/u64_checked_sub: Warming up for 3.0000 s
+Benchmarking spend_success/u64_checked_sub: Collecting 100 samples in estimated 5.0000 s (3.5B iterations)
+Benchmarking spend_success/u64_checked_sub: Analyzing
+spend_success/u64_checked_sub
+                        time:   [1.3649 ns 1.3659 ns 1.3669 ns]
+                        change: [+0.6746% +0.8343% +0.9873%] (p = 0.00 < 0.05)
+                        Change within noise threshold.
+Found 5 outliers among 100 measurements (5.00%)
+  1 (1.00%) low severe
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+
+Benchmarking spend_insufficient/budget_spend_err
+Benchmarking spend_insufficient/budget_spend_err: Warming up for 3.0000 s
+Benchmarking spend_insufficient/budget_spend_err: Collecting 100 samples in estimated 5.0000 s (2.8B iterations)
+Benchmarking spend_insufficient/budget_spend_err: Analyzing
+spend_insufficient/budget_spend_err
+                        time:   [1.8087 ns 1.8105 ns 1.8127 ns]
+                        change: [+0.5773% +0.7791% +0.9737%] (p = 0.00 < 0.05)
+                        Change within noise threshold.
+Found 5 outliers among 100 measurements (5.00%)
+  1 (1.00%) low mild
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+
+Benchmarking split_merge/split_then_merge
+Benchmarking split_merge/split_then_merge: Warming up for 3.0000 s
+Benchmarking split_merge/split_then_merge: Collecting 100 samples in estimated 5.0000 s (5.4B iterations)
+Benchmarking split_merge/split_then_merge: Analyzing
+split_merge/split_then_merge
+                        time:   [926.02 ps 928.28 ps 931.05 ps]
+                        change: [-2.4677% -0.2152% +2.0270%] (p = 0.86 > 0.05)
+                        No change in performance detected.
+Found 11 outliers among 100 measurements (11.00%)
+  3 (3.00%) high mild
+  8 (8.00%) high severe
+
+Benchmarking estimate_cost/estimate_cost_call
+Benchmarking estimate_cost/estimate_cost_call: Warming up for 3.0000 s
+Benchmarking estimate_cost/estimate_cost_call: Collecting 100 samples in estimated 5.0000 s (3.5B iterations)
+Benchmarking estimate_cost/estimate_cost_call: Analyzing
+estimate_cost/estimate_cost_call
+                        time:   [1.4058 ns 1.4080 ns 1.4108 ns]
+                        change: [+2.5515% +2.8678% +3.2106%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high severe
+

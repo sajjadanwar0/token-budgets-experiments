@@ -1,0 +1,23 @@
+# Build artifacts
+/target
+
+# Environment - never commit secrets
+.env
+.env.local
+*.env.local
+
+# IDE / editor metadata
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Trybuild leftovers
+wip/
+
+*.zip

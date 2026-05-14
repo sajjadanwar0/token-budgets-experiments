@@ -1,0 +1,54 @@
+warning: unused import: `serde::Deserialize`
+  --> src/bin/refund-live-multi.rs:17:5
+   |
+17 | use serde::Deserialize;
+   |     ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `refund-live` (bin "refund-live-multi") generated 1 warning (run `cargo fix --bin "refund-live-multi" -p refund-live` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.14s
+     Running `target/release/refund-live-multi`
+=== Provider: anthropic-haiku-4.5 | model: claude-haiku-4-5-20251001 | max_tokens: 1024 | N: 300 ===
+Rates: 1000 nc/in_tok, 5000 nc/out_tok ($/M = 0.001/0.005)
+
+   0 reserve=   5251000 actual=    386000 refund=   4865000 in=  16 out=  74 ms= 1984 x=13.60
+  25 reserve=   5241000 actual=   1075000 refund=   4166000 in=  15 out= 212 ms= 3120 x= 4.88
+  50 reserve=   5252000 actual=    551000 refund=   4701000 in=  16 out= 107 ms= 2709 x= 9.53
+  75 reserve=   5251000 actual=   1626000 refund=   3625000 in=  16 out= 322 ms= 4508 x= 3.23
+ 100 reserve=   5253000 actual=    386000 refund=   4867000 in=  16 out=  74 ms= 1593 x=13.61
+ 125 reserve=   5246000 actual=    668000 refund=   4578000 in=  13 out= 131 ms= 2507 x= 7.85
+ 150 reserve=   5253000 actual=    591000 refund=   4662000 in=  16 out= 115 ms= 2663 x= 8.89
+ 175 reserve=   5241000 actual=   1025000 refund=   4216000 in=  15 out= 202 ms= 3144 x= 5.11
+ 200 reserve=   5251000 actual=    521000 refund=   4730000 in=  16 out= 101 ms= 1630 x=10.08
+ 225 reserve=   5251000 actual=   1531000 refund=   3720000 in=  16 out= 303 ms= 4098 x= 3.43
+ 250 reserve=   5252000 actual=    516000 refund=   4736000 in=  16 out= 100 ms= 1620 x=10.18
+ 275 reserve=   5246000 actual=    618000 refund=   4628000 in=  13 out= 121 ms= 2456 x= 8.49
+ 299 reserve=   5248000 actual=    501000 refund=   4747000 in=  16 out=  97 ms= 2252 x=10.48
+
+=== Summary: anthropic-haiku-4.5 | max_tokens=1024 | N=300 ===
+Wall time:        14.8 min
+Successful:       300 (0 cap-saturated, 0.0%)
+A1 violations:    0 (0.00%)
+API errors:       0
+
+Reserved (USD):   $1.575828
+Actual   (USD):   $0.248015
+Refunded (USD):   $1.327813
+Final budget:     $99.751985
+
+Conservation:     ✓ EXACT  (1575828000=1575828000)
+Over-reservation: 6.354x (535.4%)
+
+=== Margin distribution ===
+min:   2.947x
+p5:    3.177x
+p25:   4.158x
+p50:   7.729x
+mean:  10.053x (std 7.819)
+p75:   12.092x
+p95:   30.428x
+p99:   31.581x
+max:   31.581x
+
+Wrote 300 rows to refund_live_anthropic_haiku_4_5_1024_300.csv

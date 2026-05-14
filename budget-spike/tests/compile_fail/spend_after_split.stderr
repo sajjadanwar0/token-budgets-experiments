@@ -1,0 +1,15 @@
+error[E0382]: use of moved value: `b`
+ --> tests/compile_fail/spend_after_split.rs:6:13
+  |
+4 |     let b = Budget::new(1_000);
+  |         - move occurs because `b` has type `budget_spike::Budget`, which does not implement the `Copy` trait
+5 |     let (_remainder, _child) = b.split(400).unwrap();
+  |                                  ---------- `b` moved due to this method call
+6 |     let _ = b.spend(100, || ()).unwrap(); // ERROR: use of moved value `b`
+  |             ^ value used here after move
+  |
+note: `budget_spike::Budget::split` takes ownership of the receiver `self`, which moves `b`
+ --> src/lib.rs
+  |
+  |     pub fn split(self, amount: u64) -> Result<(Budget, Budget), BudgetError> {
+  |                  ^^^^

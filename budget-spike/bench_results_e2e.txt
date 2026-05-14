@@ -1,0 +1,125 @@
+   Compiling budget-spike v0.2.0 (/home/neo/RustroverProjects/budget-spike)
+    Finished `bench` profile [optimized + debuginfo] target(s) in 14.02s
+     Running benches/end_to_end.rs (target/release/deps/end_to_end-ba5f072ef3aac17d)
+Gnuplot not found, using plotters backend
+Benchmarking byte_length_estimator/short
+Benchmarking byte_length_estimator/short: Warming up for 3.0000 s
+Benchmarking byte_length_estimator/short: Collecting 100 samples in estimated 5.0000 s (5.7B iterations)
+Benchmarking byte_length_estimator/short: Analyzing
+byte_length_estimator/short
+                        time:   [879.30 ps 881.26 ps 883.46 ps]
+Found 11 outliers among 100 measurements (11.00%)
+  6 (6.00%) low mild
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+Benchmarking byte_length_estimator/medium
+Benchmarking byte_length_estimator/medium: Warming up for 3.0000 s
+Benchmarking byte_length_estimator/medium: Collecting 100 samples in estimated 5.0000 s (5.6B iterations)
+Benchmarking byte_length_estimator/medium: Analyzing
+byte_length_estimator/medium
+                        time:   [900.71 ps 909.88 ps 920.25 ps]
+Found 14 outliers among 100 measurements (14.00%)
+  7 (7.00%) high mild
+  7 (7.00%) high severe
+Benchmarking byte_length_estimator/long
+Benchmarking byte_length_estimator/long: Warming up for 3.0000 s
+Benchmarking byte_length_estimator/long: Collecting 100 samples in estimated 5.0000 s (5.5B iterations)
+Benchmarking byte_length_estimator/long: Analyzing
+byte_length_estimator/long
+                        time:   [883.07 ps 884.93 ps 887.03 ps]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+
+Benchmarking tiktoken_o200k_estimator/short
+Benchmarking tiktoken_o200k_estimator/short: Warming up for 3.0000 s
+Benchmarking tiktoken_o200k_estimator/short: Collecting 100 samples in estimated 5.0010 s (1.8M iterations)
+Benchmarking tiktoken_o200k_estimator/short: Analyzing
+tiktoken_o200k_estimator/short
+                        time:   [2.7375 µs 2.7453 µs 2.7535 µs]
+Found 13 outliers among 100 measurements (13.00%)
+  1 (1.00%) low severe
+  10 (10.00%) low mild
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+Benchmarking tiktoken_o200k_estimator/medium
+Benchmarking tiktoken_o200k_estimator/medium: Warming up for 3.0000 s
+Benchmarking tiktoken_o200k_estimator/medium: Collecting 100 samples in estimated 5.2454 s (61k iterations)
+Benchmarking tiktoken_o200k_estimator/medium: Analyzing
+tiktoken_o200k_estimator/medium
+                        time:   [86.703 µs 86.926 µs 87.207 µs]
+Found 9 outliers among 100 measurements (9.00%)
+  3 (3.00%) high mild
+  6 (6.00%) high severe
+Benchmarking tiktoken_o200k_estimator/long
+Benchmarking tiktoken_o200k_estimator/long: Warming up for 3.0000 s
+
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.1s, enable flat sampling, or reduce sample count to 60.
+Benchmarking tiktoken_o200k_estimator/long: Collecting 100 samples in estimated 6.0956 s (5050 iterations)
+Benchmarking tiktoken_o200k_estimator/long: Analyzing
+tiktoken_o200k_estimator/long
+                        time:   [1.1952 ms 1.1970 ms 1.1992 ms]
+Found 6 outliers among 100 measurements (6.00%)
+  2 (2.00%) high mild
+  4 (4.00%) high severe
+
+Benchmarking end_to_end_byte_length/short
+Benchmarking end_to_end_byte_length/short: Warming up for 3.0000 s
+Benchmarking end_to_end_byte_length/short: Collecting 100 samples in estimated 5.0000 s (7.4B iterations)
+Benchmarking end_to_end_byte_length/short: Analyzing
+end_to_end_byte_length/short
+                        time:   [676.40 ps 676.93 ps 677.52 ps]
+Found 9 outliers among 100 measurements (9.00%)
+  2 (2.00%) low severe
+  2 (2.00%) low mild
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+Benchmarking end_to_end_byte_length/medium
+Benchmarking end_to_end_byte_length/medium: Warming up for 3.0000 s
+Benchmarking end_to_end_byte_length/medium: Collecting 100 samples in estimated 5.0000 s (7.3B iterations)
+Benchmarking end_to_end_byte_length/medium: Analyzing
+end_to_end_byte_length/medium
+                        time:   [683.69 ps 684.89 ps 686.25 ps]
+Found 14 outliers among 100 measurements (14.00%)
+  2 (2.00%) low severe
+  3 (3.00%) low mild
+  3 (3.00%) high mild
+  6 (6.00%) high severe
+Benchmarking end_to_end_byte_length/long
+Benchmarking end_to_end_byte_length/long: Warming up for 3.0000 s
+Benchmarking end_to_end_byte_length/long: Collecting 100 samples in estimated 5.0000 s (7.3B iterations)
+Benchmarking end_to_end_byte_length/long: Analyzing
+end_to_end_byte_length/long
+                        time:   [682.79 ps 684.67 ps 686.80 ps]
+Found 5 outliers among 100 measurements (5.00%)
+  4 (4.00%) high mild
+  1 (1.00%) high severe
+
+Benchmarking end_to_end_tiktoken/short
+Benchmarking end_to_end_tiktoken/short: Warming up for 3.0000 s
+Benchmarking end_to_end_tiktoken/short: Collecting 100 samples in estimated 5.0098 s (1.7M iterations)
+Benchmarking end_to_end_tiktoken/short: Analyzing
+end_to_end_tiktoken/short
+                        time:   [2.8298 µs 2.8380 µs 2.8476 µs]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+Benchmarking end_to_end_tiktoken/medium
+Benchmarking end_to_end_tiktoken/medium: Warming up for 3.0000 s
+Benchmarking end_to_end_tiktoken/medium: Collecting 100 samples in estimated 5.4396 s (61k iterations)
+Benchmarking end_to_end_tiktoken/medium: Analyzing
+end_to_end_tiktoken/medium
+                        time:   [90.314 µs 90.574 µs 90.859 µs]
+Found 5 outliers among 100 measurements (5.00%)
+  5 (5.00%) high mild
+Benchmarking end_to_end_tiktoken/long
+Benchmarking end_to_end_tiktoken/long: Warming up for 3.0000 s
+
+Warning: Unable to complete 100 samples in 5.0s. You may wish to increase target time to 6.4s, enable flat sampling, or reduce sample count to 60.
+Benchmarking end_to_end_tiktoken/long: Collecting 100 samples in estimated 6.3619 s (5050 iterations)
+Benchmarking end_to_end_tiktoken/long: Analyzing
+end_to_end_tiktoken/long
+                        time:   [1.2634 ms 1.2698 ms 1.2798 ms]
+Found 7 outliers among 100 measurements (7.00%)
+  4 (4.00%) high mild
+  3 (3.00%) high severe
+

@@ -1,0 +1,11 @@
+runtime,run_id,provider,workload,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+litellm_proxy,1,openai,lang001,litellm_budget_exceeded_after_call,9,540,540,100.0,0,0,94,16.813
+litellm_proxy,2,openai,lang001,litellm_budget_exceeded_after_call,10,540,634,117.41,94,0,101,16.234
+litellm_proxy,3,openai,lang001,litellm_budget_exceeded_after_call,9,540,540,100.0,0,0,94,15.488
+litellm_proxy,4,openai,lang001,litellm_budget_exceeded_after_call,9,540,540,100.0,0,0,94,11.879
+litellm_proxy,5,openai,lang001,litellm_budget_exceeded_after_call,9,540,540,100.0,0,0,94,13.312
+litellm_proxy,6,openai,lang001,litellm_budget_exceeded_after_call,9,540,540,100.0,0,0,94,14.951
+litellm_proxy,7,openai,lang001,litellm_budget_exceeded_after_call,9,540,540,100.0,0,0,94,21.517
+litellm_proxy,8,openai,lang001,litellm_budget_exceeded_after_call,10,540,634,117.41,94,0,101,19.057
+litellm_proxy,9,openai,lang001,litellm_budget_exceeded_after_call,9,540,540,100.0,0,0,94,23.613
+litellm_proxy,10,openai,lang001,litellm_budget_exceeded_after_call,10,540,634,117.41,94,0,101,19.002

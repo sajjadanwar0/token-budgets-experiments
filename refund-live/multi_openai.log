@@ -1,0 +1,54 @@
+warning: unused import: `serde::Deserialize`
+  --> src/bin/refund-live-multi.rs:17:5
+   |
+17 | use serde::Deserialize;
+   |     ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `refund-live` (bin "refund-live-multi") generated 1 warning (run `cargo fix --bin "refund-live-multi" -p refund-live` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.13s
+     Running `target/release/refund-live-multi`
+=== Provider: openai-gpt-4o-mini | model: gpt-4o-mini | max_tokens: 1024 | N: 300 ===
+Rates: 150 nc/in_tok, 600 nc/out_tok ($/M = 0.00015/0.0006)
+
+   0 reserve=    631950 actual=     20400 refund=    611550 in=  16 out=  30 ms= 3094 x=30.98
+  25 reserve=    630450 actual=    135900 refund=    494550 in=  14 out= 223 ms= 3441 x= 4.64
+  50 reserve=    632100 actual=     50400 refund=    581700 in=  16 out=  80 ms= 2011 x=12.54
+  75 reserve=    631950 actual=    276000 refund=    355950 in=  16 out= 456 ms= 8985 x= 2.29
+ 100 reserve=    632250 actual=     15000 refund=    617250 in=  16 out=  21 ms= 1025 x=42.15
+ 125 reserve=    631200 actual=     60150 refund=    571050 in=  13 out=  97 ms= 2814 x=10.49
+ 150 reserve=    632250 actual=     25200 refund=    607050 in=  16 out=  38 ms= 1451 x=25.09
+ 175 reserve=    630450 actual=    173700 refund=    456750 in=  14 out= 286 ms= 3828 x= 3.63
+ 200 reserve=    631950 actual=     35400 refund=    596550 in=  16 out=  55 ms= 2459 x=17.85
+ 225 reserve=    631950 actual=    274200 refund=    357750 in=  16 out= 453 ms= 9102 x= 2.30
+ 250 reserve=    632100 actual=     30000 refund=    602100 in=  16 out=  46 ms= 1450 x=21.07
+ 275 reserve=    631200 actual=     63750 refund=    567450 in=  13 out= 103 ms= 2819 x= 9.90
+ 299 reserve=    631500 actual=     56700 refund=    574800 in=  14 out=  91 ms= 1804 x=11.14
+
+=== Summary: openai-gpt-4o-mini | max_tokens=1024 | N=300 ===
+Wall time:        17.2 min
+Successful:       300 (0 cap-saturated, 0.0%)
+A1 violations:    0 (0.00%)
+API errors:       0
+
+Reserved (USD):   $0.189664
+Actual   (USD):   $0.027512
+Refunded (USD):   $0.162152
+Final budget:     $99.972488
+
+Conservation:     ✓ EXACT  (189664200=189664200)
+Over-reservation: 6.894x (589.4%)
+
+=== Margin distribution ===
+min:   1.969x
+p5:    2.556x
+p25:   4.545x
+p50:   10.400x
+mean:  13.294x (std 11.834)
+p75:   17.393x
+p95:   43.235x
+p99:   57.108x
+max:   60.514x
+
+Wrote 300 rows to refund_live_openai_gpt_4o_mini_1024_300.csv

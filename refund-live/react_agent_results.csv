@@ -1,0 +1,51 @@
+task_idx,task_name,iterations,tool_calls,total_reserved_nc,total_actual_nc,completed,exhausted,violations,final_budget_nc,tightest_margin
+0,"What's 17 * 23, and is the result prime?",3,2,10999000,3721000,true,false,0,46279000,2.550435
+1,"Compute the area of a triangle with base",2,1,6314000,1216000,true,false,0,48784000,4.704944
+2,"What year was the Eiffel Tower completed",3,2,11065000,3156000,true,false,0,46844000,3.159861
+3,"Find the GCD of 144 and 96.",6,3,28806000,13376000,false,false,0,36624000,1.810616
+4,"If a car travels at 65mph for 3.5 hours,",2,1,6397000,1398000,true,false,0,48602000,3.979784
+5,"Convert 100 degrees Fahrenheit to Celsiu",2,1,6713000,2525000,true,false,0,47475000,2.160440
+6,"What's the molecular weight of water?",2,1,6661000,2192000,true,false,0,47808000,2.415499
+7,"Is 89 prime? Show your reasoning.",6,3,35531000,17765000,false,false,0,32235000,1.140741
+8,"Sum the first 10 squares: 1 + 4 + 9 + 16",2,1,6734000,2752000,true,false,0,47248000,1.901872
+9,"What's 2^16 - 1?",2,1,6130000,1257000,true,false,0,48743000,4.177691
+10,"Compute the hypotenuse of a right triang",2,1,6554000,1981000,true,false,0,48019000,2.626667
+11,"Find the average of 12, 45, 67, 89, 23, ",3,2,10550000,3456000,true,false,0,46544000,2.590308
+12,"What's 7 factorial?",5,2,17743000,3755000,true,false,0,46245000,3.263112
+13,"Roughly, how far is the Sun from Earth i",2,1,6592000,1731000,true,false,0,48269000,3.308559
+14,"What's the speed of light in m/s?",3,2,10710000,3233000,true,false,0,46767000,3.230183
+15,"Convert 5 km to miles.",2,1,6236000,1219000,true,false,0,48781000,4.874582
+16,"If you save $50 a week, how much in 2 ye",3,2,10597000,3000000,true,false,0,47000000,3.085084
+17,"Compute the volume of a sphere with radi",2,1,6541000,1968000,true,false,0,48032000,2.654020
+18,"How many seconds in a day?",3,1,9767000,1826000,true,false,0,48174000,4.511592
+19,"What's 0.1 + 0.2 in floating point, and ",3,2,14472000,7451000,true,false,0,42549000,1.241860
+20,"Convert 90 degrees to radians.",3,2,10581000,3242000,true,false,0,46758000,2.845714
+21,"What's the population of Tokyo, roughly?",2,1,6590000,1479000,true,false,0,48521000,3.603194
+22,"How many milligrams in a gram?",6,3,27423000,9475000,false,false,0,40525000,2.118683
+23,"What's e^2?",2,1,6189000,1239000,true,false,0,48761000,4.881129
+24,"Roughly, the boiling point of water at s",2,1,6527000,1544000,true,false,0,48456000,3.553140
+25,"How many bits in a megabyte?",4,3,17203000,6888000,true,false,0,43112000,1.948632
+26,"What's the formula for the area of a cir",2,1,6638000,1935000,true,false,0,48065000,2.729554
+27,"What's 15% of 240?",3,1,9516000,1494000,true,false,0,48506000,5.807496
+28,"If x + 3 = 8, what is x?",2,1,6438000,1755000,true,false,0,48245000,2.919920
+29,"What's the perimeter of a square with si",5,4,19361000,4598000,true,false,0,45402000,3.753114
+30,"Sum: 1 + 2 + 3 + ... + 100",5,3,20351000,6483000,true,false,0,43517000,2.582763
+31,"What's the largest 3-digit prime?",5,4,23759000,7588000,true,false,0,42412000,1.912418
+32,"How many days in February 2024?",2,1,6355000,1336000,true,false,0,48664000,3.903872
+33,"Compute 50 choose 2.",3,2,9823000,2285000,true,false,0,47715000,3.812827
+34,"What's the chemical formula for table sa",2,1,6418000,1227000,true,false,0,48773000,4.489297
+35,"Distance from London to Paris, roughly?",2,1,6625000,1744000,true,false,0,48256000,3.176598
+36,"How many minutes in a week?",2,1,6225000,1304000,true,false,0,48696000,4.281525
+37,"What's pi to 4 decimal places?",3,2,10545000,2664000,true,false,0,47336000,3.249302
+38,"If a recipe needs 3 cups for 4 people, h",3,2,10832000,3513000,true,false,0,46487000,2.604076
+39,"What's the difference of squares: 10^2 -",2,1,6395000,1887000,true,false,0,48113000,3.183099
+40,"Convert 72 inches to feet.",2,1,6207000,1224000,true,false,0,48776000,4.881271
+41,"What's the cube root of 27?",6,5,24931000,6620000,false,false,0,43380000,3.011409
+42,"Solve: 2x + 5 = 17.",2,1,6451000,2145000,true,false,0,47855000,2.649682
+43,"How many countries in the EU?",2,1,6383000,1550000,true,false,0,48450000,3.790800
+44,"What's the chemical symbol for gold?",2,1,6332000,1104000,true,false,0,48896000,5.344891
+45,"Compute 7 * 8 * 9.",6,5,22873000,5455000,false,false,0,44545000,3.325444
+46,"What's the median of 4, 7, 2, 9, 5?",3,2,11255000,3970000,true,false,0,46030000,1.774545
+47,"What year did WWII end?",2,1,6409000,1648000,true,false,0,48352000,3.564792
+48,"If the angle is 30 degrees, what's the s",2,1,6359000,1548000,true,false,0,48452000,3.974290
+49,"How many ounces in a pound?",2,1,6228000,1102000,true,false,0,48898000,5.519849

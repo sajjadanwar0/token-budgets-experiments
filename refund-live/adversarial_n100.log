@@ -1,0 +1,116 @@
+    Finished `release` profile [optimized] target(s) in 0.13s
+     Running `target/release/a1-adversarial-n100`
+
+=== Class: cjk_dense (N=100) ===
+  [  0] reserve=  1153 actual=  1027 margin=1.123x
+  [ 20] reserve=  1153 actual=  1027 margin=1.123x
+  [ 40] reserve=  1153 actual=  1027 margin=1.123x
+  [ 60] reserve=  1153 actual=  1027 margin=1.123x
+  [ 80] reserve=  1153 actual=  1027 margin=1.123x
+  [ 99] reserve=  1327 actual=  1087 margin=1.221x
+  cjk_dense: 0/100 violations (0.0%), min margin 1.116x
+
+=== Class: emoji_dense (N=100) ===
+  [  0] reserve=  1136 actual=   622 margin=1.826x
+  [ 20] reserve=  1136 actual=   743 margin=1.529x
+  [ 40] reserve=  1136 actual=   903 margin=1.258x
+  [ 60] reserve=  1136 actual=   632 margin=1.797x
+  [ 80] reserve=  1136 actual=   758 margin=1.499x
+  [ 99] reserve=  1212 actual=  1094 margin=1.108x
+  emoji_dense: 0/100 violations (0.0%), min margin 1.095x
+
+=== Class: repeated_rare (N=100) ===
+  [  0] reserve=  1446 actual=   703 margin=2.057x
+  [ 20] reserve=  1446 actual=   468 margin=3.090x
+  [ 40] reserve=  1446 actual=   688 margin=2.102x
+  [ 60] reserve=  1446 actual=   678 margin=2.133x
+  [ 80] reserve=  1446 actual=   483 margin=2.994x
+  [ 99] reserve=  1676 actual=   774 margin=2.165x
+  repeated_rare: 0/100 violations (0.0%), min margin 1.362x
+
+=== Class: long_output (N=100) ===
+  [  0] reserve=  1150 actual=  1020 margin=1.127x
+  [ 20] reserve=  1150 actual=  1020 margin=1.127x
+  [ 40] reserve=  1150 actual=  1020 margin=1.127x
+  [ 60] reserve=  1150 actual=  1020 margin=1.127x
+  [ 80] reserve=  1150 actual=  1020 margin=1.127x
+  [ 99] reserve=  1154 actual=  1021 margin=1.130x
+  long_output: 0/100 violations (0.0%), min margin 1.127x
+
+=== Class: mixed_scripts (N=100) ===
+  [  0] reserve=  1179 actual=   619 margin=1.905x
+  [ 20] reserve=  1179 actual=   799 margin=1.476x
+  [ 40] reserve=  1179 actual=   719 margin=1.640x
+  [ 60] reserve=  1179 actual=   834 margin=1.414x
+  [ 80] reserve=  1179 actual=   599 margin=1.968x
+  [ 99] reserve=  1273 actual=  1069 margin=1.191x
+  mixed_scripts: 0/100 violations (0.0%), min margin 1.157x
+
+=== Class: json_dense (N=100) ===
+  [  0] reserve=  1154 actual=   700 margin=1.649x
+  [ 20] reserve=  1155 actual=   935 margin=1.235x
+  [ 40] reserve=  1155 actual=  1010 margin=1.144x
+  [ 60] reserve=  1155 actual=   760 margin=1.520x
+  [ 80] reserve=  1155 actual=   680 margin=1.699x
+  [ 99] reserve=  1227 actual=  1061 margin=1.156x
+  json_dense: 0/100 violations (0.0%), min margin 1.137x
+
+=== Class: whitespace_pad (N=100) ===
+  [  0] reserve=  1201 actual=   366 margin=3.281x
+  [ 20] reserve=  1222 actual=   612 margin=1.997x
+  [ 40] reserve=  1242 actual=   598 margin=2.077x
+  [ 60] reserve=  1262 actual=   409 margin=3.086x
+  [ 80] reserve=  1282 actual=   551 margin=2.327x
+  [ 99] reserve=  1301 actual=   572 margin=2.274x
+  whitespace_pad: 0/100 violations (0.0%), min margin 1.198x
+
+=== Class: code_heavy (N=100) ===
+  [  0] reserve=  1184 actual=  1038 margin=1.141x
+  [ 20] reserve=  1185 actual=  1038 margin=1.142x
+  [ 40] reserve=  1185 actual=  1038 margin=1.142x
+  [ 60] reserve=  1185 actual=  1038 margin=1.142x
+  [ 80] reserve=  1185 actual=  1038 margin=1.142x
+  [ 99] reserve=  1185 actual=  1038 margin=1.142x
+  code_heavy: 0/100 violations (0.0%), min margin 1.141x
+
+=== Class: long_prompt (N=100) ===
+  [  0] reserve=  7126 actual=  1450 margin=4.914x
+  [ 20] reserve=  8326 actual=  1615 margin=5.155x
+  [ 40] reserve=  9526 actual=  1975 margin=4.823x
+  [ 60] reserve= 10726 actual=  2205 margin=4.864x
+  [ 80] reserve= 11926 actual=  2335 margin=5.107x
+  [ 99] reserve= 13066 actual=  2563 margin=5.098x
+  long_prompt: 0/100 violations (0.0%), min margin 4.697x
+
+=== Class: tool_format (N=100) ===
+  [  0] reserve=  1205 actual=   911 margin=1.323x
+  [ 20] reserve=  1207 actual=   506 margin=2.385x
+  [ 40] reserve=  1207 actual=   536 margin=2.252x
+  [ 60] reserve=  1207 actual=   611 margin=1.975x
+  [ 80] reserve=  1207 actual=   521 margin=2.317x
+  [ 99] reserve=  1207 actual=   551 margin=2.191x
+  tool_format: 0/100 violations (0.0%), min margin 1.163x
+
+=== Aggregate ===
+Total calls:      1000 (target 1000)
+Total violations: 0 (0.000%)
+Global min margin: 1.095x
+
+Per-class breakdown:
+               class violations min_margin         rate
+           cjk_dense          0      1.116        0.00%
+         emoji_dense          0      1.095        0.00%
+       repeated_rare          0      1.362        0.00%
+         long_output          0      1.127        0.00%
+       mixed_scripts          0      1.157        0.00%
+          json_dense          0      1.137        0.00%
+      whitespace_pad          0      1.198        0.00%
+          code_heavy          0      1.141        0.00%
+         long_prompt          0      4.697        0.00%
+         tool_format          0      1.163        0.00%
+
+Statistical interpretation (Clopper-Pearson):
+  N=1000, observed violations k, 95% CI upper bound on true rate:
+  k=0 → upper bound = 0.2991% (rule of 3 / exact)
+
+Wrote 1000 rows to a1_adversarial_n100_results.csv
