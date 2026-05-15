@@ -6,12 +6,12 @@ edition = "2024"
 [workspace]
 
 [dependencies]
-token-budgets = { path = "../token-budgets" }
-governor = "0.7"
+token-budgets = { path = "../../token-budgets" }
+governor = "0.10.4"
 nonzero_ext = "0.3"
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = "0.8.2"
 
 [[bench]]
 name = "head_to_head"
