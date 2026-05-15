@@ -1,0 +1,45 @@
+{
+  "total_runs": 30,
+  "valid_runs": 30,
+  "errors": [],
+  "a1_holds_count": 30,
+  "a1_holds_rate": "30/30",
+  "byte_length_baseline": {
+    "expected_holds": 0,
+    "expected_holds_rate": "0/30",
+    "expected_bt_ratio_range": [
+      0.72,
+      0.79
+    ]
+  },
+  "anthropic_estimator_observed": {
+    "a1_holds_rate": "30/30",
+    "est_ratio_mean": 1.0,
+    "est_ratio_min": 1.0,
+    "est_ratio_max": 1.0,
+    "est_ratio_stdev": 0.0,
+    "bt_ratio_mean": 0.9890685917546873,
+    "bt_ratio_min": 0.8250401284109149,
+    "bt_ratio_max": 1.1468531468531469
+  },
+  "per_workload": {
+    "sql_retry": {
+      "total": 10,
+      "a1_holds": "10/10",
+      "est_ratio_mean": 1.0,
+      "est_ratio_min": 1.0
+    },
+    "ambig_tool": {
+      "total": 10,
+      "a1_holds": "10/10",
+      "est_ratio_mean": 1.0,
+      "est_ratio_min": 1.0
+    },
+    "arg_hallucination": {
+      "total": 10,
+      "a1_holds": "10/10",
+      "est_ratio_mean": 1.0,
+      "est_ratio_min": 1.0
+    }
+  }
+}

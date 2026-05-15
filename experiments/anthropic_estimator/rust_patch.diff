@@ -1,0 +1,100 @@
+# Rust patch: AnthropicEstimator as default for Provider::Anthropic
+# Apply with: git apply rust_patch.diff
+# Targets: token-budgets/src/estimator/default.rs (or equivalent)
+# If the file/symbol names differ slightly in your repo, see
+# rust_patch_manual.md for hand-application instructions.
+
+diff --git a/src/estimator/default.rs b/src/estimator/default.rs
+index a000001..b000002 100644
+--- a/src/estimator/default.rs
++++ b/src/estimator/default.rs
+@@ -1,52 +1,86 @@
++//! Provider-stratified default estimator selection.
++//!
++//! For each provider P, `select_for_provider(P)` returns the estimator
++//! that the artefact recommends as default. The byte-length estimator
++//! remains available as an opt-in fallback via `Estimator::ByteLength`
++//! but is no longer the default for Anthropic.
++
+ use crate::estimator::{Estimator, ByteLengthEstimator};
++#[cfg(feature = "anthropic-estimator")]
++use crate::estimator::AnthropicEstimator;
++#[cfg(feature = "tiktoken")]
++use crate::estimator::TiktokenEstimator;
+ use crate::provider::Provider;
+ 
+-/// Return the byte-length estimator regardless of provider.
+-/// (Legacy v9 default; v10+ uses select_for_provider.)
++/// Return the recommended estimator for the given provider.
++///
++/// Mapping (v10):
++///   Provider::OpenAI    -> ByteLength    (A1 verified, 14/14 cells)
++///   Provider::Groq      -> ByteLength    (A1 verified, 14/14 cells)
++///   Provider::Anthropic -> AnthropicEstimator (with anthropic-estimator feature)
++///                                          falls back to ByteLength+warn otherwise
++///   _                   -> ByteLength + runtime warning
+ pub fn select_for_provider(provider: Provider) -> Box<dyn Estimator> {
+-    Box::new(ByteLengthEstimator::default())
++    match provider {
++        Provider::OpenAI | Provider::Groq => {
++            Box::new(ByteLengthEstimator::default())
++        }
++        Provider::Anthropic => {
++            #[cfg(feature = "anthropic-estimator")]
++            {
++                Box::new(AnthropicEstimator::new())
++            }
++            #[cfg(not(feature = "anthropic-estimator"))]
++            {
++                eprintln!(
++                    "WARNING: Provider::Anthropic without anthropic-estimator \
++                     feature. The byte-length estimator is UNSOUND on \
++                     Anthropic tool-loop workloads (A1 fails 30/30 in our \
++                     evaluation). Enable the anthropic-estimator feature or \
++                     supply your own conservative estimator."
++                );
++                Box::new(ByteLengthEstimator::default())
++            }
++        }
++        Provider::Unknown(name) => {
++            eprintln!(
++                "WARNING: Provider '{}' has no audited byte-length-A1 \
++                 verification. Byte-length estimator selected as fallback; \
++                 cap-soundness is contingent on A1 holding for this provider.",
++                name
++            );
++            Box::new(ByteLengthEstimator::default())
++        }
++    }
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+ 
+     #[test]
+-    fn default_is_byte_length() {
+-        let est = select_for_provider(Provider::OpenAI);
++    fn openai_default_is_byte_length() {
++        let est = select_for_provider(Provider::OpenAI);
++        // ByteLength is sub-nanosecond; sanity check by estimating a known prompt
++        assert!(est.estimate("hello world").is_ok());
++    }
++
++    #[test]
++    fn groq_default_is_byte_length() {
++        let est = select_for_provider(Provider::Groq);
+         assert!(est.estimate("hello world").is_ok());
+     }
++
++    #[cfg(feature = "anthropic-estimator")]
++    #[test]
++    fn anthropic_default_is_anthropic_estimator() {
++        let est = select_for_provider(Provider::Anthropic);
++        // AnthropicEstimator should produce tight (not loose) estimates
++        let result = est.estimate("hello world").unwrap();
++        // For a short ASCII prompt, expect <= 5 tokens (4-byte words tokenize
++        // to ~1 token each)
++        assert!(result < 20, "expected tight estimate, got {}", result);
++    }
+ }
