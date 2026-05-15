@@ -11,7 +11,7 @@
 //! Output CSV: refund_live_ollama_llama3_2_1024_300.csv
 
 use anyhow::{anyhow, Context, Result};
-use budget_typed_cap::Budget;
+use token_budgets::Budget;
 use serde_json::{json, Value};
 use std::env;
 use std::fs::File;

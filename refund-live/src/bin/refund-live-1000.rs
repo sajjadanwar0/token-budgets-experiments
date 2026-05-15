@@ -8,7 +8,7 @@
 //! Estimated cost: ~$0.10-3 depending on N_CALLS and prompt length.
 
 use anyhow::{Context, Result};
-use budget_typed_cap::Budget;
+use token_budgets::Budget;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs::File;

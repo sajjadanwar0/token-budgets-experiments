@@ -10,7 +10,7 @@
 //! Cost: ~$5-10 on o3-mini for N=100 (depends on reasoning depth).
 
 use anyhow::{Context, Result};
-use budget_typed_cap::Budget;
+use token_budgets::Budget;
 use serde_json::{json, Value};
 use std::env;
 use std::fs::File;

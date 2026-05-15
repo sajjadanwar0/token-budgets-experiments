@@ -12,7 +12,7 @@
 //! Cost: ~$0.50 for N=100 calls.
 
 use anyhow::Result;
-use budget_typed_cap::{Budget, estimator::{ByteLength, TokenEstimator}};
+use token_budgets::{Budget, estimator::{ByteLength, TokenEstimator}};
 use serde_json::{json, Value};
 use std::env;
 use std::fs::File;
@@ -20,7 +20,7 @@ use std::io::Write;
 use std::time::{Duration, Instant};
 
 #[cfg(feature = "tiktoken")]
-use budget_typed_cap::estimator::Tiktoken;
+use token_budgets::estimator::Tiktoken;
 
 const BUDGET_CAP: u64 = 10_000_000_000;  // $10
 type B = Budget<BUDGET_CAP>;
