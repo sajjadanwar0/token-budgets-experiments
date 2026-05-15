@@ -1,0 +1,18 @@
+[package]
+name = "governor-bench"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+
+[dependencies]
+token-budgets = { path = "../token-budgets" }
+governor = "0.7"
+nonzero_ext = "0.3"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "head_to_head"
+harness = false
