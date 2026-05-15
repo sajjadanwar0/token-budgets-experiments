@@ -1,0 +1,198 @@
+warning: unused import: `std::time::Duration`
+  --> benches/head_to_head.rs:10:5
+   |
+10 | use std::time::Duration;
+   |     ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+ --> benches/head_to_head.rs:6:17
+  |
+6 | use criterion::{black_box, criterion_group, criterion_main, Criterion, Th...
+  |                 ^^^^^^^^^
+  |
+  = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:19:19
+   |
+19 |         b.iter(|| black_box(B::new(black_box(500_000)).unwrap()))
+   |                   ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:19:36
+   |
+19 |         b.iter(|| black_box(B::new(black_box(500_000)).unwrap()))
+   |                                    ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:24:13
+   |
+24 | ...   black_box(RateLimiter::direct(Quota::per_second(nonzero!(500_000u3...
+   |       ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:39:25
+   |
+39 |                 let _ = black_box(budget.spend(black_box(100))).unwrap();
+   |                         ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:39:48
+   |
+39 |                 let _ = black_box(budget.spend(black_box(100))).unwrap();
+   |                                                ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:49:13
+   |
+49 |             black_box(limiter.check().is_ok())
+   |             ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:58:13
+   |
+58 |             black_box(limiter.check_n(nonzero!(100u32)).is_ok())
+   |             ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:74:30
+   |
+74 | ...   budget = black_box(budget.spend(black_box(100)).unwrap());
+   |                ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:74:53
+   |
+74 | ...   budget = black_box(budget.spend(black_box(100)).unwrap());
+   |                                       ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:76:17
+   |
+76 |                 black_box(budget);
+   |                 ^^^^^^^^^
+
+warning: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead
+  --> benches/head_to_head.rs:87:17
+   |
+87 |                 black_box(limiter.check().is_ok());
+   |                 ^^^^^^^^^
+
+warning: `governor-bench` (bench "head_to_head") generated 13 warnings (run `cargo fix --bench "head_to_head" -p governor-bench` to apply 1 suggestion)
+    Finished `bench` profile [optimized] target(s) in 0.05s
+     Running benches/head_to_head.rs (target/release/deps/head_to_head-2797a287e120f93a)
+Gnuplot not found, using plotters backend
+Benchmarking construction/Budget::new
+Benchmarking construction/Budget::new: Warming up for 3.0000 s
+Benchmarking construction/Budget::new: Collecting 100 samples in estimated 5.0000 s (7.2B iterations)
+Benchmarking construction/Budget::new: Analyzing
+construction/Budget::new
+                        time:   [692.63 ps 694.50 ps 696.54 ps]
+                        change: [+2.8261% +3.1133% +3.4105%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 10 outliers among 100 measurements (10.00%)
+  9 (9.00%) high mild
+  1 (1.00%) high severe
+Benchmarking construction/governor::RateLimiter::direct
+Benchmarking construction/governor::RateLimiter::direct: Warming up for 3.0000 s
+Benchmarking construction/governor::RateLimiter::direct: Collecting 100 samples in estimated 5.0002 s (20M iterations)
+Benchmarking construction/governor::RateLimiter::direct: Analyzing
+construction/governor::RateLimiter::direct
+                        time:   [233.21 ns 233.96 ns 234.72 ns]
+                        change: [−1.6720% −1.0425% −0.5470%] (p = 0.00 < 0.05)
+                        Change within noise threshold.
+Found 5 outliers among 100 measurements (5.00%)
+  5 (5.00%) high mild
+
+Benchmarking single_spend/Budget::spend
+Benchmarking single_spend/Budget::spend: Warming up for 3.0000 s
+Benchmarking single_spend/Budget::spend: Collecting 100 samples in estimated 5.0010 s (2.1M iterations)
+Benchmarking single_spend/Budget::spend: Analyzing
+single_spend/Budget::spend
+                        time:   [1.2062 µs 1.2095 µs 1.2129 µs]
+                        thrpt:  [824.47 Kelem/s 826.76 Kelem/s 829.07 Kelem/s]
+                 change:
+                        time:   [−1.0421% −0.4739% +0.0016%] (p = 0.08 > 0.05)
+                        thrpt:  [−0.0016% +0.4762% +1.0531%]
+                        No change in performance detected.
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+Benchmarking single_spend/governor::check
+Benchmarking single_spend/governor::check: Warming up for 3.0000 s
+Benchmarking single_spend/governor::check: Collecting 100 samples in estimated 5.0000 s (575M iterations)
+Benchmarking single_spend/governor::check: Analyzing
+single_spend/governor::check
+                        time:   [8.5518 ns 8.5643 ns 8.5768 ns]
+                        thrpt:  [116.59 Melem/s 116.76 Melem/s 116.94 Melem/s]
+                 change:
+                        time:   [−0.0199% +0.2044% +0.4314%] (p = 0.08 > 0.05)
+                        thrpt:  [−0.4295% −0.2040% +0.0199%]
+                        No change in performance detected.
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) low mild
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+Benchmarking single_spend/governor::check_n(100)
+Benchmarking single_spend/governor::check_n(100): Warming up for 3.0000 s
+Benchmarking single_spend/governor::check_n(100): Collecting 100 samples in estimated 5.0000 s (559M iterations)
+Benchmarking single_spend/governor::check_n(100): Analyzing
+single_spend/governor::check_n(100)
+                        time:   [8.9843 ns 9.0045 ns 9.0267 ns]
+                        thrpt:  [110.78 Melem/s 111.06 Melem/s 111.31 Melem/s]
+                 change:
+                        time:   [−1.2979% −0.8936% −0.5333%] (p = 0.00 < 0.05)
+                        thrpt:  [+0.5361% +0.9017% +1.3150%]
+                        Change within noise threshold.
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+
+Benchmarking sequence_100_spends/Budget::spend x100
+Benchmarking sequence_100_spends/Budget::spend x100: Warming up for 3.0000 s
+Benchmarking sequence_100_spends/Budget::spend x100: Collecting 100 samples in estimated 5.0065 s (2.0M iterations)
+Benchmarking sequence_100_spends/Budget::spend x100: Analyzing
+sequence_100_spends/Budget::spend x100
+                        time:   [1.2478 µs 1.2511 µs 1.2548 µs]
+                        thrpt:  [79.695 Melem/s 79.930 Melem/s 80.141 Melem/s]
+                 change:
+                        time:   [+0.3170% +0.6614% +0.9993%] (p = 0.00 < 0.05)
+                        thrpt:  [−0.9894% −0.6571% −0.3160%]
+                        Change within noise threshold.
+Found 5 outliers among 100 measurements (5.00%)
+  1 (1.00%) low severe
+  1 (1.00%) low mild
+  3 (3.00%) high mild
+Benchmarking sequence_100_spends/governor::check x100
+Benchmarking sequence_100_spends/governor::check x100: Warming up for 3.0000 s
+Benchmarking sequence_100_spends/governor::check x100: Collecting 100 samples in estimated 5.0036 s (5.8M iterations)
+Benchmarking sequence_100_spends/governor::check x100: Analyzing
+sequence_100_spends/governor::check x100
+                        time:   [861.93 ns 862.43 ns 862.92 ns]
+                        thrpt:  [115.89 Melem/s 115.95 Melem/s 116.02 Melem/s]
+                 change:
+                        time:   [−0.6959% +0.2118% +0.8788%] (p = 0.65 > 0.05)
+                        thrpt:  [−0.8712% −0.2113% +0.7008%]
+                        No change in performance detected.
+Found 15 outliers among 100 measurements (15.00%)
+  4 (4.00%) low severe
+  8 (8.00%) low mild
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+
+
+=== Memory footprint ===
+Budget<1_000_000>:     8 bytes
+governor::RateLimiter: 72 bytes
+Benchmarking noop
+Benchmarking noop: Warming up for 3.0000 s
+Benchmarking noop: Collecting 100 samples in estimated 5.0000 s (22B iterations)
+Benchmarking noop: Analyzing
+noop                    time:   [224.56 ps 225.42 ps 226.46 ps]
+                        change: [+1.1634% +1.6764% +2.1703%] (p = 0.00 < 0.05)
+                        Performance has regressed.
+Found 10 outliers among 100 measurements (10.00%)
+  6 (6.00%) high mild
+  4 (4.00%) high severe
+
