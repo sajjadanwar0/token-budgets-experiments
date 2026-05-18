@@ -1,0 +1,31 @@
+run_id,runtime,provider,workload,iteration,n_calls,total_input_tokens,total_output_tokens,total_cost_uc,cap_uc,overshoot_uc,outcome,wall_clock_s,error
+langgraph_00,langgraph,ollama,lang001,0,2,343,240,0.392,50,0.0,completed,18.52,
+langgraph_01,langgraph,ollama,lang001,1,2,343,240,0.392,50,0.0,completed,20.28,
+langgraph_02,langgraph,ollama,lang001,2,2,343,240,0.392,50,0.0,completed,20.52,
+langgraph_03,langgraph,ollama,lang001,3,2,343,240,0.392,50,0.0,completed,21.13,
+langgraph_04,langgraph,ollama,lang001,4,2,343,240,0.392,50,0.0,completed,20.87,
+langgraph_05,langgraph,ollama,lang001,5,2,343,240,0.392,50,0.0,completed,20.99,
+langgraph_06,langgraph,ollama,lang001,6,2,343,240,0.392,50,0.0,completed,21.24,
+langgraph_07,langgraph,ollama,lang001,7,2,343,240,0.392,50,0.0,completed,21.27,
+langgraph_08,langgraph,ollama,lang001,8,2,343,240,0.392,50,0.0,completed,21.18,
+langgraph_09,langgraph,ollama,lang001,9,2,343,240,0.392,50,0.0,completed,21.12,
+langgraph_agentguard_00,langgraph_agentguard,ollama,lang001,0,2,343,240,0.392,50,0.0,completed,21.36,
+langgraph_agentguard_01,langgraph_agentguard,ollama,lang001,1,2,343,240,0.392,50,0.0,completed,21.17,
+langgraph_agentguard_02,langgraph_agentguard,ollama,lang001,2,2,343,240,0.392,50,0.0,completed,21.29,
+langgraph_agentguard_03,langgraph_agentguard,ollama,lang001,3,2,343,240,0.392,50,0.0,completed,21.05,
+langgraph_agentguard_04,langgraph_agentguard,ollama,lang001,4,2,343,240,0.392,50,0.0,completed,21.51,
+langgraph_agentguard_05,langgraph_agentguard,ollama,lang001,5,2,343,240,0.392,50,0.0,completed,21.27,
+langgraph_agentguard_06,langgraph_agentguard,ollama,lang001,6,2,343,240,0.392,50,0.0,completed,21.28,
+langgraph_agentguard_07,langgraph_agentguard,ollama,lang001,7,2,343,240,0.392,50,0.0,completed,21.77,
+langgraph_agentguard_08,langgraph_agentguard,ollama,lang001,8,2,343,240,0.392,50,0.0,completed,21.15,
+langgraph_agentguard_09,langgraph_agentguard,ollama,lang001,9,2,343,240,0.392,50,0.0,completed,21.05,
+token_budgets_00,token_budgets,ollama,lang001,0,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'
+token_budgets_01,token_budgets,ollama,lang001,1,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'
+token_budgets_02,token_budgets,ollama,lang001,2,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'
+token_budgets_03,token_budgets,ollama,lang001,3,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'
+token_budgets_04,token_budgets,ollama,lang001,4,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'
+token_budgets_05,token_budgets,ollama,lang001,5,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'
+token_budgets_06,token_budgets,ollama,lang001,6,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'
+token_budgets_07,token_budgets,ollama,lang001,7,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'
+token_budgets_08,token_budgets,ollama,lang001,8,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'
+token_budgets_09,token_budgets,ollama,lang001,9,0,0,0,0.0,50,0.0,fatal,0.0,'AIMessage' object has no attribute 'get'

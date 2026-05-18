@@ -1,0 +1,4 @@
+provider,workload,cap_uc,n_runs,csv_path,completed_runs,mid_loop_fired,pre_flight_refused,self_terminated,api_error_runs,overshoot_runs,total_spent_uc
+ollama,lang001,150,50,sweep_ollama_retry/ollama_lang001_n50.csv,0,50,0,0,0,0,1300
+ollama,clarification,150,50,sweep_ollama_retry/ollama_clarification_n50.csv,50,0,0,0,0,0,1100
+ollama,arg_hallucination,150,50,sweep_ollama_retry/ollama_arg_hallucination_n50.csv,50,0,0,0,0,0,1250

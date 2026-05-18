@@ -1,0 +1,102 @@
+{
+  "anthropic/claude-sonnet-4-20250514@300uc": {
+    "n_total": 3,
+    "n_mid_loop": 0,
+    "n_pre_flight": 3,
+    "n_completed": 0,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 0
+  },
+  "anthropic/claude-sonnet-4-20250514@750uc": {
+    "n_total": 3,
+    "n_mid_loop": 3,
+    "n_pre_flight": 0,
+    "n_completed": 0,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 489
+  },
+  "anthropic/claude-sonnet-4-20250514@1500uc": {
+    "n_total": 3,
+    "n_mid_loop": 3,
+    "n_pre_flight": 0,
+    "n_completed": 0,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 1287
+  },
+  "anthropic/claude-sonnet-4-20250514@3000uc": {
+    "n_total": 3,
+    "n_mid_loop": 0,
+    "n_pre_flight": 0,
+    "n_completed": 3,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 4308
+  },
+  "anthropic/claude-sonnet-4-20250514@6000uc": {
+    "n_total": 3,
+    "n_mid_loop": 0,
+    "n_pre_flight": 0,
+    "n_completed": 3,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 4308
+  },
+  "openai/gpt-4o@120uc": {
+    "n_total": 3,
+    "n_mid_loop": 0,
+    "n_pre_flight": 3,
+    "n_completed": 0,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 0
+  },
+  "openai/gpt-4o@300uc": {
+    "n_total": 3,
+    "n_mid_loop": 3,
+    "n_pre_flight": 0,
+    "n_completed": 0,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 276
+  },
+  "openai/gpt-4o@600uc": {
+    "n_total": 3,
+    "n_mid_loop": 3,
+    "n_pre_flight": 0,
+    "n_completed": 0,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 658
+  },
+  "openai/gpt-4o@1200uc": {
+    "n_total": 3,
+    "n_mid_loop": 2,
+    "n_pre_flight": 0,
+    "n_completed": 1,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 1910
+  },
+  "openai/gpt-4o@2400uc": {
+    "n_total": 3,
+    "n_mid_loop": 0,
+    "n_pre_flight": 0,
+    "n_completed": 3,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_spent_uc": 2310
+  },
+  "__headline__": {
+    "n_total": 30,
+    "n_overshoot": 0,
+    "n_mid_loop": 14,
+    "n_pre_flight_refused": 6,
+    "n_completed_within_cap": 10,
+    "n_errors": 0,
+    "total_actual_spent_usd": 0.015546,
+    "robustness_claim": "Cap-respecting holds across all 30 runs at 10 cap values: 0/30 overshoots."
+  }
+}

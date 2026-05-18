@@ -1,0 +1,740 @@
+"""Resource monitoring and tracking.
+
+This module implements the runtime resource monitoring system that tracks actual
+resource consumption and validates it against contract constraints.
+"""
+
+import threading
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Any
+
+from agent_contracts.core.contract import ResourceConstraints
+
+
+@dataclass
+class ResourceUsage:
+    """Tracks actual resource consumption during agent execution.
+
+    This class accumulates resource usage across multiple dimensions and provides
+    methods to check if usage exceeds contract constraints.
+
+    Supports separate tracking of reasoning vs text tokens for reasoning models.
+    Supports per-tool usage tracking for granular monitoring.
+
+    Attributes:
+        tokens: Total tokens consumed (reasoning + text)
+        reasoning_tokens: Tokens used for internal reasoning/thinking
+        text_tokens: Tokens used for text output
+        reasoning_content: The actual reasoning/thinking text from reasoning models
+        api_calls: Total API calls made
+        web_searches: Total web searches performed
+        tool_invocations: Total tool invocations
+        tool_usage_by_name: Per-tool invocation counts (tool_name -> count)
+        memory_mb: Peak memory usage in MB
+        compute_seconds: Total CPU time in seconds
+        cost_usd: Total cost in USD
+        start_time: When tracking started
+        last_updated: When usage was last updated
+        metadata: Additional usage metadata
+    """
+
+    tokens: int = 0
+    reasoning_tokens: int = 0
+    text_tokens: int = 0
+    reasoning_content: str = ""
+    api_calls: int = 0
+    web_searches: int = 0
+    tool_invocations: int = 0
+    tool_usage_by_name: dict[str, int] = field(default_factory=dict)
+    memory_mb: float = 0.0
+    compute_seconds: float = 0.0
+    cost_usd: float = 0.0
+
+    start_time: datetime = field(default_factory=datetime.now)
+    last_updated: datetime = field(default_factory=datetime.now)
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Validate resource usage values are non-negative."""
+        self._lock = threading.Lock()
+        for field_name in [
+            "tokens",
+            "reasoning_tokens",
+            "text_tokens",
+            "api_calls",
+            "web_searches",
+            "tool_invocations",
+            "memory_mb",
+            "compute_seconds",
+            "cost_usd",
+        ]:
+            value = getattr(self, field_name)
+            if value < 0:
+                raise ValueError(f"{field_name} must be non-negative, got {value}")
+
+    def add_tokens(self, count: int, reasoning: int = 0, text: int = 0) -> None:
+        """Add token usage with optional reasoning/text breakdown.
+
+        Args:
+            count: Total number of tokens to add (if reasoning and text not specified)
+            reasoning: Number of reasoning tokens (for reasoning models)
+            text: Number of text output tokens (for reasoning models)
+
+        Raises:
+            ValueError: If count is negative
+        """
+        if count < 0:
+            raise ValueError(f"Token count must be non-negative, got {count}")
+        if reasoning < 0:
+            raise ValueError(f"Reasoning tokens must be non-negative, got {reasoning}")
+        if text < 0:
+            raise ValueError(f"Text tokens must be non-negative, got {text}")
+
+        with self._lock:
+            # If reasoning/text specified, use those; otherwise use total count
+            if reasoning > 0 or text > 0:
+                self.reasoning_tokens += reasoning
+                self.text_tokens += text
+                self.tokens += reasoning + text
+            else:
+                self.tokens += count
+
+            self.last_updated = datetime.now()
+
+    def add_api_call(self, cost: float = 0.0, tokens: int = 0) -> None:
+        """Record an API call with optional cost and token information.
+
+        Args:
+            cost: Cost of this API call in USD
+            tokens: Number of tokens consumed by this call
+
+        Raises:
+            ValueError: If cost or tokens are negative
+        """
+        if cost < 0:
+            raise ValueError(f"Cost must be non-negative, got {cost}")
+        if tokens < 0:
+            raise ValueError(f"Tokens must be non-negative, got {tokens}")
+
+        with self._lock:
+            self.api_calls += 1
+            self.cost_usd += cost
+            self.tokens += tokens
+            self.last_updated = datetime.now()
+
+    def add_web_search(self) -> None:
+        """Record a web search."""
+        with self._lock:
+            self.web_searches += 1
+            self.last_updated = datetime.now()
+
+    def add_tool_invocation(self, tool_name: str | None = None) -> None:
+        """Record a tool invocation.
+
+        Args:
+            tool_name: Optional name of the tool being invoked.
+                       If provided, per-tool usage is tracked in addition
+                       to the aggregate count.
+        """
+        with self._lock:
+            self.tool_invocations += 1
+            if tool_name:
+                self.tool_usage_by_name[tool_name] = self.tool_usage_by_name.get(tool_name, 0) + 1
+            self.last_updated = datetime.now()
+
+    def get_tool_usage(self, tool_name: str) -> int:
+        """Get usage count for a specific tool.
+
+        Args:
+            tool_name: Name of the tool to query
+
+        Returns:
+            Number of times the tool was invoked (0 if never used)
+        """
+        return self.tool_usage_by_name.get(tool_name, 0)
+
+    def update_memory(self, memory_mb: float) -> None:
+        """Update memory usage (tracks peak).
+
+        Args:
+            memory_mb: Current memory usage in MB
+
+        Raises:
+            ValueError: If memory_mb is negative
+        """
+        if memory_mb < 0:
+            raise ValueError(f"Memory must be non-negative, got {memory_mb}")
+        with self._lock:
+            self.memory_mb = max(self.memory_mb, memory_mb)
+            self.last_updated = datetime.now()
+
+    def add_compute_time(self, seconds: float) -> None:
+        """Add compute time.
+
+        Args:
+            seconds: Compute time to add in seconds
+
+        Raises:
+            ValueError: If seconds is negative
+        """
+        if seconds < 0:
+            raise ValueError(f"Compute time must be non-negative, got {seconds}")
+        with self._lock:
+            self.compute_seconds += seconds
+            self.last_updated = datetime.now()
+
+    def add_cost(self, cost_usd: float) -> None:
+        """Add cost.
+
+        Args:
+            cost_usd: Cost to add in USD
+
+        Raises:
+            ValueError: If cost_usd is negative
+        """
+        if cost_usd < 0:
+            raise ValueError(f"Cost must be non-negative, got {cost_usd}")
+        with self._lock:
+            self.cost_usd += cost_usd
+            self.last_updated = datetime.now()
+
+    def elapsed_time(self) -> timedelta:
+        """Calculate elapsed time since tracking started.
+
+        Returns:
+            Time elapsed since start_time
+        """
+        return datetime.now() - self.start_time
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert usage to dictionary format.
+
+        Returns:
+            Dictionary representation of resource usage
+        """
+        return {
+            "tokens": self.tokens,
+            "reasoning_tokens": self.reasoning_tokens,
+            "text_tokens": self.text_tokens,
+            "api_calls": self.api_calls,
+            "web_searches": self.web_searches,
+            "tool_invocations": self.tool_invocations,
+            "tool_usage_by_name": dict(self.tool_usage_by_name),  # Copy for safety
+            "memory_mb": self.memory_mb,
+            "compute_seconds": self.compute_seconds,
+            "cost_usd": self.cost_usd,
+            "elapsed_seconds": self.elapsed_time().total_seconds(),
+            "start_time": self.start_time.isoformat(),
+            "last_updated": self.last_updated.isoformat(),
+        }
+
+    def __repr__(self) -> str:
+        """String representation of resource usage."""
+        if self.reasoning_tokens > 0 or self.text_tokens > 0:
+            return (
+                f"ResourceUsage(tokens={self.tokens} "
+                f"[reasoning={self.reasoning_tokens}, text={self.text_tokens}], "
+                f"api_calls={self.api_calls}, "
+                f"cost_usd={self.cost_usd:.4f}, elapsed={self.elapsed_time()})"
+            )
+        return (
+            f"ResourceUsage(tokens={self.tokens}, api_calls={self.api_calls}, "
+            f"cost_usd={self.cost_usd:.4f}, elapsed={self.elapsed_time()})"
+        )
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Support pickling by excluding the non-picklable lock."""
+        state = self.__dict__.copy()
+        state.pop("_lock", None)
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore state and recreate the lock after unpickling."""
+        self.__dict__.update(state)
+        self._lock = threading.Lock()
+
+
+@dataclass
+class ViolationInfo:
+    """Information about a constraint violation.
+
+    Attributes:
+        resource: Name of the violated resource
+        limit: The constraint limit that was exceeded
+        actual: The actual usage value
+        timestamp: When the violation occurred
+    """
+
+    resource: str
+    limit: float
+    actual: float
+    timestamp: datetime = field(default_factory=datetime.now)
+
+    def __repr__(self) -> str:
+        """String representation of violation."""
+        return f"ViolationInfo({self.resource}: {self.actual} > {self.limit})"
+
+
+class ResourceMonitor:
+    """Monitors resource usage and validates against constraints.
+
+    This class provides real-time monitoring of resource consumption and checks
+    whether usage exceeds contract constraints.
+
+    Attributes:
+        constraints: Resource constraints to monitor against
+        usage: Current resource usage
+        violations: List of detected violations
+    """
+
+    def __init__(self, constraints: ResourceConstraints) -> None:
+        """Initialize resource monitor.
+
+        Args:
+            constraints: Resource constraints to enforce
+        """
+        self.constraints = constraints
+        self.usage = ResourceUsage()
+        self.violations: list[ViolationInfo] = []
+        self._lock = threading.RLock()
+
+    def check_constraints(self) -> list[ViolationInfo]:
+        """Check if current usage violates any constraints.
+
+        Token constraints are checked based on the active mode:
+        - Lumpsum mode: Check total tokens only
+        - Fine-grained mode: Check reasoning_tokens and/or text_tokens separately
+        - No mode: Skip token checks
+
+        Returns:
+            List of violations (empty if all constraints satisfied)
+        """
+        violations: list[ViolationInfo] = []
+
+        # Token validation based on mode
+        mode = self.constraints.token_mode
+
+        if mode == "lumpsum":
+            # Lumpsum mode: Check total tokens against combined budget
+            if self.constraints.tokens is not None and self.usage.tokens > self.constraints.tokens:
+                violations.append(
+                    ViolationInfo(
+                        resource="tokens",
+                        limit=self.constraints.tokens,
+                        actual=self.usage.tokens,
+                    )
+                )
+
+        elif mode == "fine_grained":
+            # Fine-grained mode: Check reasoning and text tokens separately
+            if (
+                self.constraints.reasoning_tokens is not None
+                and self.usage.reasoning_tokens > self.constraints.reasoning_tokens
+            ):
+                violations.append(
+                    ViolationInfo(
+                        resource="reasoning_tokens",
+                        limit=self.constraints.reasoning_tokens,
+                        actual=self.usage.reasoning_tokens,
+                    )
+                )
+
+            if (
+                self.constraints.text_tokens is not None
+                and self.usage.text_tokens > self.constraints.text_tokens
+            ):
+                violations.append(
+                    ViolationInfo(
+                        resource="text_tokens",
+                        limit=self.constraints.text_tokens,
+                        actual=self.usage.text_tokens,
+                    )
+                )
+        # else: mode == "none", skip token checks
+
+        if (
+            self.constraints.api_calls is not None
+            and self.usage.api_calls > self.constraints.api_calls
+        ):
+            violations.append(
+                ViolationInfo(
+                    resource="api_calls",
+                    limit=self.constraints.api_calls,
+                    actual=self.usage.api_calls,
+                )
+            )
+
+        if (
+            self.constraints.web_searches is not None
+            and self.usage.web_searches > self.constraints.web_searches
+        ):
+            violations.append(
+                ViolationInfo(
+                    resource="web_searches",
+                    limit=self.constraints.web_searches,
+                    actual=self.usage.web_searches,
+                )
+            )
+
+        if (
+            self.constraints.tool_invocations is not None
+            and self.usage.tool_invocations > self.constraints.tool_invocations
+        ):
+            violations.append(
+                ViolationInfo(
+                    resource="tool_invocations",
+                    limit=self.constraints.tool_invocations,
+                    actual=self.usage.tool_invocations,
+                )
+            )
+
+        # Check per-tool limits
+        for tool_name, limit in self.constraints.per_tool_limits.items():
+            actual = self.usage.get_tool_usage(tool_name)
+            if actual > limit:
+                violations.append(
+                    ViolationInfo(
+                        resource=f"tool:{tool_name}",
+                        limit=limit,
+                        actual=actual,
+                    )
+                )
+
+        if (
+            self.constraints.memory_mb is not None
+            and self.usage.memory_mb > self.constraints.memory_mb
+        ):
+            violations.append(
+                ViolationInfo(
+                    resource="memory_mb",
+                    limit=self.constraints.memory_mb,
+                    actual=self.usage.memory_mb,
+                )
+            )
+
+        if (
+            self.constraints.compute_seconds is not None
+            and self.usage.compute_seconds > self.constraints.compute_seconds
+        ):
+            violations.append(
+                ViolationInfo(
+                    resource="compute_seconds",
+                    limit=self.constraints.compute_seconds,
+                    actual=self.usage.compute_seconds,
+                )
+            )
+
+        if (
+            self.constraints.cost_usd is not None
+            and self.usage.cost_usd > self.constraints.cost_usd
+        ):
+            violations.append(
+                ViolationInfo(
+                    resource="cost_usd", limit=self.constraints.cost_usd, actual=self.usage.cost_usd
+                )
+            )
+
+        return violations
+
+    def is_violated(self) -> bool:
+        """Check if any constraints are currently violated.
+
+        Returns:
+            True if any constraint is violated, False otherwise
+        """
+        return len(self.check_constraints()) > 0
+
+    def record_violation(self, violation: ViolationInfo) -> None:
+        """Record a constraint violation, replacing duplicates.
+
+        If a violation with the same resource and limit already exists,
+        it is replaced with the new one (updated actual value and timestamp).
+
+        Args:
+            violation: The violation information to record
+        """
+        with self._lock:
+            for i, existing in enumerate(self.violations):
+                if existing.resource == violation.resource and existing.limit == violation.limit:
+                    self.violations[i] = violation
+                    return
+            self.violations.append(violation)
+
+    def get_usage_percentage(self) -> dict[str, float]:
+        """Calculate usage as percentage of constraints.
+
+        Token percentages are reported based on the active mode:
+        - Lumpsum mode: Only show "tokens" percentage
+        - Fine-grained mode: Show "reasoning_tokens" and/or "text_tokens" percentages
+        - No mode: No token percentages
+
+        Returns:
+            Dictionary mapping resource names to usage percentages (0-100+)
+            Resources without constraints are excluded
+        """
+        percentages: dict[str, float] = {}
+
+        # Token percentages based on mode
+        mode = self.constraints.token_mode
+
+        if mode == "lumpsum":
+            # Lumpsum mode: Show total tokens only
+            if self.constraints.tokens is not None and self.constraints.tokens > 0:
+                percentages["tokens"] = (self.usage.tokens / self.constraints.tokens) * 100
+
+        elif mode == "fine_grained":
+            # Fine-grained mode: Show reasoning and/or text tokens
+            if (
+                self.constraints.reasoning_tokens is not None
+                and self.constraints.reasoning_tokens > 0
+            ):
+                percentages["reasoning_tokens"] = (
+                    self.usage.reasoning_tokens / self.constraints.reasoning_tokens
+                ) * 100
+
+            if self.constraints.text_tokens is not None and self.constraints.text_tokens > 0:
+                percentages["text_tokens"] = (
+                    self.usage.text_tokens / self.constraints.text_tokens
+                ) * 100
+        # else: mode == "none", no token percentages
+
+        if self.constraints.api_calls is not None and self.constraints.api_calls > 0:
+            percentages["api_calls"] = (self.usage.api_calls / self.constraints.api_calls) * 100
+
+        if self.constraints.web_searches is not None and self.constraints.web_searches > 0:
+            percentages["web_searches"] = (
+                self.usage.web_searches / self.constraints.web_searches
+            ) * 100
+
+        if self.constraints.tool_invocations is not None and self.constraints.tool_invocations > 0:
+            percentages["tool_invocations"] = (
+                self.usage.tool_invocations / self.constraints.tool_invocations
+            ) * 100
+
+        if self.constraints.memory_mb is not None and self.constraints.memory_mb > 0:
+            percentages["memory_mb"] = (self.usage.memory_mb / self.constraints.memory_mb) * 100
+
+        if self.constraints.compute_seconds is not None and self.constraints.compute_seconds > 0:
+            percentages["compute_seconds"] = (
+                self.usage.compute_seconds / self.constraints.compute_seconds
+            ) * 100
+
+        if self.constraints.cost_usd is not None and self.constraints.cost_usd > 0:
+            percentages["cost_usd"] = (self.usage.cost_usd / self.constraints.cost_usd) * 100
+
+        return percentages
+
+    def get_remaining_tokens(self) -> float:
+        """Get remaining tokens budget.
+
+        Returns:
+            Remaining tokens, or float('inf') if no limit set
+        """
+        if self.constraints.tokens is None:
+            return float("inf")
+        return max(0.0, self.constraints.tokens - self.usage.tokens)
+
+    def get_remaining_cost(self) -> float:
+        """Get remaining cost budget.
+
+        Returns:
+            Remaining cost in USD, or float('inf') if no limit set
+        """
+        if self.constraints.cost_usd is None:
+            return float("inf")
+        return max(0.0, self.constraints.cost_usd - self.usage.cost_usd)
+
+    def get_remaining_api_calls(self) -> float:
+        """Get remaining API calls budget.
+
+        Returns:
+            Remaining API calls, or float('inf') if no limit set
+        """
+        if self.constraints.api_calls is None:
+            return float("inf")
+        return max(0.0, self.constraints.api_calls - self.usage.api_calls)
+
+    def get_remaining_tool_calls(self, tool_name: str) -> float:
+        """Get remaining calls for a specific tool.
+
+        Args:
+            tool_name: Name of the tool to check
+
+        Returns:
+            Remaining calls for this tool, or float('inf') if no limit set
+        """
+        if tool_name not in self.constraints.per_tool_limits:
+            return float("inf")
+        limit = self.constraints.per_tool_limits[tool_name]
+        actual = self.usage.get_tool_usage(tool_name)
+        return max(0.0, limit - actual)
+
+    def can_use_tool(self, tool_name: str) -> bool:
+        """Check if a specific tool can still be used.
+
+        This checks both the per-tool limit and the aggregate tool_invocations limit.
+
+        Args:
+            tool_name: Name of the tool to check
+
+        Returns:
+            True if the tool can still be used, False if limit reached
+        """
+        # Check per-tool limit
+        if (
+            tool_name in self.constraints.per_tool_limits
+            and self.usage.get_tool_usage(tool_name) >= self.constraints.per_tool_limits[tool_name]
+        ):
+            return False
+
+        # Check aggregate limit
+        return not (
+            self.constraints.tool_invocations is not None
+            and self.usage.tool_invocations >= self.constraints.tool_invocations
+        )
+
+    def reset(self) -> None:
+        """Reset usage tracking and clear violations."""
+        with self._lock:
+            self.usage = ResourceUsage()
+            self.violations = []
+
+    def __repr__(self) -> str:
+        """String representation of monitor."""
+        violated = "VIOLATED" if self.is_violated() else "OK"
+        return f"ResourceMonitor(status={violated}, usage={self.usage})"
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Support pickling by excluding the non-picklable lock."""
+        state = self.__dict__.copy()
+        state.pop("_lock", None)
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore state and recreate the lock after unpickling."""
+        self.__dict__.update(state)
+        self._lock = threading.RLock()
+
+
+class TemporalMonitor:
+    """Monitors temporal constraints (deadlines, duration limits).
+
+    This class tracks time-related metrics and checks if execution meets
+    temporal constraints defined in the contract.
+
+    Attributes:
+        contract: The contract being monitored
+        start_time: When monitoring started
+        deadline: Absolute deadline timestamp (if set)
+        max_duration: Maximum allowed duration in seconds (if set)
+    """
+
+    def __init__(self, contract: "Contract") -> None:  # type: ignore # noqa: F821
+        """Initialize temporal monitor.
+
+        Args:
+            contract: Contract with temporal constraints to monitor
+        """
+        self.contract = contract
+        self.start_time: datetime | None = None
+        self.deadline: datetime | None = None
+        self.max_duration: float | None = None
+
+        # Extract temporal constraints if present
+        if contract.temporal:
+            # Handle deadline (could be datetime or timedelta)
+            if hasattr(contract.temporal, "deadline") and contract.temporal.deadline:
+                deadline_val = contract.temporal.deadline
+                if isinstance(deadline_val, datetime):
+                    self.deadline = deadline_val
+                elif isinstance(deadline_val, timedelta):
+                    # Will set absolute deadline when start() is called
+                    self.max_duration = deadline_val.total_seconds()
+                elif isinstance(deadline_val, (int, float)):
+                    self.max_duration = float(deadline_val)
+
+            # Handle max_duration
+            if hasattr(contract.temporal, "max_duration"):
+                duration_val = contract.temporal.max_duration
+                if isinstance(duration_val, timedelta):
+                    self.max_duration = duration_val.total_seconds()
+                elif isinstance(duration_val, (int, float)):
+                    self.max_duration = float(duration_val)
+
+    def start(self) -> None:
+        """Start timing (call at beginning of execution)."""
+        self.start_time = datetime.now()
+
+        # Set absolute deadline if max_duration was specified
+        if self.max_duration and not self.deadline:
+            self.deadline = self.start_time + timedelta(seconds=self.max_duration)
+
+    def get_elapsed_seconds(self) -> float:
+        """Get elapsed time in seconds since start.
+
+        Returns:
+            Elapsed time in seconds, or 0.0 if not started
+        """
+        if not self.start_time:
+            return 0.0
+        return (datetime.now() - self.start_time).total_seconds()
+
+    def get_remaining_seconds(self) -> float | None:
+        """Get remaining time until deadline in seconds.
+
+        Returns:
+            Remaining seconds, or None if no deadline set
+        """
+        if not self.deadline:
+            return None
+        return (self.deadline - datetime.now()).total_seconds()
+
+    def get_time_pressure(self) -> float:
+        """Get time pressure value (0.0 = no pressure, 1.0 = deadline reached).
+
+        This metric helps agents adjust their strategy based on time remaining:
+        - 0.0-0.3: Plenty of time, can be thorough
+        - 0.3-0.7: Moderate pressure, balance quality and speed
+        - 0.7-1.0: High pressure, prioritize completion
+
+        Returns:
+            Time pressure value between 0.0 and 1.0
+        """
+        if not self.start_time or not self.max_duration:
+            return 0.0
+
+        elapsed = self.get_elapsed_seconds()
+        pressure = elapsed / self.max_duration
+
+        # Clamp to [0.0, 1.0]
+        return max(0.0, min(1.0, pressure))
+
+    def is_past_deadline(self) -> bool:
+        """Check if current time is past the deadline.
+
+        Returns:
+            True if deadline has passed, False otherwise
+        """
+        if not self.deadline:
+            return False
+        return datetime.now() > self.deadline
+
+    def is_over_duration(self) -> bool:
+        """Check if execution has exceeded max duration.
+
+        Returns:
+            True if over duration limit, False otherwise
+        """
+        if not self.max_duration or not self.start_time:
+            return False
+        return self.get_elapsed_seconds() > self.max_duration
+
+    def __repr__(self) -> str:
+        """String representation of temporal monitor."""
+        if not self.start_time:
+            return "TemporalMonitor(not started)"
+
+        elapsed = self.get_elapsed_seconds()
+        status = "EXCEEDED" if self.is_past_deadline() or self.is_over_duration() else "OK"
+        return f"TemporalMonitor(elapsed={elapsed:.1f}s, status={status})"

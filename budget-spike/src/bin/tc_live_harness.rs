@@ -2,10 +2,11 @@
 //! row in Section V.D of the paper.
 //!
 //! This binary drives the actual Rust `Budget` discipline against real LLM
-//! provider APIs (OpenAI, Anthropic, Groq) using the byte-length estimator
-//! over full message bodies. It produces a CSV in the same column format as
-//! the Python harness's `multiway_compare.py`, with additional per-call
-//! detail columns for utilization analysis.
+//! provider APIs (OpenAI, Anthropic, Groq) and a local OpenAI-compatible
+//! endpoint (Ollama) using the byte-length estimator over full message
+//! bodies. It produces a CSV in the same column format as the Python
+//! harness's `multiway_compare.py`, with additional per-call detail
+//! columns for utilization analysis.
 //!
 //! v32 patch: added per-call detail accumulators (sum_input_tokens,
 //! sum_output_tokens, sum_byte_length_estimate, sum_reservation_uc,
@@ -13,6 +14,17 @@
 //! aggregator can compute input/output/dollar utilization and the
 //! byte-to-token ratio. All existing columns are preserved in their original
 //! positions; new columns are appended after wall_seconds.
+//!
+//! v33 patch: added "ollama" provider for local llama3.2 inference via
+//! Ollama's OpenAI-compatible endpoint at http://localhost:11434/v1. The
+//! provider has operator-set pricing (no real billing) so the cap
+//! arithmetic exercises the discipline in the same shape as paid
+//! providers. No API key is required; a placeholder string is supplied
+//! so the OpenAI-compatible code path has a non-empty Authorization header.
+//!
+//! v33.1: model name updated to `llama3.2:latest` to match the standard
+//! Ollama pull tag (`ollama pull llama3.2` produces `llama3.2:latest`,
+//! not `llama3.2:3b`). The model is the 3.2B Q4_K_M variant regardless.
 //!
 //! Build:
 //!     cargo build --release --bin tc_live_harness
@@ -24,6 +36,12 @@
 //!     ./target/release/tc_live_harness \
 //!         --provider openai --runs 10 --workload lang001 \
 //!         --cap-uc 540 --output-csv tc_rust_openai_lang001_n10.csv
+//!
+//! Run (local Ollama, no API key needed; requires `ollama serve` running
+//! and `ollama pull llama3.2`):
+//!     ./target/release/tc_live_harness \
+//!         --provider ollama --runs 10 --workload lang001 \
+//!         --cap-uc 150 --output-csv tc_rust_ollama_lang001_n10.csv
 //!
 //! Output CSV columns (existing + new appended):
 //!     runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,
@@ -78,6 +96,14 @@ fn pricing_for(provider: &str) -> Pricing {
             input_per_token_uc_per_million: 590_000,
             output_per_token_uc_per_million: 790_000,
         },
+        // Operator-set rates for local Ollama. The real inference cost is
+        // $0 since it runs locally; these rates exist solely so the cap
+        // arithmetic exercises the discipline in the same shape as paid
+        // providers. Magnitudes are deliberately cheap-of-Groq.
+        "ollama" => Pricing {
+            input_per_token_uc_per_million: 50_000,
+            output_per_token_uc_per_million: 100_000,
+        },
         _ => panic!("unknown provider: {}", provider),
     }
 }
@@ -87,6 +113,10 @@ fn model_for(provider: &str) -> &'static str {
         "openai" => "gpt-4o-mini",
         "anthropic" => "claude-haiku-4-5-20251001",
         "groq" => "llama-3.3-70b-versatile",
+        // `llama3.2:latest` is what `ollama pull llama3.2` actually creates;
+        // verify with `ollama list`. The model behind this tag is the 3.2B
+        // Q4_K_M variant of Llama 3.2.
+        "ollama" => "llama3.2:latest",
         _ => panic!("unknown provider: {}", provider),
     }
 }
@@ -143,7 +173,8 @@ fn estimate_input_bytes(messages: &[ChatMessage], tools: &[ToolDef]) -> u64 {
 }
 
 // =============================================================================
-// HTTP layer: provider-specific request/response (OpenAI, Anthropic, Groq).
+// HTTP layer: provider-specific request/response (OpenAI, Anthropic, Groq,
+// Ollama). Ollama uses the OpenAI-compatible code path.
 // =============================================================================
 
 #[derive(Debug)]
@@ -161,13 +192,15 @@ async fn chat_call(
     max_output_tokens: u64,
 ) -> Result<ChatResult, String> {
     match provider {
-        "openai" | "groq" => openai_compat_call(provider, api_key, messages, tools, max_output_tokens).await,
+        "openai" | "groq" | "ollama" => {
+            openai_compat_call(provider, api_key, messages, tools, max_output_tokens).await
+        }
         "anthropic" => anthropic_call(api_key, messages, tools, max_output_tokens).await,
         _ => Err(format!("unknown provider: {}", provider)),
     }
 }
 
-// ----- OpenAI / Groq (OpenAI-compatible) ----------------------------------
+// ----- OpenAI / Groq / Ollama (OpenAI-compatible) -------------------------
 
 #[derive(Serialize)]
 struct OAIRequest<'a> {
@@ -264,6 +297,7 @@ async fn openai_compat_call(
     let url = match provider {
         "openai" => "https://api.openai.com/v1/chat/completions",
         "groq" => "https://api.groq.com/openai/v1/chat/completions",
+        "ollama" => "http://localhost:11434/v1/chat/completions",
         _ => unreachable!(),
     };
 
@@ -761,7 +795,7 @@ fn parse_args() -> Args {
             "--cap-uc" => { cap_uc = argv[i+1].parse().expect("--cap-uc needs u64"); i += 2; }
             "--output-csv" => { output_csv = argv[i+1].clone(); i += 2; }
             "--help" | "-h" => {
-                eprintln!("Usage: tc_live_harness --provider {{openai|anthropic|groq}} \
+                eprintln!("Usage: tc_live_harness --provider {{openai|anthropic|groq|ollama}} \
                           --workload {{lang001|clarification|arg_hallucination}} \
                           --runs N --cap-uc UC --output-csv FILE");
                 std::process::exit(0);
@@ -773,6 +807,12 @@ fn parse_args() -> Args {
 }
 
 fn api_key_for(provider: &str) -> Result<String, String> {
+    // Ollama runs locally and doesn't authenticate; return a placeholder
+    // so the OpenAI-compatible code path has a non-empty Authorization
+    // header.
+    if provider == "ollama" {
+        return Ok("ollama".to_string());
+    }
     let var = match provider {
         "openai" => "OPENAI_API_KEY",
         "anthropic" => "ANTHROPIC_API_KEY",

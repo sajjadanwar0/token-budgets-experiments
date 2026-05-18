@@ -1,0 +1,3 @@
+- 2026-05-18T04:44:55.877616+00:00: Starting Agent Contracts head-to-head attempt
+- 2026-05-18T04:44:55.877885+00:00: Using user-provided artifact at results/agent-contracts
+- 2026-05-18T04:44:55.878212+00:00: Could not import their API: No module named 'agent_contracts'

@@ -47,7 +47,7 @@ import csv
 import json
 import sys
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from operator import add
 from typing import Annotated, Any, Callable, Dict, List, Optional, TypedDict
 
@@ -60,9 +60,9 @@ from typing import Annotated, Any, Callable, Dict, List, Optional, TypedDict
 
 PROVIDER_PRICING: Dict[str, Dict[str, float]] = {
     "openai": {
-        "model": "gpt-4o-mini",
-        "input_per_token": 0.15 / 1_000_000,
-        "output_per_token": 0.60 / 1_000_000,
+        "model": "gpt-4o",
+        "input_per_token": 2.50 / 1_000_000,
+        "output_per_token": 10.00 / 1_000_000,
     },
     "anthropic": {
         "model": "claude-haiku-4-5-20251001",

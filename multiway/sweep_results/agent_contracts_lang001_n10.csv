@@ -1,0 +1,11 @@
+runtime,run_id,provider,workload,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,wall_seconds
+agent_contracts,1,openai,lang001,agent_contracts_budget_violation,3,540,0,0.0,0,0,0,13.178
+agent_contracts,2,openai,lang001,agent_contracts_budget_violation,4,540,0,0.0,0,0,0,11.001
+agent_contracts,3,openai,lang001,agent_contracts_budget_violation,4,540,0,0.0,0,0,0,8.659
+agent_contracts,4,openai,lang001,agent_contracts_budget_violation,4,540,0,0.0,0,0,0,8.425
+agent_contracts,5,openai,lang001,agent_contracts_budget_violation,4,540,0,0.0,0,0,0,10.212
+agent_contracts,6,openai,lang001,agent_contracts_budget_violation,4,540,0,0.0,0,0,0,9.138
+agent_contracts,7,openai,lang001,agent_contracts_budget_violation,4,540,0,0.0,0,0,0,7.656
+agent_contracts,8,openai,lang001,agent_contracts_budget_violation,4,540,0,0.0,0,0,0,13.623
+agent_contracts,9,openai,lang001,agent_contracts_budget_violation,4,540,0,0.0,0,0,0,8.362
+agent_contracts,10,openai,lang001,completed_no_cap_hit,3,540,0,0.0,0,0,0,4.637

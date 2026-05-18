@@ -1,0 +1,45 @@
+{
+  "anthropic/claude-sonnet-4-20250514": {
+    "cell": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514",
+      "workload": "agent_loop",
+      "cap_micro_cents": 1500
+    },
+    "n_total": 10,
+    "n_mid_loop_fired": 10,
+    "n_early_completion": 0,
+    "n_pre_flight_refused": 0,
+    "n_completed_within_cap": 0,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_actual_spent_uc": 4290,
+    "total_actual_spent_usd": 0.00429,
+    "headline": "10/10 mid-loop fired, 0/10 cap overshoots, $0.004290 total API cost"
+  },
+  "openai/gpt-4o": {
+    "cell": {
+      "provider": "openai",
+      "model": "gpt-4o",
+      "workload": "agent_loop",
+      "cap_micro_cents": 600
+    },
+    "n_total": 10,
+    "n_mid_loop_fired": 10,
+    "n_early_completion": 0,
+    "n_pre_flight_refused": 0,
+    "n_completed_within_cap": 0,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_actual_spent_uc": 2223,
+    "total_actual_spent_usd": 0.002223,
+    "headline": "10/10 mid-loop fired, 0/10 cap overshoots, $0.002223 total API cost"
+  },
+  "headline_total": {
+    "n_total": 20,
+    "n_mid_loop_fired": 20,
+    "n_overshoot": 0,
+    "n_errors": 0,
+    "total_actual_spent_usd": 0.006513
+  }
+}
