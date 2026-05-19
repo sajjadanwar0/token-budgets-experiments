@@ -1,0 +1,11 @@
+runtime,workload,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,remaining_uc,pct_of_cap,overshoot_uc,capital_efficiency,wall_seconds,actual_input_tokens,actual_output_tokens,count_tokens_calls,count_tokens_total_latency_ms,count_tokens_mean_latency_ms,error_repr
+tokenizer_direct,arg-hallucination,trial_0,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,5.647,404,76,3,3074.1,1024.7,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"
+tokenizer_direct,arg-hallucination,trial_1,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,5.417,404,76,3,2682.4,894.1,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"
+tokenizer_direct,arg-hallucination,trial_2,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,7.284,404,76,3,3580.6,1193.5,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"
+tokenizer_direct,arg-hallucination,trial_3,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,4.622,404,76,3,2134.7,711.6,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"
+tokenizer_direct,arg-hallucination,trial_4,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,9.698,404,76,3,7260.3,2420.1,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"
+tokenizer_direct,arg-hallucination,trial_5,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,10.285,404,76,3,7477.0,2492.3,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"
+tokenizer_direct,arg-hallucination,trial_6,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,5.903,404,76,3,1769.6,589.9,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"
+tokenizer_direct,arg-hallucination,trial_7,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,5.061,404,76,3,2463.6,821.2,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"
+tokenizer_direct,arg-hallucination,trial_8,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,5.37,404,76,3,3047.5,1015.8,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"
+tokenizer_direct,arg-hallucination,trial_9,anthropic,compile_time_reservation_refused,2,2000,784,1216,39.2%,0,1.0,6.203,404,76,3,2619.4,873.1,"refused: predicted=1316uc, remaining=1216uc, input_tokens=316"

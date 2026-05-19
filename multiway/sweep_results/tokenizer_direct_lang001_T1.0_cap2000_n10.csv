@@ -1,0 +1,11 @@
+runtime,temperature,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,remaining_uc,pct_of_cap,overshoot_uc,wall_seconds,workload,actual_input_tokens,actual_output_tokens,output_tokens_per_step,error_repr
+tokenizer_direct,1.0,trial_0,anthropic,compile_time_reservation_refused,2,2000,1519,481,75.9%,0,6.967,lang001,324,239,"113,126","refused: predicted=1397uc, remaining=481uc, input_tokens=397"
+tokenizer_direct,1.0,trial_1,anthropic,compile_time_reservation_refused,2,2000,1961,39,98.0%,0,7.396,lang001,336,325,"125,200","refused: predicted=1486uc, remaining=39uc, input_tokens=486"
+tokenizer_direct,1.0,trial_2,anthropic,compile_time_reservation_refused,2,2000,1551,449,77.5%,0,6.329,lang001,326,245,"115,130","refused: predicted=1403uc, remaining=449uc, input_tokens=403"
+tokenizer_direct,1.0,trial_3,anthropic,compile_time_reservation_refused,2,2000,1835,165,91.8%,0,6.37,lang001,315,304,"104,200","refused: predicted=1463uc, remaining=165uc, input_tokens=463"
+tokenizer_direct,1.0,trial_4,anthropic,compile_time_reservation_refused,2,2000,1595,405,79.8%,0,6.213,lang001,315,256,"104,152","refused: predicted=1414uc, remaining=405uc, input_tokens=414"
+tokenizer_direct,1.0,trial_5,anthropic,compile_time_reservation_refused,2,2000,1806,194,90.3%,0,8.117,lang001,316,298,"105,193","refused: predicted=1456uc, remaining=194uc, input_tokens=456"
+tokenizer_direct,1.0,trial_6,anthropic,compile_time_reservation_refused,2,2000,1901,99,95.0%,0,5.925,lang001,326,315,"115,200","refused: predicted=1473uc, remaining=99uc, input_tokens=473"
+tokenizer_direct,1.0,trial_7,anthropic,compile_time_reservation_refused,1,2000,788,1212,39.4%,0,3.798,lang001,88,140,140,"refused: predicted=1263uc, remaining=1212uc, input_tokens=263"
+tokenizer_direct,1.0,trial_8,anthropic,compile_time_reservation_refused,2,2000,1630,370,81.5%,0,6.217,lang001,315,263,"104,159","refused: predicted=1421uc, remaining=370uc, input_tokens=421"
+tokenizer_direct,1.0,trial_9,anthropic,compile_time_reservation_refused,2,2000,1491,509,74.6%,0,12.888,lang001,321,234,"110,124","refused: predicted=1392uc, remaining=509uc, input_tokens=392"

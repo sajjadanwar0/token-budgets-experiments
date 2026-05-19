@@ -1,0 +1,11 @@
+runtime,workload,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,remaining_uc,pct_of_cap,overshoot_uc,capital_efficiency,wall_seconds,actual_input_tokens,actual_output_tokens,count_tokens_calls,count_tokens_total_latency_ms,count_tokens_mean_latency_ms,error_repr
+tokenizer_direct,clarification,trial_0,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,19.362,990,600,4,6737.6,1684.4,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"
+tokenizer_direct,clarification,trial_1,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,13.971,990,600,4,2348.7,587.2,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"
+tokenizer_direct,clarification,trial_2,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,11.731,990,600,4,2627.5,656.9,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"
+tokenizer_direct,clarification,trial_3,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,12.446,990,600,4,2765.6,691.4,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"
+tokenizer_direct,clarification,trial_4,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,16.002,990,600,4,2121.9,530.5,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"
+tokenizer_direct,clarification,trial_5,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,12.722,990,600,4,3538.6,884.7,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"
+tokenizer_direct,clarification,trial_6,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,14.567,990,600,4,3256.8,814.2,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"
+tokenizer_direct,clarification,trial_7,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,11.494,990,600,4,2917.9,729.5,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"
+tokenizer_direct,clarification,trial_8,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,15.181,990,600,4,3185.2,796.3,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"
+tokenizer_direct,clarification,trial_9,anthropic,compile_time_reservation_refused,3,5000,3990,1010,79.8%,0,1.0,15.843,990,600,4,2496.9,624.2,"refused: predicted=1808uc, remaining=1010uc, input_tokens=808"

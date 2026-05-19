@@ -1,0 +1,11 @@
+runtime,temperature,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,remaining_uc,pct_of_cap,overshoot_uc,wall_seconds,workload,actual_input_tokens,actual_output_tokens,output_tokens_per_step,error_repr
+tokenizer_direct,0.0,trial_0,anthropic,compile_time_reservation_refused,2,2000,1515,485,75.8%,0,12.064,lang001,315,240,"104,136","refused: predicted=1398uc, remaining=485uc, input_tokens=398"
+tokenizer_direct,0.0,trial_1,anthropic,compile_time_reservation_refused,2,2000,1835,165,91.8%,0,6.497,lang001,315,304,"104,200","refused: predicted=1465uc, remaining=165uc, input_tokens=465"
+tokenizer_direct,0.0,trial_2,anthropic,compile_time_reservation_refused,2,2000,1515,485,75.8%,0,10.917,lang001,315,240,"104,136","refused: predicted=1398uc, remaining=485uc, input_tokens=398"
+tokenizer_direct,0.0,trial_3,anthropic,compile_time_reservation_refused,2,2000,1515,485,75.8%,0,7.286,lang001,315,240,"104,136","refused: predicted=1398uc, remaining=485uc, input_tokens=398"
+tokenizer_direct,0.0,trial_4,anthropic,compile_time_reservation_refused,2,2000,1835,165,91.8%,0,6.503,lang001,315,304,"104,200","refused: predicted=1465uc, remaining=165uc, input_tokens=465"
+tokenizer_direct,0.0,trial_5,anthropic,compile_time_reservation_refused,2,2000,1515,485,75.8%,0,13.971,lang001,315,240,"104,136","refused: predicted=1398uc, remaining=485uc, input_tokens=398"
+tokenizer_direct,0.0,trial_6,anthropic,compile_time_reservation_refused,2,2000,1445,555,72.2%,0,6.725,lang001,315,226,"104,122","refused: predicted=1384uc, remaining=555uc, input_tokens=384"
+tokenizer_direct,0.0,trial_7,anthropic,compile_time_reservation_refused,2,2000,1835,165,91.8%,0,7.255,lang001,315,304,"104,200","refused: predicted=1465uc, remaining=165uc, input_tokens=465"
+tokenizer_direct,0.0,trial_8,anthropic,compile_time_reservation_refused,2,2000,1835,165,91.8%,0,5.885,lang001,315,304,"104,200","refused: predicted=1465uc, remaining=165uc, input_tokens=465"
+tokenizer_direct,0.0,trial_9,anthropic,compile_time_reservation_refused,2,2000,1515,485,75.8%,0,5.565,lang001,315,240,"104,136","refused: predicted=1398uc, remaining=485uc, input_tokens=398"
