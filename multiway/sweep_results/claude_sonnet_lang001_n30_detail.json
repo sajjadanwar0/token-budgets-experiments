@@ -1,0 +1,5582 @@
+[
+  {
+    "runtime": "langgraph_only",
+    "run_id": 1,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4722,
+    "pct_of_cap": 874.44,
+    "overshoot_uc": 4182,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 8.373,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 101,
+        "cost_uc": 1456,
+        "cumulative_uc": 4722
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 2,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4722,
+    "pct_of_cap": 874.44,
+    "overshoot_uc": 4182,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.718,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 101,
+        "cost_uc": 1456,
+        "cumulative_uc": 4722
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 3,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 5.944,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 4,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4777,
+    "pct_of_cap": 884.63,
+    "overshoot_uc": 4237,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.726,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 112,
+        "cost_uc": 1511,
+        "cumulative_uc": 4777
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 5,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4762,
+    "pct_of_cap": 881.85,
+    "overshoot_uc": 4222,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 8.053,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 109,
+        "cost_uc": 1496,
+        "cumulative_uc": 4762
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 6,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.34,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 7,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4722,
+    "pct_of_cap": 874.44,
+    "overshoot_uc": 4182,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.555,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 101,
+        "cost_uc": 1456,
+        "cumulative_uc": 4722
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 8,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 5.951,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 9,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.337,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 10,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4722,
+    "pct_of_cap": 874.44,
+    "overshoot_uc": 4182,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.589,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 101,
+        "cost_uc": 1456,
+        "cumulative_uc": 4722
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 11,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.542,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 12,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.35,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 13,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4722,
+    "pct_of_cap": 874.44,
+    "overshoot_uc": 4182,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.166,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 101,
+        "cost_uc": 1456,
+        "cumulative_uc": 4722
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 14,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.348,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 15,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 8.805,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 16,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4787,
+    "pct_of_cap": 886.48,
+    "overshoot_uc": 4247,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.145,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 114,
+        "cost_uc": 1521,
+        "cumulative_uc": 4787
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 17,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4722,
+    "pct_of_cap": 874.44,
+    "overshoot_uc": 4182,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.551,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 101,
+        "cost_uc": 1456,
+        "cumulative_uc": 4722
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 18,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4722,
+    "pct_of_cap": 874.44,
+    "overshoot_uc": 4182,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.348,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 101,
+        "cost_uc": 1456,
+        "cumulative_uc": 4722
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 19,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4762,
+    "pct_of_cap": 881.85,
+    "overshoot_uc": 4222,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.166,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 109,
+        "cost_uc": 1496,
+        "cumulative_uc": 4762
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 20,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4762,
+    "pct_of_cap": 881.85,
+    "overshoot_uc": 4222,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.75,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 109,
+        "cost_uc": 1496,
+        "cumulative_uc": 4762
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 21,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4809,
+    "pct_of_cap": 890.56,
+    "overshoot_uc": 4269,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.173,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 117,
+        "cost_uc": 1537,
+        "cumulative_uc": 4809
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 22,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4585,
+    "pct_of_cap": 849.07,
+    "overshoot_uc": 4045,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.758,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 80,
+        "cost_uc": 1212,
+        "cumulative_uc": 3177
+      },
+      {
+        "step": 4,
+        "input_tokens": 933,
+        "output_tokens": 95,
+        "cost_uc": 1408,
+        "cumulative_uc": 4585
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 23,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.645,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 24,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.304,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 25,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.553,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 26,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.419,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 27,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.7,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 28,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4722,
+    "pct_of_cap": 874.44,
+    "overshoot_uc": 4182,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.196,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 101,
+        "cost_uc": 1456,
+        "cumulative_uc": 4722
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 29,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4754,
+    "pct_of_cap": 880.37,
+    "overshoot_uc": 4214,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.887,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 72,
+        "cost_uc": 1059,
+        "cumulative_uc": 1965
+      },
+      {
+        "step": 3,
+        "input_tokens": 812,
+        "output_tokens": 99,
+        "cost_uc": 1307,
+        "cumulative_uc": 3272
+      },
+      {
+        "step": 4,
+        "input_tokens": 952,
+        "output_tokens": 106,
+        "cost_uc": 1482,
+        "cumulative_uc": 4754
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_only",
+    "run_id": 30,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4787,
+    "pct_of_cap": 886.48,
+    "overshoot_uc": 4247,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.764,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      },
+      {
+        "step": 2,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_uc": 1054,
+        "cumulative_uc": 1960
+      },
+      {
+        "step": 3,
+        "input_tokens": 811,
+        "output_tokens": 99,
+        "cost_uc": 1306,
+        "cumulative_uc": 3266
+      },
+      {
+        "step": 4,
+        "input_tokens": 951,
+        "output_tokens": 114,
+        "cost_uc": 1521,
+        "cumulative_uc": 4787
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 1,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.174,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 2,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.089,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 3,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.103,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 4,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.677,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 5,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.715,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 6,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.432,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 7,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.23,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 8,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.459,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 9,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.149,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 10,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.488,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 11,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.146,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 12,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.188,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 13,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.147,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 14,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.193,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 15,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.113,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 16,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.584,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 17,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.131,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 18,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.043,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 19,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.308,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 20,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.142,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 21,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.231,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 22,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.186,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 23,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.215,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 24,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.33,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 25,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.146,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 26,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 8.109,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 27,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.402,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 28,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.464,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 29,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 2.048,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "langgraph_with_guard",
+    "run_id": 30,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "runtime_guard_fired_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.434,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 1,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 6699,
+    "pct_of_cap": 1240.56,
+    "overshoot_uc": 6159,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 43.207,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4869,
+        "output_tokens": 366,
+        "cost_uc": 6699,
+        "cumulative_uc": 6699
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 2,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 6662,
+    "pct_of_cap": 1233.7,
+    "overshoot_uc": 6122,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 10.962,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4872,
+        "output_tokens": 358,
+        "cost_uc": 6662,
+        "cumulative_uc": 6662
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 3,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 6802,
+    "pct_of_cap": 1259.63,
+    "overshoot_uc": 6262,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 10.355,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4872,
+        "output_tokens": 386,
+        "cost_uc": 6802,
+        "cumulative_uc": 6802
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 4,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8240,
+    "pct_of_cap": 1525.93,
+    "overshoot_uc": 7700,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 13.904,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5735,
+        "output_tokens": 501,
+        "cost_uc": 8240,
+        "cumulative_uc": 8240
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 5,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 6742,
+    "pct_of_cap": 1248.52,
+    "overshoot_uc": 6202,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 10.31,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4872,
+        "output_tokens": 374,
+        "cost_uc": 6742,
+        "cumulative_uc": 6742
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 6,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 14742,
+    "pct_of_cap": 2730.0,
+    "overshoot_uc": 14202,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 22.887,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 10607,
+        "output_tokens": 827,
+        "cost_uc": 14742,
+        "cumulative_uc": 14742
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 7,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 6912,
+    "pct_of_cap": 1280.0,
+    "overshoot_uc": 6372,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 10.265,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4872,
+        "output_tokens": 408,
+        "cost_uc": 6912,
+        "cumulative_uc": 6912
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 8,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 5587,
+    "pct_of_cap": 1034.63,
+    "overshoot_uc": 5047,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 9.967,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 3617,
+        "output_tokens": 394,
+        "cost_uc": 5587,
+        "cumulative_uc": 5587
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 9,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8215,
+    "pct_of_cap": 1521.3,
+    "overshoot_uc": 7675,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 15.196,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5735,
+        "output_tokens": 496,
+        "cost_uc": 8215,
+        "cumulative_uc": 8215
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 10,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 7007,
+    "pct_of_cap": 1297.59,
+    "overshoot_uc": 6467,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 11.67,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4872,
+        "output_tokens": 427,
+        "cost_uc": 7007,
+        "cumulative_uc": 7007
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 11,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 14179,
+    "pct_of_cap": 2625.74,
+    "overshoot_uc": 13639,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 21.303,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 10614,
+        "output_tokens": 713,
+        "cost_uc": 14179,
+        "cumulative_uc": 14179
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 12,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8419,
+    "pct_of_cap": 1559.07,
+    "overshoot_uc": 7879,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 13.579,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5734,
+        "output_tokens": 537,
+        "cost_uc": 8419,
+        "cumulative_uc": 8419
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 13,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 7317,
+    "pct_of_cap": 1355.0,
+    "overshoot_uc": 6777,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 15.112,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4872,
+        "output_tokens": 489,
+        "cost_uc": 7317,
+        "cumulative_uc": 7317
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 14,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 5477,
+    "pct_of_cap": 1014.26,
+    "overshoot_uc": 4937,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 9.873,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 3617,
+        "output_tokens": 372,
+        "cost_uc": 5477,
+        "cumulative_uc": 5477
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 15,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8469,
+    "pct_of_cap": 1568.33,
+    "overshoot_uc": 7929,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 12.595,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5734,
+        "output_tokens": 547,
+        "cost_uc": 8469,
+        "cumulative_uc": 8469
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 16,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8248,
+    "pct_of_cap": 1527.41,
+    "overshoot_uc": 7708,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 12.598,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5738,
+        "output_tokens": 502,
+        "cost_uc": 8248,
+        "cumulative_uc": 8248
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 17,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8275,
+    "pct_of_cap": 1532.41,
+    "overshoot_uc": 7735,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 11.743,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5735,
+        "output_tokens": 508,
+        "cost_uc": 8275,
+        "cumulative_uc": 8275
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 18,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 5239,
+    "pct_of_cap": 970.19,
+    "overshoot_uc": 4699,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 9.591,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 3614,
+        "output_tokens": 325,
+        "cost_uc": 5239,
+        "cumulative_uc": 5239
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 19,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8282,
+    "pct_of_cap": 1533.7,
+    "overshoot_uc": 7742,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 13.175,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5742,
+        "output_tokens": 508,
+        "cost_uc": 8282,
+        "cumulative_uc": 8282
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 20,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 6667,
+    "pct_of_cap": 1234.63,
+    "overshoot_uc": 6127,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 10.491,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4872,
+        "output_tokens": 359,
+        "cost_uc": 6667,
+        "cumulative_uc": 6667
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 21,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 4974,
+    "pct_of_cap": 921.11,
+    "overshoot_uc": 4434,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 10.999,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 3614,
+        "output_tokens": 272,
+        "cost_uc": 4974,
+        "cumulative_uc": 4974
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 22,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8354,
+    "pct_of_cap": 1547.04,
+    "overshoot_uc": 7814,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 13.958,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5744,
+        "output_tokens": 522,
+        "cost_uc": 8354,
+        "cumulative_uc": 8354
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 23,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 14820,
+    "pct_of_cap": 2744.44,
+    "overshoot_uc": 14280,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 19.672,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 10610,
+        "output_tokens": 842,
+        "cost_uc": 14820,
+        "cumulative_uc": 14820
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 24,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8219,
+    "pct_of_cap": 1522.04,
+    "overshoot_uc": 7679,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 11.467,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5734,
+        "output_tokens": 497,
+        "cost_uc": 8219,
+        "cumulative_uc": 8219
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 25,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 6952,
+    "pct_of_cap": 1287.41,
+    "overshoot_uc": 6412,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 11.248,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4872,
+        "output_tokens": 416,
+        "cost_uc": 6952,
+        "cumulative_uc": 6952
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 26,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 5527,
+    "pct_of_cap": 1023.52,
+    "overshoot_uc": 4987,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 8.979,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 3617,
+        "output_tokens": 382,
+        "cost_uc": 5527,
+        "cumulative_uc": 5527
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 27,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 5469,
+    "pct_of_cap": 1012.78,
+    "overshoot_uc": 4929,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 8.857,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 3614,
+        "output_tokens": 371,
+        "cost_uc": 5469,
+        "cumulative_uc": 5469
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 28,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8485,
+    "pct_of_cap": 1571.3,
+    "overshoot_uc": 7945,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 12.364,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5735,
+        "output_tokens": 550,
+        "cost_uc": 8485,
+        "cumulative_uc": 8485
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 29,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 6805,
+    "pct_of_cap": 1260.19,
+    "overshoot_uc": 6265,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 11.725,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 4875,
+        "output_tokens": 386,
+        "cost_uc": 6805,
+        "cumulative_uc": 6805
+      }
+    ]
+  },
+  {
+    "runtime": "crewai",
+    "run_id": 30,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "completed_no_cap_hit",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 8055,
+    "pct_of_cap": 1491.67,
+    "overshoot_uc": 7515,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 13.918,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 5735,
+        "output_tokens": 464,
+        "cost_uc": 8055,
+        "cumulative_uc": 8055
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 1,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 9.348,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 2,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.923,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 3,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4850,
+    "pct_of_cap": 898.15,
+    "overshoot_uc": 4310,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.781,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 88,
+        "cost_uc": 1217,
+        "cumulative_uc": 4850
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 4,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4850,
+    "pct_of_cap": 898.15,
+    "overshoot_uc": 4310,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.322,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 88,
+        "cost_uc": 1217,
+        "cumulative_uc": 4850
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 5,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.81,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 6,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.983,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 7,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.533,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 8,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.668,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 9,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4850,
+    "pct_of_cap": 898.15,
+    "overshoot_uc": 4310,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.873,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 88,
+        "cost_uc": 1217,
+        "cumulative_uc": 4850
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 10,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.346,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 11,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4850,
+    "pct_of_cap": 898.15,
+    "overshoot_uc": 4310,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 10.04,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 88,
+        "cost_uc": 1217,
+        "cumulative_uc": 4850
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 12,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4900,
+    "pct_of_cap": 907.41,
+    "overshoot_uc": 4360,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.576,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 1221
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 2442
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 3663
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 92,
+        "cost_uc": 1237,
+        "cumulative_uc": 4900
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 13,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4880,
+    "pct_of_cap": 903.7,
+    "overshoot_uc": 4340,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.554,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 88,
+        "cost_uc": 1216,
+        "cumulative_uc": 1216
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 88,
+        "cost_uc": 1216,
+        "cumulative_uc": 2432
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 88,
+        "cost_uc": 1216,
+        "cumulative_uc": 3648
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4880
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 14,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4855,
+    "pct_of_cap": 899.07,
+    "overshoot_uc": 4315,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.021,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 89,
+        "cost_uc": 1222,
+        "cumulative_uc": 4855
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 15,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4880,
+    "pct_of_cap": 903.7,
+    "overshoot_uc": 4340,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.048,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 88,
+        "cost_uc": 1216,
+        "cumulative_uc": 1216
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 88,
+        "cost_uc": 1216,
+        "cumulative_uc": 2432
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 88,
+        "cost_uc": 1216,
+        "cumulative_uc": 3648
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4880
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 16,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.025,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 17,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4855,
+    "pct_of_cap": 899.07,
+    "overshoot_uc": 4315,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 9.216,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 89,
+        "cost_uc": 1222,
+        "cumulative_uc": 4855
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 18,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4900,
+    "pct_of_cap": 907.41,
+    "overshoot_uc": 4360,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.209,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 1221
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 2442
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 3663
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 92,
+        "cost_uc": 1237,
+        "cumulative_uc": 4900
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 19,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4855,
+    "pct_of_cap": 899.07,
+    "overshoot_uc": 4315,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.804,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 89,
+        "cost_uc": 1222,
+        "cumulative_uc": 4855
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 20,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.877,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 21,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4900,
+    "pct_of_cap": 907.41,
+    "overshoot_uc": 4360,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.241,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 1221
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 2442
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 3663
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 92,
+        "cost_uc": 1237,
+        "cumulative_uc": 4900
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 22,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 9.325,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 23,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.191,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 24,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4850,
+    "pct_of_cap": 898.15,
+    "overshoot_uc": 4310,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.082,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 88,
+        "cost_uc": 1217,
+        "cumulative_uc": 4850
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 25,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4850,
+    "pct_of_cap": 898.15,
+    "overshoot_uc": 4310,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.43,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 88,
+        "cost_uc": 1217,
+        "cumulative_uc": 4850
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 26,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4825,
+    "pct_of_cap": 893.52,
+    "overshoot_uc": 4285,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 9.331,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 86,
+        "cost_uc": 1206,
+        "cumulative_uc": 1206
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 86,
+        "cost_uc": 1206,
+        "cumulative_uc": 2412
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 86,
+        "cost_uc": 1206,
+        "cumulative_uc": 3618
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 86,
+        "cost_uc": 1207,
+        "cumulative_uc": 4825
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 27,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.563,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 28,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4910,
+    "pct_of_cap": 909.26,
+    "overshoot_uc": 4370,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.509,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 1226
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 2452
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 90,
+        "cost_uc": 1226,
+        "cumulative_uc": 3678
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 91,
+        "cost_uc": 1232,
+        "cumulative_uc": 4910
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 29,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4900,
+    "pct_of_cap": 907.41,
+    "overshoot_uc": 4360,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 6.662,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 1221
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 2442
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 89,
+        "cost_uc": 1221,
+        "cumulative_uc": 3663
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 92,
+        "cost_uc": 1237,
+        "cumulative_uc": 4900
+      }
+    ]
+  },
+  {
+    "runtime": "autogen",
+    "run_id": 30,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "structural_max_turns_hit",
+    "agent_steps": 4,
+    "cap_uc": 540,
+    "total_spent_uc": 4855,
+    "pct_of_cap": 899.07,
+    "overshoot_uc": 4315,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 7.025,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 1211
+      },
+      {
+        "step": 2,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 2422
+      },
+      {
+        "step": 3,
+        "input_tokens": 776,
+        "output_tokens": 87,
+        "cost_uc": 1211,
+        "cumulative_uc": 3633
+      },
+      {
+        "step": 4,
+        "input_tokens": 777,
+        "output_tokens": 89,
+        "cost_uc": 1222,
+        "cumulative_uc": 4855
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 1,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.457,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 2,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.203,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 3,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.154,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 4,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.305,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 5,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.829,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 6,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.658,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 7,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.183,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 8,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.346,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 9,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.069,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 10,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.085,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 11,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.586,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 12,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.548,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 13,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.167,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 14,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.182,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 15,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.138,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 16,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.096,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 17,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 2.011,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 18,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.224,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 19,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.114,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 20,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.04,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 21,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 2.057,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 22,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.408,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 23,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.474,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 24,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.309,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 25,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 5.263,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 26,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.217,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 27,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.179,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 28,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.867,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 29,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.111,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "token_capabilities",
+    "run_id": 30,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "compile_time_reservation_refused",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 0,
+    "wall_seconds": 1.359,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 1,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.12,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 2,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.21,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 3,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.798,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 4,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.188,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 5,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.39,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 6,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.482,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 7,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 2.042,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 8,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.865,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 9,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 2.026,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 10,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.115,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 11,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.408,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 12,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 2.106,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 13,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 2.129,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 14,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.259,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 15,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.404,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 16,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.44,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 17,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.239,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 18,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 2.235,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 19,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.176,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 20,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.536,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 21,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.999,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 22,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.637,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 23,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.329,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 24,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.31,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 25,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.253,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 26,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 2.304,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 27,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.09,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 28,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 2.66,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 29,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.137,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  },
+  {
+    "runtime": "litellm_proxy",
+    "run_id": 30,
+    "provider": "anthropic",
+    "workload": "lang001",
+    "outcome": "litellm_budget_exceeded_after_call",
+    "agent_steps": 1,
+    "cap_uc": 540,
+    "total_spent_uc": 906,
+    "pct_of_cap": 167.78,
+    "overshoot_uc": 366,
+    "structural_undershoot_uc": 0,
+    "wasted_call_cost_uc": 906,
+    "wall_seconds": 1.114,
+    "per_step": [
+      {
+        "step": 1,
+        "input_tokens": 596,
+        "output_tokens": 62,
+        "cost_uc": 906,
+        "cumulative_uc": 906
+      }
+    ]
+  }
+]
