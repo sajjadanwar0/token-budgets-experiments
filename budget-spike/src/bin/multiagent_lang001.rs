@@ -233,6 +233,7 @@ async fn openai_call(
     messages: &[ChatMessage],
     tools: &[ToolDef],
     max_output_tokens: u64,
+    temperature: f64,
 ) -> Result<ChatResult, String> {
     let oai_messages: Vec<OAIMessage> = messages.iter().map(|m| OAIMessage {
         role: m.role.clone(),
@@ -266,7 +267,7 @@ async fn openai_call(
         model: model_for("openai"),
         messages: oai_messages,
         tools: oai_tools,
-        temperature: 0.0,
+        temperature,
         max_completion_tokens: max_output_tokens,
     };
 
@@ -372,6 +373,7 @@ async fn anthropic_call(
     messages: &[ChatMessage],
     tools: &[ToolDef],
     max_output_tokens: u64,
+    temperature: f64,
 ) -> Result<ChatResult, String> {
     let mut system_text = String::new();
     let mut ant_messages: Vec<AntMessage> = Vec::new();
@@ -422,7 +424,7 @@ async fn anthropic_call(
     let req = AntRequest {
         model: model_for("anthropic"),
         max_tokens: max_output_tokens,
-        temperature: 0.0,
+        temperature,
         system: system_text,
         messages: ant_messages,
         tools: ant_tools,
@@ -481,10 +483,11 @@ async fn chat_call(
     messages: &[ChatMessage],
     tools: &[ToolDef],
     max_output_tokens: u64,
+    temperature: f64,
 ) -> Result<ChatResult, String> {
     match provider {
-        "openai" => openai_call(api_key, messages, tools, max_output_tokens).await,
-        "anthropic" => anthropic_call(api_key, messages, tools, max_output_tokens).await,
+        "openai" => openai_call(api_key, messages, tools, max_output_tokens, temperature).await,
+        "anthropic" => anthropic_call(api_key, messages, tools, max_output_tokens, temperature).await,
         _ => Err(format!("unknown provider: {}", provider)),
     }
 }
@@ -540,6 +543,7 @@ async fn run_lang001_child(
     mut budget: Budget,
     initial_cap_uc: u64,
     child_id: usize,
+    temperature: f64,
 ) -> ChildOutcome {
     let pricing = pricing_for(&provider);
     let tools = lang001_tools();
@@ -581,7 +585,7 @@ async fn run_lang001_child(
         calls_admitted += 1;
 
         let result = match chat_call(
-            &provider, &api_key, &messages, &tools, MAX_OUTPUT_TOKENS,
+            &provider, &api_key, &messages, &tools, MAX_OUTPUT_TOKENS, temperature,
         ).await {
             Ok(r) => r,
             Err(e) => {
@@ -656,6 +660,7 @@ async fn run_one_trial(
     provider: String,
     api_key: String,
     child_cap_uc: u64,
+    temperature: f64,
 ) -> Result<TrialOutcome, String> {
     let b0_uc = child_cap_uc.saturating_mul(3);
     let parent = Budget::new(b0_uc);
@@ -677,9 +682,9 @@ async fn run_one_trial(
     let k1 = api_key.clone();
     let k2 = api_key.clone();
 
-    let h0 = tokio::spawn(run_lang001_child(p0, k0, child0_budget, child_cap_uc, 0));
-    let h1 = tokio::spawn(run_lang001_child(p1, k1, child1_budget, child_cap_uc, 1));
-    let h2 = tokio::spawn(run_lang001_child(p2, k2, child2_budget, child_cap_uc, 2));
+    let h0 = tokio::spawn(run_lang001_child(p0, k0, child0_budget, child_cap_uc, 0, temperature));
+    let h1 = tokio::spawn(run_lang001_child(p1, k1, child1_budget, child_cap_uc, 1, temperature));
+    let h2 = tokio::spawn(run_lang001_child(p2, k2, child2_budget, child_cap_uc, 2, temperature));
 
     let r0 = h0.await.map_err(|e| format!("child0 join: {}", e))?;
     let r1 = h1.await.map_err(|e| format!("child1 join: {}", e))?;
@@ -708,6 +713,7 @@ struct Args {
     runs: u64,
     output_csv: String,
     child_cap_uc: u64,
+    temperature: f64,
 }
 
 fn parse_args() -> Args {
@@ -715,6 +721,7 @@ fn parse_args() -> Args {
     let mut runs: u64 = 30;
     let mut output_csv = "multiagent_lang001.csv".to_string();
     let mut child_cap_uc: u64 = DEFAULT_CHILD_CAP_UC;
+    let mut temperature: f64 = 0.0;
 
     let argv: Vec<String> = env::args().collect();
     let mut i = 1;
@@ -724,11 +731,13 @@ fn parse_args() -> Args {
             "--runs" => { runs = argv[i+1].parse().expect("--runs needs u64"); i += 2; }
             "--output-csv" => { output_csv = argv[i+1].clone(); i += 2; }
             "--child-cap-uc" => { child_cap_uc = argv[i+1].parse().expect("--child-cap-uc needs u64"); i += 2; }
+            "--temperature" => { temperature = argv[i+1].parse().expect("--temperature needs f64"); i += 2; }
             "--help" | "-h" => {
                 eprintln!("Usage: multiagent_lang001 --provider {{openai|anthropic}} \\");
-                eprintln!("       --runs N --output-csv FILE [--child-cap-uc UC]");
+                eprintln!("       --runs N --output-csv FILE [--child-cap-uc UC] [--temperature T]");
                 eprintln!();
                 eprintln!("Default --child-cap-uc 540 (OpenAI). For Anthropic use 2000.");
+                eprintln!("Default --temperature 0.0 (deterministic). Try 0.7 for variance.");
                 eprintln!("Parent B_0 = 3 * child-cap-uc.");
                 std::process::exit(0);
             }
@@ -738,7 +747,7 @@ fn parse_args() -> Args {
             }
         }
     }
-    Args { provider, runs, output_csv, child_cap_uc }
+    Args { provider, runs, output_csv, child_cap_uc, temperature }
 }
 
 fn csv_header() -> String {
@@ -759,11 +768,11 @@ fn csv_row(provider: &str, t: &TrialOutcome) -> String {
          {},{}",
         t.trial_id, provider, model_for(provider), t.initial_b0_uc,
         c[0].spent_uc, c[0].residual_uc, c[0].calls_attempted, c[0].calls_admitted,
-        c[0].outcome, c[0].wall_clock_ms,
+            c[0].outcome, c[0].wall_clock_ms,
         c[1].spent_uc, c[1].residual_uc, c[1].calls_attempted, c[1].calls_admitted,
-        c[1].outcome, c[1].wall_clock_ms,
+            c[1].outcome, c[1].wall_clock_ms,
         c[2].spent_uc, c[2].residual_uc, c[2].calls_attempted, c[2].calls_admitted,
-        c[2].outcome, c[2].wall_clock_ms,
+            c[2].outcome, c[2].wall_clock_ms,
         t.aggregate_spent_uc, t.aggregate_overshoot,
     )
 }
@@ -790,14 +799,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let b0_uc = args.child_cap_uc.saturating_mul(3);
 
     eprintln!("Config: provider={} runs={} child_cap_uc={} B0_uc={}",
-              args.provider, args.runs, args.child_cap_uc, b0_uc);
+        args.provider, args.runs, args.child_cap_uc, b0_uc);
 
     for trial_id in 0..args.runs {
         eprintln!("=== trial {}/{} ({}) ===",
-                  trial_id + 1, args.runs, args.provider);
+            trial_id + 1, args.runs, args.provider);
         let t = match run_one_trial(
             trial_id as usize, args.provider.clone(), api_key.clone(),
-            args.child_cap_uc,
+            args.child_cap_uc, args.temperature,
         ).await {
             Ok(t) => t,
             Err(e) => {
@@ -826,7 +835,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     eprintln!();
     eprintln!("==== SUMMARY ({} child_cap={} B0={}) ====",
-              args.provider, args.child_cap_uc, b0_uc);
+        args.provider, args.child_cap_uc, b0_uc);
     eprintln!("Trials:                  {}", args.runs);
     eprintln!("Aggregate overshoots:    {}/{}", aggregate_overshoots, args.runs);
     eprintln!("Per-child cap violations: {}", child_cap_violations);
