@@ -24,7 +24,8 @@ clap = { version = "4", features = ["derive"] }
 anyhow = "1"
 
 [features]
-default  = []
+default  = ["system-authority"]
+system-authority = ["token-budgets/system-authority"]
 tiktoken = ["token-budgets/tiktoken"]
 
 # ── 10 binary targets (one per experiment runner) ──
