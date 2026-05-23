@@ -1,0 +1,3 @@
+estimator,n_calls,median_effective_margin,mean_effective_margin,min_effective_margin,max_effective_margin,a1_violations,median_capital_efficiency
+static_2.0x,50,1.1398,3.4315,1.0119,23.0,0,0.8774
+adaptive_eps_0.10,50,1.0625,3.2807,1.003,21.0,0,0.9411

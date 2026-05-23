@@ -1,0 +1,31 @@
+cap_tokens,cap_uc,trial_id,steps,total_input_tokens,total_output_tokens,total_billed_uc,total_reserved_uc,overshoot,refused_at_step,refused_reason,retries_total
+10000,60000,0,5,3488,1134,27474,109860,0,5,"Insufficient: requested 32550 uc, only 32526 available",0
+10000,60000,1,6,4709,1164,31587,141858,0,6,"Insufficient: requested 33522 uc, only 28413 available",0
+10000,60000,2,5,3480,1178,28110,110472,0,5,"Insufficient: requested 33216 uc, only 31890 available",0
+10000,60000,3,4,2661,1323,27828,85704,0,4,"Insufficient: requested 34932 uc, only 32172 available",0
+10000,60000,4,4,2739,1296,27657,85608,0,4,"Insufficient: requested 34092 uc, only 32343 available",0
+10000,60000,5,6,4313,1127,29844,137856,0,6,"Insufficient: requested 32484 uc, only 30156 available",0
+10000,60000,6,6,4527,1126,30471,141318,0,6,"Insufficient: requested 33330 uc, only 29529 available",0
+10000,60000,7,4,2606,1270,26868,85464,0,4,"Insufficient: requested 34596 uc, only 33132 available",0
+10000,60000,8,5,3470,1271,29475,110814,0,5,"Insufficient: requested 34314 uc, only 30525 available",0
+10000,60000,9,7,5336,1100,32508,160914,0,,,0
+10000,60000,10,5,3625,1287,30180,111744,0,5,"Insufficient: requested 34482 uc, only 29820 available",0
+10000,60000,11,7,5341,1040,31623,166644,0,,,0
+10000,60000,12,5,3443,1164,27789,110310,0,5,"Insufficient: requested 33156 uc, only 32211 available",0
+10000,60000,13,7,5333,1108,32619,159816,0,7,"Insufficient: requested 31578 uc, only 27381 available",0
+10000,60000,14,7,5029,934,29097,157860,0,,,0
+10000,60000,15,4,2687,1359,28446,86118,0,4,"Insufficient: requested 36300 uc, only 31554 available",0
+10000,60000,16,6,4677,1127,30936,142218,0,,,0
+10000,60000,17,6,4410,1076,29370,142122,0,6,"Insufficient: requested 33258 uc, only 30630 available",0
+10000,60000,18,6,4264,1057,28647,139584,0,6,"Insufficient: requested 32526 uc, only 31353 available",0
+10000,60000,19,3,1728,1500,27684,57636,0,3,"Insufficient: requested 39654 uc, only 32316 available",0
+10000,60000,20,7,5512,1084,32796,167298,0,7,"Insufficient: requested 32058 uc, only 27204 available",0
+10000,60000,21,5,4007,1365,32496,116124,0,5,"Insufficient: requested 35136 uc, only 27504 available",0
+10000,60000,22,5,3579,1164,28197,112392,0,5,"Insufficient: requested 32928 uc, only 31803 available",0
+10000,60000,23,5,3724,1263,30117,115020,0,5,"Insufficient: requested 33882 uc, only 29883 available",0
+10000,60000,24,5,3836,1337,31563,116370,0,5,"Insufficient: requested 34578 uc, only 28437 available",0
+10000,60000,25,6,4717,1152,31431,142434,0,6,"Insufficient: requested 33324 uc, only 28569 available",0
+10000,60000,26,6,4307,1120,29721,136728,0,6,"Insufficient: requested 32952 uc, only 30279 available",0
+10000,60000,27,5,3410,1129,27165,108690,0,5,"Insufficient: requested 33054 uc, only 32835 available",0
+10000,60000,28,7,5229,1041,31302,164250,0,,,0
+10000,60000,29,6,4554,1094,30072,144534,0,6,"Insufficient: requested 33954 uc, only 29928 available",0
