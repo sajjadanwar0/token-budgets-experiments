@@ -26,6 +26,15 @@
 //! Ollama pull tag (`ollama pull llama3.2` produces `llama3.2:latest`,
 //! not `llama3.2:3b`). The model is the 3.2B Q4_K_M variant regardless.
 //!
+//! v34 patch: anthropic-sonnet support. Adds a second Anthropic pricing
+//! row for claude-sonnet-4-5 ($3/Mtok input, $15/Mtok output) plus a
+//! model selector. The default "anthropic" provider continues to use
+//! haiku-4-5; "anthropic-sonnet" uses sonnet-4-5 at sonnet rates. This
+//! enables model-parity replication of the Anthropic cross-provider
+//! comparison (paper §5.7 / Table 9): baselines run on sonnet via
+//! multiway_compare.py and TB now runs on the same model, removing the
+//! haiku-vs-sonnet methodological confound.
+//!
 //! Build:
 //!     cargo build --release --bin tc_live_harness
 //!
@@ -92,6 +101,12 @@ fn pricing_for(provider: &str) -> Pricing {
             input_per_token_uc_per_million: 1_000_000,
             output_per_token_uc_per_million: 5_000_000,
         },
+        // Sonnet 4.5 standard-tier rates: $3/Mtok input, $15/Mtok output
+        // (3x haiku's rates).
+        "anthropic-sonnet" => Pricing {
+            input_per_token_uc_per_million: 3_000_000,
+            output_per_token_uc_per_million: 15_000_000,
+        },
         "groq" => Pricing {
             input_per_token_uc_per_million: 590_000,
             output_per_token_uc_per_million: 790_000,
@@ -112,6 +127,7 @@ fn model_for(provider: &str) -> &'static str {
     match provider {
         "openai" => "gpt-4o-mini",
         "anthropic" => "claude-haiku-4-5-20251001",
+        "anthropic-sonnet" => "claude-sonnet-4-5-20250929",
         "groq" => "llama-3.3-70b-versatile",
         // `llama3.2:latest` is what `ollama pull llama3.2` actually creates;
         // verify with `ollama list`. The model behind this tag is the 3.2B
@@ -195,7 +211,18 @@ async fn chat_call(
         "openai" | "groq" | "ollama" => {
             openai_compat_call(provider, api_key, messages, tools, max_output_tokens).await
         }
-        "anthropic" => anthropic_call(api_key, messages, tools, max_output_tokens).await,
+        "anthropic" => {
+            anthropic_call_with_model(
+                model_for("anthropic"),
+                api_key, messages, tools, max_output_tokens
+            ).await
+        }
+        "anthropic-sonnet" => {
+            anthropic_call_with_model(
+                model_for("anthropic-sonnet"),
+                api_key, messages, tools, max_output_tokens
+            ).await
+        }
         _ => Err(format!("unknown provider: {}", provider)),
     }
 }
@@ -440,6 +467,21 @@ async fn anthropic_call(
     tools: &[ToolDef],
     max_output_tokens: u64,
 ) -> Result<ChatResult, String> {
+    // Backwards-compat wrapper preserving the v33 signature; delegates to
+    // model-parameterised v34 implementation with default haiku model.
+    anthropic_call_with_model(
+        model_for("anthropic"),
+        api_key, messages, tools, max_output_tokens
+    ).await
+}
+
+async fn anthropic_call_with_model(
+    model: &str,
+    api_key: &str,
+    messages: &[ChatMessage],
+    tools: &[ToolDef],
+    max_output_tokens: u64,
+) -> Result<ChatResult, String> {
     let mut system_text = String::new();
     let mut ant_messages: Vec<AntMessage> = Vec::new();
 
@@ -487,7 +529,7 @@ async fn anthropic_call(
     }).collect();
 
     let req = AntRequest {
-        model: model_for("anthropic"),
+        model,
         max_tokens: max_output_tokens,
         temperature: 0.0,
         system: system_text,
@@ -795,7 +837,7 @@ fn parse_args() -> Args {
             "--cap-uc" => { cap_uc = argv[i+1].parse().expect("--cap-uc needs u64"); i += 2; }
             "--output-csv" => { output_csv = argv[i+1].clone(); i += 2; }
             "--help" | "-h" => {
-                eprintln!("Usage: tc_live_harness --provider {{openai|anthropic|groq|ollama}} \
+                eprintln!("Usage: tc_live_harness --provider {{openai|anthropic|anthropic-sonnet|groq|ollama}} \
                           --workload {{lang001|clarification|arg_hallucination}} \
                           --runs N --cap-uc UC --output-csv FILE");
                 std::process::exit(0);
@@ -816,6 +858,7 @@ fn api_key_for(provider: &str) -> Result<String, String> {
     let var = match provider {
         "openai" => "OPENAI_API_KEY",
         "anthropic" => "ANTHROPIC_API_KEY",
+        "anthropic-sonnet" => "ANTHROPIC_API_KEY",
         "groq" => "GROQ_API_KEY",
         _ => return Err(format!("unknown provider: {}", provider)),
     };
