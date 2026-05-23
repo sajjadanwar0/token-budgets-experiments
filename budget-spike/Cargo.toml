@@ -6,8 +6,7 @@ edition = "2024"
 rust-version = "1.85"
 description = "Token Capabilities: compile-time cost control for LLM agent systems via affine resource types."
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/sajjadanwar0/token-capabilities"
-readme = "README.md"
+repository = "https://github.com/sajjadanwar0/token-budgets-experiments"
 keywords = ["llm", "budget", "affine-types", "agent", "rust"]
 categories = ["api-bindings", "rust-patterns"]
 
@@ -28,9 +27,9 @@ serde_json = "1"
 tracing = { version = "0.1", optional = true }
 tiktoken-rs = { version = "0.6", optional = true }
 futures = { version = "0.3", optional = true, default-features = false, features = ["std"] }
+anyhow = "1.0.102"
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
 proptest = "1"
 trybuild = "1"
 tokio = { version = "1", features = ["full", "test-util", "macros"] }
@@ -67,3 +66,7 @@ opt-level = 1
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+reqwest = { version = "0.12", features = ["json"] }
+serde_json = "1"
+csv = "1"

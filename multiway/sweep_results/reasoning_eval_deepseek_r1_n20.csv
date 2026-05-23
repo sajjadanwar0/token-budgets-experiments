@@ -1,0 +1,21 @@
+trial_id,provider_label,steps,total_input_tokens,total_output_tokens,total_reasoning_tokens,total_billed_uc,total_reserved_uc,overshoot,refused_at_step,refused_reason,retries_total
+0,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+1,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+2,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+3,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+4,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+5,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+6,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+7,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+8,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+9,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+10,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+11,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+12,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+13,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+14,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+15,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+16,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+17,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+18,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
+19,deepseek_r1,0,0,0,0,0,3132,0,0,"api_error: deepseek non-2xx: {""error"":{""message"":""Insufficient Balance"",""type"":""unknown_error"",""param"":null,""code"":""invalid_request_error""}}",0
