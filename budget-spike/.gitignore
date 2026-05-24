@@ -5,7 +5,7 @@
 .env
 .env.local
 *.env.local
-
+.ac_venv
 # IDE / editor metadata
 .idea/
 .vscode/
