@@ -1,0 +1,21 @@
+trial_id,provider_label,workload,cap_uc,reasoning_uc_per_call,steps,total_input_tokens,total_output_tokens,total_reasoning_tokens,total_billed_uc,total_reserved_uc,overshoot,a1_violation,refused_at_step,refused_reason,retries_total
+0,anthropic_sonnet_thinking,sequence,300000,15360,8,2222,7948,0,125886,208128,0,0,-1,,0
+1,anthropic_sonnet_thinking,sequence,300000,15360,8,2403,7860,0,125109,208380,0,0,-1,,0
+2,anthropic_sonnet_thinking,sequence,300000,15360,8,2514,9214,0,145752,208188,0,0,-1,,0
+3,anthropic_sonnet_thinking,sequence,300000,15360,8,2519,9124,0,144417,208236,0,0,-1,,0
+4,anthropic_sonnet_thinking,sequence,300000,15360,8,2343,10405,0,163104,208200,0,0,-1,,0
+5,anthropic_sonnet_thinking,sequence,300000,15360,8,2472,8856,0,140256,208116,0,0,-1,,0
+6,anthropic_sonnet_thinking,sequence,300000,15360,8,2418,7810,0,124404,208296,0,0,-1,,0
+7,anthropic_sonnet_thinking,sequence,300000,15360,8,2211,8086,0,127923,208224,0,0,-1,,0
+8,anthropic_sonnet_thinking,sequence,300000,15360,8,2381,8228,0,130563,208332,0,0,-1,,0
+9,anthropic_sonnet_thinking,sequence,300000,15360,8,2286,7954,0,126168,208284,0,0,-1,,0
+10,anthropic_sonnet_thinking,sequence,300000,15360,0,0,0,0,0,23940,0,0,0,api_error: anthropic POST,0
+11,anthropic_sonnet_thinking,sequence,300000,15360,8,2292,8458,0,133746,208140,0,0,-1,,0
+12,anthropic_sonnet_thinking,sequence,300000,15360,8,2309,8227,0,130332,208176,0,0,-1,,0
+13,anthropic_sonnet_thinking,sequence,300000,15360,8,2714,9455,0,149967,208236,0,0,-1,,0
+14,anthropic_sonnet_thinking,sequence,300000,15360,8,2661,9781,0,154698,208092,0,0,-1,,0
+15,anthropic_sonnet_thinking,sequence,300000,15360,8,2216,10128,0,158568,208344,0,0,-1,,0
+16,anthropic_sonnet_thinking,sequence,300000,15360,8,2290,8623,0,136215,208176,0,0,-1,,0
+17,anthropic_sonnet_thinking,sequence,300000,15360,8,2266,9415,0,148023,208260,0,0,-1,,0
+18,anthropic_sonnet_thinking,sequence,300000,15360,8,2584,10227,0,161157,208188,0,0,-1,,0
+19,anthropic_sonnet_thinking,sequence,300000,15360,8,2615,10224,0,161205,208140,0,0,-1,,0
