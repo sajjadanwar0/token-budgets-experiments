@@ -5,41 +5,45 @@
   "a1_holds_count": 30,
   "a1_holds_rate": "30/30",
   "byte_length_baseline": {
-    "expected_holds": 0,
-    "expected_holds_rate": "0/30",
+    "expected_holds": 10,
+    "expected_holds_rate": "10/30",
     "expected_bt_ratio_range": [
-      0.72,
-      0.79
+      0.7769,
+      1.0713
     ]
   },
   "anthropic_estimator_observed": {
     "a1_holds_rate": "30/30",
-    "est_ratio_mean": 1.0,
-    "est_ratio_min": 1.0,
-    "est_ratio_max": 1.0,
-    "est_ratio_stdev": 0.0,
-    "bt_ratio_mean": 0.9890685917546873,
-    "bt_ratio_min": 0.8250401284109149,
-    "bt_ratio_max": 1.1468531468531469
+    "est_ratio_mean": 1.8696,
+    "est_ratio_min": 1.5538,
+    "est_ratio_max": 2.1427,
+    "est_ratio_stdev": 0.2465,
+    "bt_ratio_mean": 0.9348,
+    "bt_ratio_min": 0.7769,
+    "bt_ratio_max": 1.0713
   },
   "per_workload": {
     "sql_retry": {
       "total": 10,
       "a1_holds": "10/10",
-      "est_ratio_mean": 1.0,
-      "est_ratio_min": 1.0
+      "est_ratio_mean": 1.9125,
+      "est_ratio_min": 1.9125,
+      "est_ratio_max": 1.9125
     },
     "ambig_tool": {
       "total": 10,
       "a1_holds": "10/10",
-      "est_ratio_mean": 1.0,
-      "est_ratio_min": 1.0
+      "est_ratio_mean": 2.1427,
+      "est_ratio_min": 2.1427,
+      "est_ratio_max": 2.1427
     },
     "arg_hallucination": {
       "total": 10,
       "a1_holds": "10/10",
-      "est_ratio_mean": 1.0,
-      "est_ratio_min": 1.0
+      "est_ratio_mean": 1.5538,
+      "est_ratio_min": 1.5538,
+      "est_ratio_max": 1.5538
     }
-  }
+  },
+  "_note": "Regenerated from runs.csv to fix the v62.x staleness bug where this file recorded est_ratio_mean=1.0 while the underlying CSV showed mean=1.87. The CSV is authoritative; this JSON is the summary."
 }
