@@ -1,10 +1,3 @@
-//! Random concurrent workload generator.
-//!
-//! Spawns N tasks, each performs M random operations on its Budget.
-//! Operations: spend, split (recursively spawn child task), merge,
-//! explicit drop. Configurable panic injection to test Drop-on-unwind
-//! preservation.
-
 use crate::budget::Budget;
 use rand::Rng;
 use rand_chacha::ChaCha8Rng;

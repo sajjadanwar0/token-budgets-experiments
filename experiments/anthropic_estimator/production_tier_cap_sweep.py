@@ -1,55 +1,3 @@
-#!/usr/bin/env python3
-"""
-production_tier_cap_sweep.py
-============================
-
-Robustness validation: runs the production-tier agent-loop workload
-across MULTIPLE cap values per model (not just the boundary cap),
-demonstrating that the discipline holds across the full range of
-cap choices, not just at the cherry-picked boundary.
-
-WHY THIS EXISTS:
-The single-cap production-tier validation (cap=1500uc Sonnet,
-cap=600uc gpt-4o) is open to the reviewer attack "you chose caps
-that force mid-loop firing; you engineered the result." This
-sweep counters that attack: across 5 cap values per cell, the
-discipline produces three distinct outcomes:
-
-  - LOW caps (below per-call cost): pre-flight refusal of call 1
-    (cap too tight for any call to succeed)
-  - BOUNDARY caps: mid-loop firing on call 3 or 4
-    (the case the single-cap run already validated)
-  - GENEROUS caps: all calls complete within cap, zero overshoot
-    (the case the original loose-cap pass demonstrated)
-
-The key invariant tested: ZERO cap overshoots across ALL cap
-values. That is the cap-respecting property, demonstrated robustly.
-
-CAPS USED:
-  Anthropic claude-sonnet-4-20250514:
-    cap_micro_cents in {300, 750, 1500, 3000, 6000}
-                       (too-tight, mid-loop, boundary, generous, very generous)
-  OpenAI gpt-4o:
-    cap_micro_cents in {120, 300, 600, 1200, 2400}
-                       (proportionally scaled from gpt-4o's lower per-call cost)
-
-INVOCATION:
-    ANTHROPIC_API_KEY=sk-ant-...  OPENAI_API_KEY=sk-...  \\
-        python tools/production_tier_cap_sweep.py --n 3
-
-EXPECTED COST:
-    5 caps x 2 cells x N=3 = 30 runs. Cost varies by cap value:
-    - Tight caps spend < $0.001 per run
-    - Generous caps spend $0.001-0.003 per run
-    Total estimated cost: $0.10-0.30 at N=3 across all cells.
-
-WALL-CLOCK: ~5-10 minutes.
-
-OUTPUT:
-    production_tier_cap_sweep_results.csv (30 rows, one per execution)
-    production_tier_cap_sweep_summary.json
-"""
-
 import argparse
 import csv
 import json
@@ -72,13 +20,7 @@ except ImportError:
     print("ERROR: pip install openai", file=sys.stderr)
     sys.exit(1)
 
-
-# =============================================================
-# Cap-sweep cell configurations
-# =============================================================
-
 CELLS = []
-# Anthropic Sonnet-4 cap sweep: 300, 750, 1500, 3000, 6000 uc
 for cap in [300, 750, 1500, 3000, 6000]:
     CELLS.append({
         "provider": "anthropic",
@@ -86,7 +28,7 @@ for cap in [300, 750, 1500, 3000, 6000]:
         "workload": "agent_loop",
         "cap_micro_cents": cap,
     })
-# OpenAI gpt-4o cap sweep: 120, 300, 600, 1200, 2400 uc
+
 for cap in [120, 300, 600, 1200, 2400]:
     CELLS.append({
         "provider": "openai",
@@ -94,11 +36,6 @@ for cap in [120, 300, 600, 1200, 2400]:
         "workload": "agent_loop",
         "cap_micro_cents": cap,
     })
-
-
-# =============================================================
-# Workload (identical to production_tier_validation.py)
-# =============================================================
 
 AGENT_LOOP_PROMPT = """You are a debugging agent. The user reports
 a Python script that fails with ImportError: No module named 'foo'.
@@ -121,11 +58,6 @@ PRICING = {
         "output_uc_per_token": 1.0,
     },
 }
-
-
-# =============================================================
-# Budget simulator
-# =============================================================
 
 @dataclass
 class BudgetState:
@@ -382,7 +314,6 @@ def main():
             "total_spent_uc": sum(r.actual_spent_uc for r in rs),
         }
 
-    # Headline
     n_total = len(results)
     n_overshoot = sum(1 for r in results if r.overshoot)
     n_mid_loop = sum(1 for r in results if r.mid_loop_fired)

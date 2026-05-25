@@ -1,7 +1,3 @@
-//! Demo: One Budget bounds spend across BOTH providers in the same session.
-//! Requires: export ANTHROPIC_API_KEY=... AND export OPENAI_API_KEY=...
-//! Run: cargo run --bin demo_multi_provider
-
 use std::error::Error;
 use budget_spike::{
     Budget, CallError, BudgetError,

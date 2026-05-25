@@ -1,32 +1,3 @@
-#!/usr/bin/env python3
-"""
-production_tier_validation.py  (v3 — bugfix for n_completed reference)
-======================================================================
-
-CHANGES FROM v2:
-  v2 crashed in the summary stage with AttributeError because the
-  summary code referenced `r.n_completed` but the dataclass field
-  is `r.n_calls_completed`. The CSV was written correctly before
-  the crash; only the summary JSON computation failed. v3 fixes
-  the field name reference and produces the summary JSON correctly.
-
-  v2 smoke (N=2) confirmed cap calibration is correct:
-    Sonnet-4: 2/2 MID-LOOP fired, 2 calls completed, 429uc spent
-    gpt-4o:   2/2 MID-LOOP fired, 2 calls completed, 223-238uc spent
-
-VALIDATES the Token Budgets discipline on PRODUCTION-TIER LLM models:
-  - Anthropic claude-sonnet-4-20250514  (cap 1500uc = 0.15c)
-  - OpenAI    gpt-4o                    (cap 600uc  = 0.06c)
-
-EXPECTED RESULT WITH v3:
-  Both cells: 10/10 mid-loop fired, 0/10 cap overshoots.
-  Total API cost across both cells: ~$0.02-0.05 at N=10.
-
-INVOCATION:
-    ANTHROPIC_API_KEY=sk-ant-...  OPENAI_API_KEY=sk-...  \\
-        python tools/production_tier_validation.py --n 10
-"""
-
 import argparse
 import csv
 import json
@@ -49,30 +20,20 @@ except ImportError:
     print("ERROR: pip install openai", file=sys.stderr)
     sys.exit(1)
 
-
-# =============================================================
-# Cell configurations
-# =============================================================
-
 CELLS = [
     {
         "provider": "anthropic",
         "model": "claude-sonnet-4-20250514",
         "workload": "agent_loop",
-        "cap_micro_cents": 1_500,  # 0.15c -- calibrated from v1 data
+        "cap_micro_cents": 1_500,
     },
     {
         "provider": "openai",
         "model": "gpt-4o",
         "workload": "agent_loop",
-        "cap_micro_cents": 600,  # 0.06c -- calibrated from v1 data
+        "cap_micro_cents": 600,
     },
 ]
-
-
-# =============================================================
-# Workload
-# =============================================================
 
 AGENT_LOOP_PROMPT = """You are a debugging agent. The user reports
 a Python script that fails with ImportError: No module named 'foo'.
@@ -85,11 +46,6 @@ Provide your fix as 2-3 sentences."""
 
 USER_RETRY_MSG = "That didn't work, try again."
 
-
-# =============================================================
-# Pricing
-# =============================================================
-
 PRICING = {
     "claude-sonnet-4-20250514": {
         "input_uc_per_token": 0.3,
@@ -100,11 +56,6 @@ PRICING = {
         "output_uc_per_token": 1.0,
     },
 }
-
-
-# =============================================================
-# Budget simulator
-# =============================================================
 
 @dataclass
 class BudgetState:
@@ -120,10 +71,6 @@ class BudgetState:
         self.spent_micro_cents += amount
         return True
 
-
-# =============================================================
-# Per-execution result row
-# =============================================================
 
 @dataclass
 class RunResult:
@@ -143,11 +90,6 @@ class RunResult:
     error: Optional[str]
     timestamp: str
     wall_clock_s: float
-
-
-# =============================================================
-# Pre-call cost estimation
-# =============================================================
 
 def estimate_cost_uc(
         provider: str,
@@ -171,11 +113,6 @@ def actual_cost_uc(model: str, input_tokens: int, output_tokens: int) -> int:
         input_tokens * p["input_uc_per_token"]
         + output_tokens * p["output_uc_per_token"]
     )
-
-
-# =============================================================
-# Provider call wrappers
-# =============================================================
 
 def call_anthropic(model: str, messages: list, max_tokens: int = 200):
     client = Anthropic()
@@ -210,11 +147,6 @@ def call_openai(model: str, messages: list, max_tokens: int = 200):
         "input_tokens": usage.prompt_tokens,
         "output_tokens": usage.completion_tokens,
     }
-
-
-# =============================================================
-# Single agent_loop run
-# =============================================================
 
 def run_agent_loop(
         provider: str,
@@ -315,11 +247,6 @@ def run_agent_loop(
         wall_clock_s=round(time.time() - t0, 3),
     )
 
-
-# =============================================================
-# Driver
-# =============================================================
-
 def main():
     parser = argparse.ArgumentParser(
         description="Production-tier validation harness (v3 bugfix)"
@@ -391,10 +318,6 @@ def main():
                 writer.writerow(asdict(r))
         print(f"Wrote {len(results)} rows to {args.output_csv}")
 
-    # =============================================================
-    # BUGFIX: use r.n_calls_completed (dataclass field name),
-    # not r.n_completed (which doesn't exist).
-    # =============================================================
     summary = {}
     for cell in cells_to_run:
         key = f"{cell['provider']}/{cell['model']}"

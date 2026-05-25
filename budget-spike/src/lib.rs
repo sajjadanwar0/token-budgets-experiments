@@ -1,7 +1,3 @@
-//! Token Capabilities: affine resource types for LLM agent budgets.
-//!
-//! Unit convention: 1 micro-cent (uc) = 10^-6 USD. So $1.00 = 1,000,000 uc.
-
 use std::fmt;
 
 pub mod llm_client;
@@ -10,10 +6,6 @@ pub mod receipt;
 
 pub use receipt::{ReservationReceipt, Refund};
 
-/// A finite quota of spendable resource, measured in micro-cents.
-///
-/// Affine: spend() and split() consume self by value and return a new
-/// Budget carrying the remainder. No Clone, no Copy.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Budget {
     micro_cents: u64,
@@ -21,15 +13,8 @@ pub struct Budget {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum BudgetError {
-    /// Reservation exceeds remaining quota; the call should not be issued.
     Insufficient { requested: u64, available: u64 },
-    /// Arithmetic overflow in `merge_checked` or `apply_refund`.
-    /// Should not occur under Assumption A2 (caps below u64::MAX/2);
-    /// surfaced defensively.
     Overflow,
-    /// Provider's reported charge exceeded the reservation, violating
-    /// Assumption A1 (conservative estimator). The receipt is consumed
-    /// and no refund is produced.
     EstimatorViolation { reservation: u64, actual: u64 },
 }
 
@@ -57,20 +42,14 @@ impl fmt::Display for BudgetError {
 impl std::error::Error for BudgetError {}
 
 impl Budget {
-    /// Construct a new Budget with the given quota in micro-cents.
     pub fn new(micro_cents: u64) -> Self {
         Self { micro_cents }
     }
 
-    /// Returns the remaining quota in micro-cents.
     pub fn available(&self) -> u64 {
         self.micro_cents
     }
 
-    /// Spend `amount` micro-cents, returning a new Budget carrying the remainder
-    /// plus the result of the audit-label closure.
-    ///
-    /// Affine: consumes self.
     pub fn spend<L, T>(self, amount: u64, label: L) -> Result<(Budget, T), BudgetError>
     where
         L: FnOnce() -> T,
@@ -86,15 +65,6 @@ impl Budget {
         Ok((remaining, log))
     }
 
-    /// Reserve `amount` micro-cents, returning a successor Budget plus a
-    /// `ReservationReceipt` that must subsequently be `confirm`ed (with
-    /// the actual provider charge) or `forfeit`ed.
-    ///
-    /// This is the refund-aware variant of `spend`. The integrity
-    /// invariant is preserved: the reserved amount is held in the
-    /// receipt, not destroyed.
-    ///
-    /// Affine: consumes self.
     pub fn reserve(self, amount: u64) -> Result<(Budget, ReservationReceipt), BudgetError> {
         if amount > self.micro_cents {
             return Err(BudgetError::Insufficient {
@@ -107,11 +77,6 @@ impl Budget {
         Ok((remaining, receipt))
     }
 
-    /// Apply a refund to this Budget, producing a new Budget with the
-    /// refund amount added back. Returns `BudgetError::Overflow` if
-    /// the addition would exceed `u64::MAX`.
-    ///
-    /// Affine: consumes both self and the refund.
     pub fn apply_refund(self, refund: Refund) -> Result<Budget, BudgetError> {
         let amount = refund.into_amount();
         let total = self.micro_cents
@@ -120,9 +85,6 @@ impl Budget {
         Ok(Budget { micro_cents: total })
     }
 
-    /// Split this Budget into two: returns (remainder, child).
-    /// Child carries `amount` micro-cents; remainder keeps the rest.
-    /// Affine: consumes self.
     pub fn split(self, amount: u64) -> Result<(Budget, Budget), BudgetError> {
         if amount > self.micro_cents {
             return Err(BudgetError::Insufficient {
@@ -135,21 +97,12 @@ impl Budget {
         Ok((remainder, child))
     }
 
-    /// Merge another Budget into this one, consuming both and returning a new one.
-    /// Uses `saturating_add`: capped at `u64::MAX`, never wraps.
-    /// For checked overflow detection, use `merge_checked`.
-    /// Affine: consumes both self and other.
     pub fn merge(self, other: Budget) -> Budget {
         Budget {
             micro_cents: self.micro_cents.saturating_add(other.micro_cents),
         }
     }
 
-    /// Merge another Budget into this one with overflow detection.
-    /// Returns `BudgetError::Overflow` if the sum exceeds `u64::MAX`.
-    /// Use this variant when Assumption A2 cannot be enforced
-    /// statically and overflow detection at the call site is required.
-    /// Affine: consumes both self and other.
     pub fn merge_checked(self, other: Budget) -> Result<Budget, BudgetError> {
         let total = self.micro_cents
             .checked_add(other.micro_cents)
@@ -157,21 +110,16 @@ impl Budget {
         Ok(Budget { micro_cents: total })
     }
 
-    /// Consume the Budget, returning the unspent micro-cents.
     pub fn consume(self) -> u64 {
         self.micro_cents
     }
 }
 
-/// Estimate cost of an LLM call given input/output tokens and combined price-per-Mtoken.
-///
-/// `price_per_mtok` is in micro-cents per million tokens.
 pub fn estimate_cost(input_tokens: u64, max_output_tokens: u64, price_per_mtok: u64) -> u64 {
     let total = input_tokens.saturating_add(max_output_tokens);
     total.saturating_mul(price_per_mtok) / 1_000_000
 }
 
-/// Estimate cost with separate input/output prices (per-token, in micro-cents).
 pub fn estimate_cost_split(
     input_tokens: u64,
     max_output_tokens: u64,
@@ -183,9 +131,6 @@ pub fn estimate_cost_split(
         .saturating_add(max_output_tokens.saturating_mul(output_price_per_token_mc))
 }
 
-// === ASYNC ADDITIONS =========================================================
-
-/// Combined error type for budget-bounded LLM calls.
 #[derive(Debug)]
 pub enum CallError {
     Budget(BudgetError),
@@ -211,11 +156,6 @@ impl From<llm_client::LLMError> for CallError {
     fn from(e: llm_client::LLMError) -> Self { CallError::Llm(e) }
 }
 
-/// Make an LLM call bounded by a Budget.
-///
-/// Conservative semantics: worst-case cost is reserved upfront. If reservation
-/// fails, no API call is made. If reservation succeeds but the API call fails,
-/// the budget is NOT refunded.
 pub async fn call_with_budget<C: llm_client::LLMClient + ?Sized>(
     client: &C,
     budget: Budget,
@@ -234,13 +174,6 @@ pub async fn call_with_budget<C: llm_client::LLMClient + ?Sized>(
     Ok((remaining, resp))
 }
 
-/// Refund-aware variant of `call_with_budget`.
-///
-/// Reserves worst-case cost upfront. If the call succeeds and the
-/// provider reports an actual cost below the reservation, the refund
-/// is applied back to the successor budget. If the call fails, the
-/// reservation is forfeited (no refund possible without a
-/// provider-reported charge).
 pub async fn call_with_budget_refund<C: llm_client::LLMClient + ?Sized>(
     client: &C,
     budget: Budget,
@@ -262,10 +195,7 @@ pub async fn call_with_budget_refund<C: llm_client::LLMClient + ?Sized>(
             return Err(e.into());
         }
     };
-    // Compute the actual charge from the response. For now we use
-    // the response's reported usage, falling back to the reservation
-    // if the response doesn't report it. Providers that don't report
-    // per-call cost cannot benefit from refunds.
+
     let actual = resp.actual_cost_micro_cents;
     match receipt.confirm(actual) {
         Ok(None) => {} // exact match

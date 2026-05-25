@@ -1,26 +1,9 @@
-#!/usr/bin/env python3
-"""
-adaptive_vs_static_eval.py
-
-Live-API head-to-head between Static AnthropicEstimator (2.0x byte-length
-margin) and Adaptive byte-length estimator (epsilon-padded observed_max).
-
-Output:
-  multiway/sweep_results/adaptive_vs_static_results.csv
-  multiway/sweep_results/adaptive_vs_static_summary.csv
-
-Requirements:
-  pip install anthropic
-  export ANTHROPIC_API_KEY=...
-"""
-
 import csv
 import json
 import os
 import statistics
 import sys
 import time
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -104,26 +87,18 @@ ALL_PROMPTS = (
         + [("dense_text", p) for p in DENSE_TEXT_PROMPTS]
 )
 
-
-# =========================================================================
-# Estimator implementations (Python ports matching the Rust crate)
-# =========================================================================
-
 class StaticAnthropicEstimator:
-    """ByteLength * STATIC_MARGIN. Matches token-budgets/src/estimator.rs."""
     name = "static_2.0x"
     def estimate(self, prompt: str) -> int:
         return int(len(prompt) * STATIC_MARGIN)
 
 
 class AdaptiveEstimator:
-    """Monotonically-upward observed_max with epsilon padding.
-    Matches token-budgets-extensions/src/adaptive.rs."""
     name = "adaptive_eps_0.10"
     def __init__(self, epsilon: float = ADAPTIVE_EPSILON):
         assert 0.0 <= epsilon < 1.0
         self.epsilon = epsilon
-        self.observed_max: float = 1.0  # starts at 1.0; first calls use bytelen + epsilon
+        self.observed_max: float = 1.0
         self.call_count = 0
 
     def estimate(self, prompt: str) -> int:
@@ -136,11 +111,6 @@ class AdaptiveEstimator:
         if ratio > self.observed_max:
             self.observed_max = ratio
         self.call_count += 1
-
-
-# =========================================================================
-# API call helpers
-# =========================================================================
 
 def call_with_retry(client, prompt):
     for attempt, backoff in enumerate([0] + OVERLOAD_BACKOFF_S):
@@ -161,15 +131,9 @@ def call_with_retry(client, prompt):
 
 
 def reserve_uc(prompt: str, estimator) -> Tuple[int, int]:
-    """Returns (estimated_input_tokens, reserved_uc)."""
     est_input_tok = estimator.estimate(prompt)
     reserved = est_input_tok * INPUT_RATE_UC_PER_TOK + MAX_OUTPUT_TOKENS * OUTPUT_RATE_UC_PER_TOK
     return est_input_tok, reserved
-
-
-# =========================================================================
-# Main loop
-# =========================================================================
 
 def main():
     if "ANTHROPIC_API_KEY" not in os.environ:
@@ -199,7 +163,6 @@ def main():
             prompt_chars = len(prompt)
             print(f"[{prompt_id+1:2d}/{len(ALL_PROMPTS)}] {category}: ", end="", flush=True)
 
-            # Call once to get actual usage (both estimators use same usage)
             try:
                 resp = call_with_retry(client, prompt)
             except Exception as e:
@@ -213,7 +176,6 @@ def main():
                     + actual_output_tokens * OUTPUT_RATE_UC_PER_TOK
             )
 
-            # Static reservation (no state update)
             _, static_reserved = reserve_uc(prompt, static_est)
             static_eff_margin = static_reserved / billed_uc if billed_uc > 0 else 0
             static_row = {
@@ -231,7 +193,6 @@ def main():
             writer.writerow(static_row)
             all_rows.append(static_row)
 
-            # Adaptive: reserve BEFORE update, then record observation
             _, adaptive_reserved = reserve_uc(prompt, adaptive_est)
             adaptive_est.record(prompt_chars, actual_input_tokens)
             adaptive_eff_margin = adaptive_reserved / billed_uc if billed_uc > 0 else 0
@@ -257,7 +218,6 @@ def main():
                 f"obs_max={adaptive_est.observed_max:.3f}"
             )
 
-    # Summary stats
     by_est: Dict[str, List[dict]] = {}
     for r in all_rows:
         by_est.setdefault(r["estimator"], []).append(r)

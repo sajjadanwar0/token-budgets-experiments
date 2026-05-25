@@ -1,63 +1,3 @@
-//! tc_live_harness.rs - Rust-side replacement for the Python TC simulator
-//! row in Section V.D of the paper.
-//!
-//! This binary drives the actual Rust `Budget` discipline against real LLM
-//! provider APIs (OpenAI, Anthropic, Groq) and a local OpenAI-compatible
-//! endpoint (Ollama) using the byte-length estimator over full message
-//! bodies. It produces a CSV in the same column format as the Python
-//! harness's `multiway_compare.py`, with additional per-call detail
-//! columns for utilization analysis.
-//!
-//! v32 patch: added per-call detail accumulators (sum_input_tokens,
-//! sum_output_tokens, sum_byte_length_estimate, sum_reservation_uc,
-//! sum_actual_cost_uc) plus a workload column, so the effective_utilization.py
-//! aggregator can compute input/output/dollar utilization and the
-//! byte-to-token ratio. All existing columns are preserved in their original
-//! positions; new columns are appended after wall_seconds.
-//!
-//! v33 patch: added "ollama" provider for local llama3.2 inference via
-//! Ollama's OpenAI-compatible endpoint at http://localhost:11434/v1. The
-//! provider has operator-set pricing (no real billing) so the cap
-//! arithmetic exercises the discipline in the same shape as paid
-//! providers. No API key is required; a placeholder string is supplied
-//! so the OpenAI-compatible code path has a non-empty Authorization header.
-//!
-//! v33.1: model name updated to `llama3.2:latest` to match the standard
-//! Ollama pull tag (`ollama pull llama3.2` produces `llama3.2:latest`,
-//! not `llama3.2:3b`). The model is the 3.2B Q4_K_M variant regardless.
-//!
-//! v34 patch: anthropic-sonnet support. Adds a second Anthropic pricing
-//! row for claude-sonnet-4-5 ($3/Mtok input, $15/Mtok output) plus a
-//! model selector. The default "anthropic" provider continues to use
-//! haiku-4-5; "anthropic-sonnet" uses sonnet-4-5 at sonnet rates. This
-//! enables model-parity replication of the Anthropic cross-provider
-//! comparison (paper §5.7 / Table 9): baselines run on sonnet via
-//! multiway_compare.py and TB now runs on the same model, removing the
-//! haiku-vs-sonnet methodological confound.
-//!
-//! Build:
-//!     cargo build --release --bin tc_live_harness
-//!
-//! Run (live providers, requires API keys):
-//!     export OPENAI_API_KEY=sk-...
-//!     export ANTHROPIC_API_KEY=sk-ant-...
-//!     export GROQ_API_KEY=gsk_...
-//!     ./target/release/tc_live_harness \
-//!         --provider openai --runs 10 --workload lang001 \
-//!         --cap-uc 540 --output-csv tc_rust_openai_lang001_n10.csv
-//!
-//! Run (local Ollama, no API key needed; requires `ollama serve` running
-//! and `ollama pull llama3.2`):
-//!     ./target/release/tc_live_harness \
-//!         --provider ollama --runs 10 --workload lang001 \
-//!         --cap-uc 150 --output-csv tc_rust_ollama_lang001_n10.csv
-//!
-//! Output CSV columns (existing + new appended):
-//!     runtime,run_id,provider,outcome,agent_steps,cap_uc,total_spent_uc,
-//!     pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,
-//!     wall_seconds,workload,actual_input_tokens,actual_output_tokens,
-//!     byte_length_estimate,reservation_uc,actual_cost_uc
-
 use std::env;
 use std::fs::File;
 use std::io::Write;
@@ -67,23 +7,14 @@ use serde::{Deserialize, Serialize};
 
 use budget_spike::Budget;
 
-// =============================================================================
-// Provider pricing (micro-cents per token, kept consistent with the Python
-// harness's PROVIDER_PRICING table to ensure cross-harness comparability).
-// =============================================================================
-
 #[derive(Clone, Copy, Debug)]
 struct Pricing {
-    input_per_token_uc_per_million: u64,  // e.g. 150 means $0.15 per Mtok
+    input_per_token_uc_per_million: u64,
     output_per_token_uc_per_million: u64,
 }
 
 impl Pricing {
     fn cost_uc(&self, in_tok: u64, out_tok: u64) -> u64 {
-        // Saturating arithmetic at every step. Pricing is (uc per Mtok),
-        // so cost in uc = (tokens * uc_per_Mtok + 999_999) / 1_000_000
-        // for ceiling, but we use integer round-half-up which matches the
-        // Python harness's `round()` behaviour.
         let in_uc = in_tok.saturating_mul(self.input_per_token_uc_per_million);
         let out_uc = out_tok.saturating_mul(self.output_per_token_uc_per_million);
         let total = in_uc.saturating_add(out_uc);
@@ -101,8 +32,7 @@ fn pricing_for(provider: &str) -> Pricing {
             input_per_token_uc_per_million: 1_000_000,
             output_per_token_uc_per_million: 5_000_000,
         },
-        // Sonnet 4.5 standard-tier rates: $3/Mtok input, $15/Mtok output
-        // (3x haiku's rates).
+
         "anthropic-sonnet" => Pricing {
             input_per_token_uc_per_million: 3_000_000,
             output_per_token_uc_per_million: 15_000_000,
@@ -111,10 +41,6 @@ fn pricing_for(provider: &str) -> Pricing {
             input_per_token_uc_per_million: 590_000,
             output_per_token_uc_per_million: 790_000,
         },
-        // Operator-set rates for local Ollama. The real inference cost is
-        // $0 since it runs locally; these rates exist solely so the cap
-        // arithmetic exercises the discipline in the same shape as paid
-        // providers. Magnitudes are deliberately cheap-of-Groq.
         "ollama" => Pricing {
             input_per_token_uc_per_million: 50_000,
             output_per_token_uc_per_million: 100_000,
@@ -136,10 +62,6 @@ fn model_for(provider: &str) -> &'static str {
         _ => panic!("unknown provider: {}", provider),
     }
 }
-
-// =============================================================================
-// Common chat types (provider-agnostic; serialised differently per provider).
-// =============================================================================
 
 #[derive(Clone, Debug)]
 struct ChatMessage {
@@ -163,8 +85,6 @@ struct ToolDef {
     parameters_schema_json: &'static str,
 }
 
-// Byte-length estimator: sum of UTF-8 bytes of all message contents and
-// tool definitions plus a 64-byte slack per message for envelope overhead.
 fn estimate_input_bytes(messages: &[ChatMessage], tools: &[ToolDef]) -> u64 {
     let mut total: u64 = 0;
     for m in messages {
@@ -188,10 +108,6 @@ fn estimate_input_bytes(messages: &[ChatMessage], tools: &[ToolDef]) -> u64 {
     total
 }
 
-// =============================================================================
-// HTTP layer: provider-specific request/response (OpenAI, Anthropic, Groq,
-// Ollama). Ollama uses the OpenAI-compatible code path.
-// =============================================================================
 
 #[derive(Debug)]
 struct ChatResult {
@@ -226,8 +142,6 @@ async fn chat_call(
         _ => Err(format!("unknown provider: {}", provider)),
     }
 }
-
-// ----- OpenAI / Groq / Ollama (OpenAI-compatible) -------------------------
 
 #[derive(Serialize)]
 struct OAIRequest<'a> {
@@ -404,8 +318,6 @@ async fn openai_compat_call(
     })
 }
 
-// ----- Anthropic -----------------------------------------------------------
-
 #[derive(Serialize)]
 struct AntRequest<'a> {
     model: &'a str,
@@ -467,8 +379,6 @@ async fn anthropic_call(
     tools: &[ToolDef],
     max_output_tokens: u64,
 ) -> Result<ChatResult, String> {
-    // Backwards-compat wrapper preserving the v33 signature; delegates to
-    // model-parameterised v34 implementation with default haiku model.
     anthropic_call_with_model(
         model_for("anthropic"),
         api_key, messages, tools, max_output_tokens
@@ -584,12 +494,6 @@ async fn anthropic_call_with_model(
     })
 }
 
-// =============================================================================
-// Workload definitions: each workload is a (system, user, tools, error_for)
-// quadruple, where error_for(tool_call) returns the canned tool error that
-// drives the retry loop.
-// =============================================================================
-
 struct Workload {
     name: &'static str,
     system: &'static str,
@@ -665,15 +569,6 @@ fn workload_for(name: &str) -> Workload {
     }
 }
 
-// =============================================================================
-// Per-run TC discipline: estimate cost, attempt budget.spend, make API call,
-// track actual cost, append response, repeat until completion or refusal.
-//
-// v32 patch: per-call sums (input_tokens, output_tokens, byte_length_estimate,
-// reservation_uc, actual_cost_uc) accumulated across successful network calls
-// in this run, exposed in the CSV for utilization analysis.
-// =============================================================================
-
 #[derive(Debug)]
 struct RunRecord {
     outcome: String,
@@ -682,7 +577,6 @@ struct RunRecord {
     cap_uc: u64,
     overshoot_uc: u64,
     wall_seconds: f64,
-    // v32 detail accumulators (sums over successful calls in this run)
     sum_input_tokens: u64,
     sum_output_tokens: u64,
     sum_byte_length_estimate: u64,
@@ -738,13 +632,6 @@ async fn run_tc_once(
             }
             Ok((b, _)) => b,
         };
-        // Spend succeeded: reservation was deducted from the budget. We
-        // pair byte_length_estimate and reservation_uc with input_tokens
-        // and actual_cost_uc on the same call, so we accumulate these
-        // four jointly only after the network call returns successfully.
-        // (If the network call fails post-spend, the reservation is gone
-        // but we have no actual_cost to pair with it; we track this gap
-        // implicitly via total_spent_uc < sum_reservation_uc.)
 
         let result = match chat_call(provider, api_key, &messages, &workload.tools, MAX_OUTPUT_TOKENS).await {
             Ok(r) => r,
@@ -754,7 +641,6 @@ async fn run_tc_once(
             }
         };
 
-        // Network call succeeded; accumulate per-call detail.
         sum_byte_length_estimate = sum_byte_length_estimate.saturating_add(est_input_bytes);
         sum_reservation_uc = sum_reservation_uc.saturating_add(est_uc);
         sum_input_tokens = sum_input_tokens.saturating_add(result.input_tokens);
@@ -808,10 +694,6 @@ async fn run_tc_once(
     }
 }
 
-// =============================================================================
-// CLI
-// =============================================================================
-
 struct Args {
     provider: String,
     workload: String,
@@ -849,9 +731,6 @@ fn parse_args() -> Args {
 }
 
 fn api_key_for(provider: &str) -> Result<String, String> {
-    // Ollama runs locally and doesn't authenticate; return a placeholder
-    // so the OpenAI-compatible code path has a non-empty Authorization
-    // header.
     if provider == "ollama" {
         return Ok("ollama".to_string());
     }
@@ -900,9 +779,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         rows.push((run_id, rec));
     }
 
-    // CSV: existing columns preserved in original positions; v32 adds
-    // workload + 5 detail columns at end. Column order is documented in
-    // the file header.
     let mut f = File::create(&args.output_csv)?;
     writeln!(
         f,

@@ -1,33 +1,3 @@
-#!/usr/bin/env python3
-"""
-adversarial_margin_sweep.py - Margin sensitivity under adversarial conditions.
-
-Sweeps 5 margins x 7 adversarial prompt classes from §V.27, measuring
-whether A1 (estimator soundness) holds at each margin per class.
-
-Cost is minimal: each trial calls messages.count_tokens(max_tokens=1) to
-get the provider-billed input token count, then compares against
-byte_length * margin. No messages.create calls, no output billing.
-
-For each (margin, class) cell:
-    predicted_input_uc = byte_length(request_body) * margin
-    actual_input_uc    = count_tokens.input_tokens
-    A1 holds iff predicted_input_uc >= actual_input_uc
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-    cd ~/tb-reproduce/token-budgets-experiments/
-
-    # Sanity (1 margin x 7 classes x N=1, ~$0.05)
-    python3 adversarial_margin_sweep.py --margins 2.0 --n-trials 1 \\
-        --output /tmp/adv_margin_sanity.csv
-
-    # Full sweep: 5 margins x 7 classes x N=5 = 175 trials, ~$0.50
-    python3 adversarial_margin_sweep.py --margins 1.0 1.5 2.0 2.5 3.0 \\
-        --n-trials 5 --output sweep_results/adversarial_margin_sweep.csv
-"""
-
 import argparse
 import csv
 import json
@@ -35,16 +5,10 @@ import math
 import os
 import sys
 import time
-
 from anthropic import Anthropic
 
 ANTHROPIC_HAIKU_4_5 = "claude-haiku-4-5-20251001"
 PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
-
-
-# ---------------------------------------------------------------------------
-# Adversarial prompt classes (from §V.27)
-# ---------------------------------------------------------------------------
 
 def make_large_tool_def():
     """4,000-character description + 20 nested arguments."""

@@ -1,58 +1,3 @@
-#!/usr/bin/env python3
-"""Expanded mid-loop boundary sweep using tc_live_harness from budget-spike.
-
-This wrapper invokes the Rust tc_live_harness binary once per (provider,
-workload, cap) cell, asking it to run N runs internally and emit a CSV.
-We then aggregate per-cell CSVs into a summary.
-
-The harness accepts these flags (matching budget-spike/bin/tc_live_harness.rs):
-    --provider {openai|anthropic|groq|ollama}
-    --workload {lang001|clarification|arg_hallucination}
-    --runs N
-    --cap-uc UC
-    --output-csv FILE
-
-Model, pricing, temperature, max_output_tokens are all hardcoded inside
-the harness. The Python wrapper does not pass them; it only chooses
-provider, workload, cap, and run count per cell.
-
-Provider matrix (4 providers x 3 workloads x 50 runs = 600 mid-loop target):
-  1. OpenAI gpt-4o-mini       (paid, ~$0.005 total)
-  2. Anthropic claude-haiku-4.5 (paid, ~$0.14 total)
-  3. Groq llama-3.3-70b        (paid but very cheap, <$0.02)
-  4. Ollama llama3.2:latest    (local, free; 3.2B Q4_K_M variant)
-
-NOTE: delegation_fanout was dropped because the Rust harness only ships
-the original three workloads; adding delegation_fanout is a Rust task
-beyond the scope of this sweep.
-
-Repository layout assumed:
-    ~/RustroverProjects/token-budgets-experiments/   <- this repo
-        budget-spike/                                <- harness lives here
-            target/release/tc_live_harness
-        tools/expanded_sweep.py                      <- this file
-
-Usage:
-    # Build the harness:
-    cd budget-spike && cargo build --release --bin tc_live_harness
-    cd ..
-
-    # Paid APIs:
-    export OPENAI_API_KEY=...
-    export ANTHROPIC_API_KEY=...
-    export GROQ_API_KEY=...
-
-    # Local Ollama: must be running with llama3.2 pulled:
-    #   ollama serve   (in another terminal)
-    #   ollama pull llama3.2    (creates llama3.2:latest tag)
-    #   ollama list             (verify llama3.2:latest is present)
-
-    python tools/expanded_sweep.py --output sweep_results_expanded/
-
-    # Or just re-run Ollama after fixing the model tag:
-    python tools/expanded_sweep.py --providers ollama --output sweep_ollama_retry/
-"""
-
 import argparse
 import csv
 import json
@@ -62,18 +7,12 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
-
-
-# ===============================================================
-# Provider configurations
-# ===============================================================
-# Caps are per-workload starting points; tune after a calibration pass.
+from typing import Dict, List
 
 @dataclass
 class ProviderConfig:
-    name: str               # must match the harness's --provider values
-    is_local: bool = False  # purely for cost reporting
+    name: str
+    is_local: bool = False
     caps_per_workload: Dict[str, int] = field(default_factory=dict)
 
 
@@ -114,15 +53,10 @@ PROVIDERS = [
 ]
 
 WORKLOADS = ["lang001", "clarification", "arg_hallucination"]
-N_RUNS_PER_CELL = 50   # 4 providers x 3 workloads x 50 = 600 runs total
+N_RUNS_PER_CELL = 50
 
-
-# ===============================================================
-# Pre-flight checks
-# ===============================================================
 
 def check_ollama_available() -> bool:
-    """Verify ollama is running at localhost:11434 and llama3.2 is pulled."""
     try:
         import urllib.request
         with urllib.request.urlopen(
@@ -143,7 +77,6 @@ def check_ollama_available() -> bool:
 
 
 def preflight(providers: List[ProviderConfig]) -> bool:
-    """Verify all required prerequisites are present."""
     env_vars = {
         "openai":    "OPENAI_API_KEY",
         "anthropic": "ANTHROPIC_API_KEY",
@@ -161,23 +94,7 @@ def preflight(providers: List[ProviderConfig]) -> bool:
                 ok = False
     return ok
 
-
-# ===============================================================
-# Cell runner: invoke tc_live_harness once per cell, parse output CSV
-# ===============================================================
-
 def categorize_row(row: Dict[str, str]) -> str:
-    """Map a harness CSV row to one of:
-        pre_flight_refused  - spend failed before any successful API call
-        mid_loop_fired      - spend failed AFTER at least one successful call
-        completed           - finished without hitting cap
-        self_terminated     - max_agent_steps_reached
-        api_error           - network or API error
-
-    Distinguishing pre_flight vs mid_loop uses agent_steps:
-        compile_time_reservation_refused + agent_steps == 0 -> pre_flight
-        compile_time_reservation_refused + agent_steps >= 1 -> mid_loop
-    """
     outcome = row["outcome"]
     try:
         steps = int(row["agent_steps"])
@@ -203,8 +120,6 @@ def run_cell(
         output_dir: Path,
         harness_path: str,
 ) -> Dict:
-    """Invoke tc_live_harness for one cell (one subprocess call, N internal
-    runs), then parse the harness's output CSV into a summary dict."""
 
     cell_csv = output_dir / f"{provider.name}_{workload}_n{n_runs}.csv"
     summary = {
@@ -233,9 +148,8 @@ def run_cell(
         "--cap-uc",   str(cap_uc),
         "--output-csv", str(cell_csv),
     ]
-    # Generous timeout: ollama can be slow, especially on CPU.
-    # 50 runs of 30s each = ~25 min worst case; allow 90 min headroom.
-    per_cell_timeout = 5400  # 90 min
+
+    per_cell_timeout = 5400
 
     try:
         result = subprocess.run(
@@ -299,11 +213,6 @@ def run_cell(
           f"overshoot={summary['overshoot_runs']}")
     return summary
 
-
-# ===============================================================
-# Main driver
-# ===============================================================
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="sweep_results_expanded/",
@@ -359,7 +268,6 @@ def main():
     print(f"Total runs:   {total_cells * n_runs}")
     print(f"Calibration:  {args.calibration}")
 
-    # Run all cells
     all_summaries: List[Dict] = []
     cell_i = 0
     for provider in providers:
@@ -372,14 +280,12 @@ def main():
             )
             all_summaries.append(summary)
 
-    # Aggregate summary CSV
     summary_csv = output_dir / "summary.csv"
     with open(summary_csv, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=all_summaries[0].keys())
         writer.writeheader()
         writer.writerows(all_summaries)
 
-    # Aggregate numbers
     total_runs          = sum(s["n_runs"] for s in all_summaries)
     total_mid_loop      = sum(s["mid_loop_fired"] for s in all_summaries)
     total_pre_flight    = sum(s["pre_flight_refused"] for s in all_summaries)
@@ -401,7 +307,6 @@ def main():
     print(f"Per-cell CSVs:        {output_dir}/<provider>_<workload>_n*.csv")
     print(f"Aggregate summary:    {output_dir}/summary.csv")
 
-    # Paper insert text
     paper_blurb = output_dir / "paper_insert.md"
     with open(paper_blurb, "w") as f:
         f.write("## Expanded mid-loop campaign - paper insert\n\n")

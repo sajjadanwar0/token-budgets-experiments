@@ -1,17 +1,4 @@
 #!/usr/bin/env bash
-# fill_groq_arg_halluc.sh
-#
-# Re-runs the Groq arg_hallucination cell with rate-limit backoff to
-# replace the N=2 row in §V-M Table XVII. The original v33 sweep had
-# 8 of 10 runs hit a Groq-side HTTP 429 rate limit; this script paces
-# the runs with sleep between them to avoid the rate limit and produces
-# a clean N=10 cell.
-#
-# Pre-requisites:
-#   - patched tc_live_harness binary
-#   - export GROQ_API_KEY=gsk_...
-#
-# Cost: ~$0.05 across 10 runs.
 
 set -e
 
@@ -31,11 +18,6 @@ fi
 
 mkdir -p "$OUT_DIR"
 
-# Run one run at a time with 30s pacing to avoid rate-limit storms.
-# (The harness as currently written runs N=10 within a single invocation
-# back-to-back, which trips Groq's per-key rate limit on tool-call workloads.
-# Inverting the loop puts the pacing at the run boundary.)
-
 for run_id in 1 2 3 4 5 6 7 8 9 10; do
   echo "==== groq / arg_hallucination / cap=540 / run $run_id ===="
   "$HARNESS" \
@@ -47,7 +29,6 @@ for run_id in 1 2 3 4 5 6 7 8 9 10; do
   fi
 done
 
-# Concatenate into a single N=10 file matching the v33 schema
 HEAD_FILE="$OUT_DIR/tc_rust_groq_arg_hallucination_run1.csv"
 OUT_FILE="$OUT_DIR/tc_rust_groq_arg_hallucination_n10.csv"
 head -1 "$HEAD_FILE" > "$OUT_FILE"

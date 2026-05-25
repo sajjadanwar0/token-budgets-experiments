@@ -1,7 +1,3 @@
-//! Head-to-head benchmark: Token Budgets affine discipline vs.
-//! `governor` rate-limiter. Same workload, both libraries, measure
-//! per-operation latency, throughput, and memory footprint.
-
 use token_budgets::Budget;
 use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use governor::{Quota, RateLimiter};
@@ -93,14 +89,12 @@ fn bench_sequence_100(c: &mut Criterion) {
 }
 
 fn bench_memory_footprint(c: &mut Criterion) {
-    // Measure size_of_val for both types
     let budget = B::new(1_000_000).unwrap();
     let limiter = RateLimiter::direct(Quota::per_second(nonzero!(1_000_000u32)));
 
     println!("\n=== Memory footprint ===");
     println!("Budget<1_000_000>:     {} bytes", std::mem::size_of_val(&budget));
     println!("governor::RateLimiter: {} bytes", std::mem::size_of_val(&limiter));
-    // Note: governor stores GCRA state and clock; Budget stores only u64.
 
     let _ = c.bench_function("noop", |b| b.iter(|| 1));
 }

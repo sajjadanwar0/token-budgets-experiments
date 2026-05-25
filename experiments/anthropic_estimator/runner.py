@@ -1,79 +1,3 @@
-#!/usr/bin/env python3
-"""
-AnthropicEstimator A1 validation harness — CORRECTED v3.
-
-WHAT v1 AND v2 GOT WRONG
-========================
-Both prior versions labeled `count_tokens` API output as the "estimator
-output". That validates Anthropic's count_tokens endpoint against
-Anthropic's usage.input_tokens field, which are two views of the same
-tokenizer and will always agree. v1 produced est_ratio=1.0 with stdev 0
-across 30 runs (an identity, not a result). v2 only fixed the count_tokens
-arguments; it did not address the deeper bug that count_tokens is not the
-estimator.
-
-WHAT THE PAPER ACTUALLY SHIPS
-=============================
-From token-budgets/src/estimator.rs lines 217-223:
-
-    impl<E: TokenEstimator> TokenEstimator for AnthropicEstimator<E> {
-        fn estimate(&self, prompt: &str) -> u64 {
-            let raw = self.base.estimate(prompt);          // ByteLength by default
-            ((raw as f64) * self.safety_margin).ceil() as u64   // margin = 2.0 by default
-        }
-    }
-
-With `base = ByteLength` and `safety_margin = 2.0` (the defaults):
-
-    AnthropicEstimator::estimate(prompt) == ceil(len(prompt_bytes) * 2.0)
-
-By convention (§5.20 of the paper), `prompt` is the FULL UTF-8-serialised
-request body: system + user + tool descriptions + history. The deployed
-budget uses this serialization when reserving against the cap.
-
-WHAT THIS HARNESS DOES
-======================
-For each of 30 runs (3 workloads × 10 iterations):
-
-  1. Build the request body the API call will use.
-  2. Serialize it to JSON, measure UTF-8 byte length.
-  3. Compute estimate = ceil(byte_length * 2.0). This is what
-     AnthropicEstimator::estimate would return on this prompt.
-  4. Make the actual API call.
-  5. Read usage.input_tokens from the response (this is the billed value
-     the cap must upper-bound).
-  6. A1 holds iff estimate >= actual.
-
-OPTIONAL DIAGNOSTIC COLUMN
-==========================
-We also record count_tokens output in `count_tokens_check`. This is NOT
-part of the A1 validation; it is a diagnostic that lets a reader verify
-Anthropic's claim that count_tokens equals usage.input_tokens. If those
-disagree by more than a few percent on any row, that is a separate finding
-about Anthropic's tooling, independent of A1.
-
-EXPECTED SHAPE OF RESULTS
-=========================
-A correct run should show:
-
-  * estimator_output_tokens ≈ 2 × prompt_bytes (not equal to actual!)
-  * est_ratio in the 1.5x–2.5x range on typical workloads, NOT exactly 1.0
-  * Non-zero stdev across the 30 runs
-  * count_tokens_check ≈ actual_input_tokens (within Anthropic's own
-    tokenizer's determinism)
-
-If you see est_ratio = 1.0 exactly across all runs, the harness is still
-wrong. If you see est_ratio < 1.0, those are real A1 violations and they
-matter — they say the 2.0× margin is insufficient for that workload.
-
-USAGE
-=====
-  export ANTHROPIC_API_KEY=sk-ant-...
-  python3 runner.py
-
-Cost: ~$0.05 total (30 messages.create calls plus 30 count_tokens calls).
-"""
-
 import csv
 import json
 import math
@@ -90,24 +14,17 @@ except ImportError:
     print("ERROR: pip install anthropic", file=sys.stderr)
     sys.exit(1)
 
-# === Configuration ===
-
 MODEL = "claude-haiku-4-5"
 MAX_OUTPUT_TOKENS = 200
 RUNS_PER_WORKLOAD = 10
 WORKLOADS = ["sql_retry", "ambig_tool", "arg_hallucination"]
 TOTAL_RUNS = RUNS_PER_WORKLOAD * len(WORKLOADS)
 
-# These are the AnthropicEstimator defaults (token-budgets/src/estimator.rs).
-# If you change them in the Rust code, change them here too.
 SAFETY_MARGIN = 2.0
 BASE_ESTIMATOR_NAME = "ByteLength"
 
 OUTPUT_DIR = Path("results")
 OUTPUT_DIR.mkdir(exist_ok=True)
-
-
-# === Workload definitions ===
 
 SQL_RETRY_TOOLS = [{
     "name": "execute_sql",
@@ -205,62 +122,39 @@ class RunRecord:
     run_id: str
     workload: str
     iteration: int
-    prompt_bytes: int                # UTF-8 bytes of the serialised request body
-    estimator_output_tokens: int     # AnthropicEstimator::estimate output:
-    # ceil(prompt_bytes * SAFETY_MARGIN)
-    actual_input_tokens: int         # usage.input_tokens from the live API
+    prompt_bytes: int
+    estimator_output_tokens: int
+    actual_input_tokens: int
     actual_output_tokens: int
-    count_tokens_check: int          # count_tokens output, DIAGNOSTIC ONLY
-    a1_holds: bool                   # estimator_output >= actual_input?
-    bt_ratio: float                  # prompt_bytes / actual_input
-    # (byte_length sufficiency without margin)
-    est_ratio: float                 # estimator_output / actual_input
-    # (the headline number: > 1.0 means A1 holds)
-    safety_margin: float             # SAFETY_MARGIN, recorded per-row for audit
+    count_tokens_check: int
+    a1_holds: bool
+    bt_ratio: float
+    est_ratio: float
+    safety_margin: float
     error: str = ""
 
 
 def serialize_request_body(prompt_text: str, tools: list) -> str:
-    """
-    The exact serialization the deployed budget would compute byte_length
-    against. Mirrors the convention in §5.20 of the paper: full UTF-8
-    JSON of the request body. Field ordering is fixed for reproducibility.
-    """
     payload = {
         "model": MODEL,
         "max_tokens": MAX_OUTPUT_TOKENS,
         "tools": tools,
         "messages": [{"role": "user", "content": prompt_text}],
     }
-    # sort_keys for deterministic byte_length across runs
+
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
 def anthropic_estimator_estimate(prompt_bytes: int, margin: float = SAFETY_MARGIN) -> int:
-    """
-    Mirrors the Rust AnthropicEstimator<ByteLength>::estimate method exactly.
-    From token-budgets/src/estimator.rs:217-223:
-
-        ((raw as f64) * self.safety_margin).ceil() as u64
-
-    The Rust `raw` comes from `ByteLength::estimate(prompt)` which is the
-    UTF-8 byte length of the prompt string. We compute byte_length on the
-    serialized request body in serialize_request_body() and pass it here.
-    """
     return math.ceil(prompt_bytes * margin)
 
 
 def run_one(workload: str, iteration: int, client: anthropic.Anthropic) -> RunRecord:
     prompt_text, tools = WORKLOAD_SPECS[workload]
-
-    # 1. Build the request body the deployed budget would see.
     request_body = serialize_request_body(prompt_text, tools)
     prompt_bytes = len(request_body.encode("utf-8"))
-
-    # 2. Compute the estimator output the way Rust does. NO API CALL.
     est_tokens = anthropic_estimator_estimate(prompt_bytes, SAFETY_MARGIN)
 
-    # 3. (DIAGNOSTIC ONLY) capture count_tokens to compare against billing.
     try:
         ct_resp = client.messages.count_tokens(
             model=MODEL,
@@ -285,7 +179,6 @@ def run_one(workload: str, iteration: int, client: anthropic.Anthropic) -> RunRe
             error=f"count_tokens: {type(e).__name__}: {e}",
         )
 
-    # 4. Make the actual API call. usage.input_tokens is what billing uses.
     try:
         response = client.messages.create(
             model=MODEL,
@@ -312,7 +205,6 @@ def run_one(workload: str, iteration: int, client: anthropic.Anthropic) -> RunRe
             error=f"api: {type(e).__name__}: {e}",
         )
 
-    # 5. Compute the headline metrics.
     a1_holds = est_tokens >= actual_input
     bt_ratio = prompt_bytes / actual_input if actual_input > 0 else 0.0
     est_ratio = est_tokens / actual_input if actual_input > 0 else 0.0
@@ -371,7 +263,6 @@ def main():
             records.append(rec)
             time.sleep(0.5)
 
-    # Write per-run CSV.
     csv_path = OUTPUT_DIR / "runs.csv"
     with open(csv_path, "w", newline="") as f:
         if records:
@@ -382,7 +273,6 @@ def main():
                 writer.writerow(asdict(r))
     print(f"\nResults written to {csv_path}")
 
-    # Compute summary statistics.
     valid = [r for r in records if not r.error]
     if not valid:
         print("\n!!! No valid runs; check API key and connectivity.")
@@ -439,7 +329,6 @@ def main():
           f"{ct_matches}/{len(valid)} rows "
           f"(Anthropic's own tokenizer determinism).")
 
-    # Per-workload breakdown.
     print()
     print("PER-WORKLOAD BREAKDOWN")
     print("-" * 60)

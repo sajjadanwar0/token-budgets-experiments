@@ -1,20 +1,3 @@
-//! End-to-end performance benchmark: estimator + Budget::spend.
-//!
-//! The existing `benches/spend_overhead.rs` measures `Budget::spend`
-//! in isolation. This benchmark adds the estimator overhead, which
-//! is the dominant per-call rust-side cost in production deployments.
-//!
-//! Estimators benchmarked:
-//!   1. byte_length     -- Assumption A1 default. Sub-microsecond.
-//!   2. tiktoken_o200k  -- Tighter, BPE pass via tiktoken-rs. Gated.
-//!
-//! Prompt sizes:
-//!   - short (~13 B), medium (~1 KB), long (~10 KB).
-//!
-//! Run:
-//!     cargo bench --bench end_to_end --features tiktoken \
-//!         -- --save-baseline tier3_v1 2>&1 | tee bench_results_e2e.txt
-
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use budget_spike::Budget;
 

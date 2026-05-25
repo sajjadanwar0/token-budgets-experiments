@@ -1,78 +1,32 @@
-//! fair-baseline: replay an Anthropic workload through two enforcement
-//! mechanisms with IDENTICAL cost arithmetic, differing only in WHEN
-//! they check the cap.
-//!
-//! Mechanism 1 (TB, type-level discipline): pre-call check
-//!   - Before each call: compute reservation = byte_estimate * input_rate
-//!     + max_output_tokens * output_rate
-//!   - Refuse if spent + reservation > cap
-//!   - Otherwise issue call, add actual cost to spent
-//!
-//! Mechanism 2 (RuntimeBudgetCallback, post-call callback): post-call check
-//!   - Before each call: check current spent; refuse if callback has tripped
-//!   - Issue call, observe actual cost, add to spent
-//!   - If spent > cap, mark callback as tripped; future calls refused
-//!   - The call that crossed the cap was already issued and paid for
-//!
-//! The point: both mechanisms use the same estimator, same cost
-//! arithmetic, same workload. The difference is purely the temporal
-//! ordering of the check. Any overshoot the callback shows is therefore
-//! a structural property of post-call enforcement, not an arithmetic
-//! defect; the comparison isolates "type-level vs runtime" from
-//! "designed for dollars vs not designed for dollars".
-//!
-//! Workload: the 30 tool-augmented Anthropic calls captured by a1-rerun
-//! (real claude-haiku-4-5 input/output token counts from the API).
-//!
-//! Usage:
-//!     cargo run --release -- \
-//!         --input ../a1-rerun/a1_rerun_results.csv \
-//!         --output fair_baseline_results.csv
-
 use anyhow::{Context, Result};
 use clap::Parser;
 use csv::{Reader, Writer};
 use serde::{Deserialize, Serialize};
 
-// -----------------------------------------------------------------------------
-// CLI
-// -----------------------------------------------------------------------------
-
 #[derive(Parser)]
 #[command(version, about = "Fair-baseline replay (TB vs runtime callback)")]
 struct Cli {
-    /// Input CSV (produced by the a1-rerun binary)
     #[arg(long, default_value = "a1_rerun_results.csv")]
     input: String,
 
-    /// Output CSV (one row per (cap, mechanism))
     #[arg(long, default_value = "fair_baseline_results.csv")]
     output: String,
 
-    /// Cap values to sweep in micro-cents (uc). Multiple --cap-uc flags allowed.
     #[arg(long = "cap-uc", default_values_t = vec![5000u64, 6500, 8000, 10000])]
     caps: Vec<u64>,
 
-    /// Anthropic input rate (uc / token). Default: claude-haiku-4-5 at $1/Mtok.
     #[arg(long, default_value = "1.0")]
     input_rate: f64,
 
-    /// Anthropic output rate (uc / token). Default: claude-haiku-4-5 at $5/Mtok.
     #[arg(long, default_value = "5.0")]
     output_rate: f64,
 
-    /// max_output_tokens used for reservation (matches paper setup).
     #[arg(long, default_value = "200")]
     max_output_tokens: u32,
 
-    /// Filter to a specific cell of the input CSV.
     #[arg(long, default_value = "cell_2_tools")]
     cell: String,
 }
-
-// -----------------------------------------------------------------------------
-// CSV row types
-// -----------------------------------------------------------------------------
 
 #[derive(Debug, Deserialize)]
 struct InputRow {
@@ -109,10 +63,6 @@ struct OutputRow {
     cap_crossing_call: i32, // -1 if cap never crossed
 }
 
-// -----------------------------------------------------------------------------
-// Per-call cost derivation
-// -----------------------------------------------------------------------------
-
 struct Call {
     call_id: u32,
     class: String,
@@ -123,9 +73,6 @@ struct Call {
 
 impl Call {
     fn reservation_uc(&self, input_rate: f64, output_rate: f64, max_out: u32) -> u64 {
-        // Conservative reservation: treat each byte of the full request body
-        // as one token at the input rate. Plus max_output_tokens at output rate.
-        // This is the byte-length estimator as discussed in the paper §V-K0.
         let input_part = self.body_bytes as f64 * input_rate;
         let output_part = max_out as f64 * output_rate;
         (input_part + output_part).round() as u64
@@ -138,9 +85,6 @@ impl Call {
     }
 }
 
-// -----------------------------------------------------------------------------
-// Replay mechanisms
-// -----------------------------------------------------------------------------
 
 #[derive(Debug)]
 struct ReplayResult {
@@ -150,8 +94,6 @@ struct ReplayResult {
     cap_crossing_call: i32,
 }
 
-/// Pre-call enforcement: compute would-be reservation, refuse if it would
-/// push cumulative reservation over the cap.
 fn replay_tb(calls: &[Call], cap_uc: u64, cli: &Cli) -> ReplayResult {
     let mut spent: u64 = 0;
     let mut admitted = 0;
@@ -174,10 +116,6 @@ fn replay_tb(calls: &[Call], cap_uc: u64, cli: &Cli) -> ReplayResult {
     ReplayResult { n_admitted: admitted, n_refused: refused, spent_uc: spent, cap_crossing_call: cap_crossing }
 }
 
-/// Post-call callback enforcement: check only the current spent before
-/// issuing. The call goes through, the cost is recorded after, and the
-/// callback trips only when cumulative actual cost exceeds the cap.
-/// The call that crossed the cap has already been issued and paid for.
 fn replay_callback(calls: &[Call], cap_uc: u64, cli: &Cli) -> ReplayResult {
     let mut spent: u64 = 0;
     let mut admitted = 0;
@@ -203,14 +141,9 @@ fn replay_callback(calls: &[Call], cap_uc: u64, cli: &Cli) -> ReplayResult {
     ReplayResult { n_admitted: admitted, n_refused: refused, spent_uc: spent, cap_crossing_call: cap_crossing }
 }
 
-// -----------------------------------------------------------------------------
-// Main
-// -----------------------------------------------------------------------------
-
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    // Load rows
     let mut rdr = Reader::from_path(&cli.input)
         .with_context(|| format!("opening input CSV: {}", cli.input))?;
     let mut calls: Vec<Call> = Vec::new();
@@ -231,7 +164,6 @@ fn main() -> Result<()> {
         anyhow::bail!("no rows matched cell='{}' in {}", cli.cell, cli.input);
     }
 
-    // Per-call summary
     let mean_reservation: f64 = calls.iter()
         .map(|c| c.reservation_uc(cli.input_rate, cli.output_rate, cli.max_output_tokens) as f64)
         .sum::<f64>() / calls.len() as f64;
@@ -244,7 +176,6 @@ fn main() -> Result<()> {
         mean_reservation - mean_actual,
         100.0 * (mean_reservation - mean_actual) / mean_actual);
 
-    // Replay each cap
     let mut writer = Writer::from_path(&cli.output)
         .with_context(|| format!("opening output CSV: {}", cli.output))?;
     let mut report: Vec<OutputRow> = Vec::new();

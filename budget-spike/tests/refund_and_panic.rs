@@ -1,8 +1,4 @@
-//! Refund flow + panic-safety integration tests.
-
 use budget_spike::{Budget, BudgetError};
-
-// ---------- Existing API tests (unchanged) ----------
 
 #[test]
 fn split_consumes_self() {
@@ -26,8 +22,6 @@ fn spend_then_spend_chains_correctly() {
     let (b3, _) = b2.spend(300, || ()).unwrap();
     assert_eq!(b3.available(), 500);
 }
-
-// ---------- Refund flow tests ----------
 
 #[test]
 fn refund_full_when_actual_charge_is_zero() {
@@ -71,7 +65,7 @@ fn estimator_violation_consumes_receipt_without_refund() {
         }
         other => panic!("expected EstimatorViolation, got {:?}", other),
     }
-    // Successor budget still alive; only the receipt was consumed.
+
     assert_eq!(b2.available(), 500);
 }
 
@@ -85,13 +79,10 @@ fn forfeit_preserves_successor_budget() {
 
 #[test]
 fn retry_loop_with_partial_refunds_bounds_total_cost() {
-    // Multi-step retry loop: each call costs less than its reservation.
-    // Total provider-charged cost equals sum of actual charges,
-    // bounded by the initial budget regardless of retry count.
     let initial = 10_000u64;
     let mut budget = Budget::new(initial);
     let calls: Vec<(u64, u64)> = vec![
-        (1000, 800),  // reserve 1000, charge 800, refund 200
+        (1000, 800),  
         (1000, 850),
         (1000, 900),
         (1000, 750),
@@ -109,8 +100,6 @@ fn retry_loop_with_partial_refunds_bounds_total_cost() {
     assert_eq!(budget.available(), initial - total_charged);
     assert!(budget.available() <= initial);
 }
-
-// ---------- Panic safety across spawn boundaries ----------
 
 #[cfg(feature = "tokio-tests")]
 mod panic_safety {

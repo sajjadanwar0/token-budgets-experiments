@@ -1,17 +1,8 @@
-#!/usr/bin/env python3
-"""
-Analyze the Conjecture 1 stress test results.
-
-Reads results/iterations.csv and results/summary.json, emits a
-paper-ready summary in results/paper_update.md.
-"""
-
 import csv
 import json
 import statistics
 import sys
 from pathlib import Path
-
 
 def main():
     results_dir = Path(sys.argv[1] if len(sys.argv) > 1 else "results")
@@ -43,9 +34,8 @@ def main():
                 "total_dropped": int(row["total_dropped"]),
             })
 
-    # Sanity-check conservation: every iteration should satisfy
-    # spent + dropped + final_phi == initial_capacity
-    INITIAL_CAP = 1_000_000  # match the default; configurable later
+    INITIAL_CAP = 1_000_000
+
     conservation_errors = []
     for r in iters:
         accounted = r["total_spent"] + r["total_dropped"] + r["final_phi"]

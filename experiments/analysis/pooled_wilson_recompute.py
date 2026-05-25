@@ -1,45 +1,3 @@
-#!/usr/bin/env python3
-"""
-pooled_wilson_recompute.py
-
-Recompute pooled Wilson 95% CIs across multi-cell result CSVs, treating
-T=0 deterministic-replica runs as 1 effective observation per cell and
-T>0 runs as N independent observations per cell. Closes the statistical
-inflation noted in paper v57.1's residual limitations.
-
-ARGUMENT FOR DOING THIS (from paper S5.10):
-  "Deterministic decoding suppresses sampling variance: ten replicas of
-  the same prompt produce near-identical token-count traces, so the
-  effective number of independent observations is the number of distinct
-  (model, cap, workload) cells rather than the number of runs."
-
-Yet the paper's headline Wilson intervals (e.g., [0.000, 0.114] on the TB
-0/30 row of Table 7) are computed against the raw run count, not the cell
-count. The intervals are therefore tighter than the underlying evidence
-supports. This script recomputes correctly.
-
-CONVENTIONS:
-  - Each input CSV must contain at minimum these columns:
-      runtime, workload, provider, temperature, overshoot_uc, run_index
-    (or aliases; the script probes for common variants).
-  - A "cell" is a unique (runtime, workload, provider, temperature) tuple.
-  - For T=0 cells, the cell-level binary outcome is
-      cell_overshoot = (any run in cell has overshoot_uc > 0)
-    and the cell contributes 1 observation to the Wilson computation.
-  - For T>0 cells, each run is independent and contributes 1 observation.
-
-USAGE:
-    cd token-budgets-experiments
-    python analysis/pooled_wilson_recompute.py \\
-        --input multiway/sweep_results/*.csv \\
-        --output analysis/wilson_recomputation.csv \\
-        --report analysis/wilson_recomputation.md
-
-EXIT CODES:
-  0 on success
-  1 if any input CSV is missing required columns (script reports which)
-  2 on usage error
-"""
 from __future__ import annotations
 
 import argparse
@@ -51,13 +9,11 @@ import sys
 from dataclasses import dataclass
 
 
-# Wilson 95% CI z-score.
-WILSON_Z = 1.95996398454  # qnorm(0.975)
+WILSON_Z = 1.95996398454
 
 
 @dataclass
 class Cell:
-    """A unique (runtime, workload, provider, temperature) cell."""
     runtime: str
     workload: str
     provider: str
@@ -69,11 +25,6 @@ class Cell:
 
 
 def wilson_interval(k: int, n: int, z: float = WILSON_Z) -> tuple[float, float]:
-    """Wilson 95% CI for k successes out of n Bernoulli trials.
-
-    Returns (lower, upper). At k=0 the lower bound is 0; at k=n the upper
-    bound is 1.
-    """
     if n == 0:
         return (0.0, 1.0)
     p_hat = k / n
@@ -86,7 +37,6 @@ def wilson_interval(k: int, n: int, z: float = WILSON_Z) -> tuple[float, float]:
 
 
 def detect_columns(rows: list[dict]) -> dict[str, str]:
-    """Probe column names for the four required quantities."""
     if not rows:
         return {}
     cols = set(rows[0].keys())
@@ -108,7 +58,6 @@ def detect_columns(rows: list[dict]) -> dict[str, str]:
 
 
 def parse_temperature(s: str) -> float | None:
-    """Parse temperature column, returning None if unparseable."""
     if s is None or s == "":
         return None
     try:
@@ -118,7 +67,6 @@ def parse_temperature(s: str) -> float | None:
 
 
 def parse_overshoot(s: str) -> bool:
-    """Return True if this row's overshoot value indicates a violation."""
     if s is None or s == "":
         return False
     try:
@@ -128,7 +76,6 @@ def parse_overshoot(s: str) -> bool:
 
 
 def aggregate_cells(rows: list[dict], col_map: dict[str, str]) -> list[Cell]:
-    """Aggregate rows into Cell objects."""
     cells_by_key: dict[tuple, Cell] = {}
     for row in rows:
         try:
@@ -144,7 +91,7 @@ def aggregate_cells(rows: list[dict], col_map: dict[str, str]) -> list[Cell]:
             continue
 
         if temperature is None:
-            temperature = 0.0  # Default for missing temperature column.
+            temperature = 0.0
 
         key = (runtime, workload, provider, temperature)
         cell = cells_by_key.setdefault(key, Cell(
@@ -159,22 +106,14 @@ def aggregate_cells(rows: list[dict], col_map: dict[str, str]) -> list[Cell]:
 
 
 def compute_pooled_wilson(cells: list[Cell]) -> dict:
-    """Compute three Wilson CIs:
-       (1) raw per-run pooled (the paper's current method);
-       (2) pooled-on-cells, treating each T=0 cell as 1 obs;
-       (3) pooled, T=0 cells as 1 obs, T>0 cells as N obs.
-    """
-    # (1) Per-run pooled.
     total_runs = sum(c.n_runs for c in cells)
     total_overshoot = sum(c.n_overshoot for c in cells)
     raw_per_run = wilson_interval(total_overshoot, total_runs)
 
-    # (2) Per-cell pooled (all cells as 1 obs each).
     n_cells = len(cells)
     n_cells_overshoot = sum(1 for c in cells if c.cell_has_overshoot)
     pooled_per_cell = wilson_interval(n_cells_overshoot, n_cells)
 
-    # (3) Hybrid: T=0 cells -> 1 obs each, T>0 cells -> N obs each.
     hybrid_n = 0
     hybrid_k = 0
     for c in cells:
@@ -213,7 +152,6 @@ def main():
                         help="Markdown summary report")
     args = parser.parse_args()
 
-    # Expand globs.
     all_files: list[str] = []
     for pattern in args.input:
         matches = sorted(glob.glob(pattern))
@@ -224,7 +162,6 @@ def main():
         print("FATAL: no input files", file=sys.stderr)
         sys.exit(2)
 
-    # Process each file.
     output_rows = []
     report_blocks = ["# Pooled Wilson 95% CI recomputation\n"]
     report_blocks.append(
@@ -242,7 +179,6 @@ def main():
     for path in all_files:
         try:
             with open(path, newline="") as f:
-                # Skip comment lines starting with #
                 cleaned = (line for line in f if not line.lstrip().startswith("#"))
                 rows = list(csv.DictReader(cleaned))
         except Exception as e:
@@ -261,7 +197,6 @@ def main():
         stats["file"] = os.path.basename(path)
         output_rows.append(stats)
 
-        # Markdown line.
         report_blocks.append(
             f"| `{os.path.basename(path)}` "
             f"| {stats['n_runs_total']} "
@@ -272,7 +207,6 @@ def main():
             f"|\n"
         )
 
-    # Write CSV output.
     if output_rows:
         fieldnames = list(output_rows[0].keys())
         with open(args.output, "w", newline="") as f:
@@ -282,12 +216,10 @@ def main():
                 w.writerow(r)
         print(f"Wrote {args.output}", file=sys.stderr)
 
-    # Write Markdown report.
     with open(args.report, "w") as f:
         f.writelines(report_blocks)
     print(f"Wrote {args.report}", file=sys.stderr)
 
-    # Print headline to stdout for direct paper inclusion.
     print(f"\n=== POOLED WILSON RECOMPUTATION HEADLINE ===", file=sys.stderr)
     for row in output_rows:
         print(f"  {row['file']}:", file=sys.stderr)

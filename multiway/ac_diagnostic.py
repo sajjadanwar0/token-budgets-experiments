@@ -1,16 +1,3 @@
-#!/usr/bin/env python3
-"""ac_diagnostic.py — figure out why ContractedLLM failed.
-
-Prints the actual API surface of ai-agent-contracts and tries a single
-1-call trial with verbose error reporting, so we can identify what's
-broken without re-burning 30 trials.
-
-Run:
-  source ~/.zshrc                  # ensure ANTHROPIC_API_KEY is set
-  source .ac_venv/bin/activate     # the venv with ai-agent-contracts installed
-  python3 multiway/ac_diagnostic.py
-"""
-
 from __future__ import annotations
 import os
 import sys
@@ -20,7 +7,6 @@ print("=" * 60)
 print("AGENT CONTRACTS DIAGNOSTIC")
 print("=" * 60)
 
-# 1. Imports
 print("\n[1] Importing ai-agent-contracts...")
 try:
     import agent_contracts
@@ -39,7 +25,6 @@ except Exception as e:
     print(f"    FAIL importing names: {e}")
     sys.exit(1)
 
-# 2. litellm
 print("\n[2] Importing litellm...")
 try:
     import litellm
@@ -53,13 +38,11 @@ print("\n[3] Checking ANTHROPIC_API_KEY...")
 key = os.environ.get("ANTHROPIC_API_KEY", "")
 print(f"    {'set, prefix=' + key[:12] + '...' if key else 'NOT SET'}")
 
-# 4. Inspect ContractedLLM
 print("\n[4] Inspecting ContractedLLM class...")
 print(f"    type: {type(ContractedLLM)}")
 print(f"    __init__ signature: {ContractedLLM.__init__.__doc__ if ContractedLLM.__init__.__doc__ else '(no docstring)'}")
 print(f"    public methods: {[m for m in dir(ContractedLLM) if not m.startswith('_')]}")
 
-# 5. Build a contract
 print("\n[5] Building contract...")
 try:
     contract = Contract(
@@ -80,7 +63,6 @@ except Exception as e:
     traceback.print_exc()
     sys.exit(1)
 
-# 6. Try activating the contract explicitly (if method exists)
 print("\n[6] Trying contract.activate() if available...")
 if hasattr(contract, "activate"):
     try:
@@ -91,7 +73,6 @@ if hasattr(contract, "activate"):
 else:
     print("    no activate() method present")
 
-# 7. Try the documented with-block pattern
 print("\n[7] Trying ContractedLLM(contract) context manager...")
 try:
     llm = ContractedLLM(contract)
@@ -104,17 +85,16 @@ except Exception as e:
     traceback.print_exc()
     sys.exit(1)
 
-# 8. Try entering the context
 print("\n[8] Entering with-block and calling completion()...")
 try:
     with ContractedLLM(contract) as llm:
         print(f"    inside with-block: type(llm)={type(llm).__name__}")
         print(f"    llm methods: {[m for m in dir(llm) if not m.startswith('_')][:15]}")
-        # Try several model name formats
+
         for model_name in [
             "claude-sonnet-4-5-20250929",
             "anthropic/claude-sonnet-4-5-20250929",
-            "claude-3-5-sonnet-20241022",  # known to litellm
+            "claude-3-5-sonnet-20241022",
         ]:
             print(f"\n    trying model={model_name!r}...")
             try:
@@ -125,7 +105,6 @@ try:
                     temperature=0,
                 )
                 print(f"      OK: type(response)={type(response).__name__}")
-                # Try to extract content
                 content = None
                 try:
                     content = response.choices[0].message.content

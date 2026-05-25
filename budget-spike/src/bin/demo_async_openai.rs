@@ -1,7 +1,3 @@
-//! Demo: Real OpenAI API calls bounded by Budget.
-//! Requires: export OPENAI_API_KEY=sk-...
-//! Run: cargo run --bin demo_async_openai
-
 use std::error::Error;
 use budget_spike::{
     Budget, CallError, BudgetError,

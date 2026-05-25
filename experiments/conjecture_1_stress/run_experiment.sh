@@ -1,6 +1,4 @@
 #!/bin/bash
-# Conjecture 1 stress test driver
-# Runs 10k randomized concurrent workloads; reports any Φ-invariant violations
 
 set -e
 
@@ -21,10 +19,8 @@ echo ""
 
 cd "$EXP_DIR"
 
-# Add csv crate dependency (oversight in Cargo.toml; do it inline)
 if ! grep -q '^csv =' Cargo.toml; then
     echo "Adding csv dependency to Cargo.toml..."
-    # Insert after the [dependencies] line
     sed -i '/^\[dependencies\]/a csv = "1"' Cargo.toml
 fi
 
@@ -46,11 +42,7 @@ mkdir -p results
     --progress-every $(($ITERATIONS / 50))
 
 echo ""
-echo "================================================================"
 echo "Done."
 echo "  - results/iterations.csv: per-iteration data"
 echo "  - results/summary.json:   aggregate summary"
 echo "  - results/violation_*.json: violation details (if any)"
-echo ""
-echo "Suggested next: python3 analyze.py results/"
-echo "================================================================"

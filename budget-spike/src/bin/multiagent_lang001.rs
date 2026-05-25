@@ -1,36 +1,3 @@
-//! multiagent_lang001.rs — multi-agent LANG-001 boundary validation.
-//!
-//! Validates that `Budget::split` + `tokio::spawn` enforce aggregate
-//! cap-respect across concurrent children. Each trial:
-//!   parent (B0=1620 uc) -> split into 3 children of 540 uc each ->
-//!   each child runs LANG-001 SQL retry loop in its own task ->
-//!   join all -> compute aggregate spend across all children.
-//!
-//! Expected: N/N trials with aggregate_spent <= B0, closing the
-//! open empirical gap on the multi-agent property at the live-API
-//! level (the compile-time integrity claim survives concurrent
-//! parent-child delegation under provider non-determinism).
-//!
-//! Self-contained: all helpers (Pricing, chat types, OpenAI/Anthropic
-//! HTTP clients, workload definitions, byte-length estimator) are
-//! copied from tc_live_harness.rs so this binary compiles without
-//! refactoring the existing harness.
-//!
-//! Build (from token-budgets-experiments/budget-spike/):
-//!   cargo build --release --bin multiagent_lang001
-//!
-//! Run (OpenAI gpt-4o-mini):
-//!   OPENAI_API_KEY=sk-... \
-//!     ./target/release/multiagent_lang001 \
-//!     --provider openai --runs 30 \
-//!     --output-csv sweep_results_rust/multiagent_lang001_openai_n30.csv
-//!
-//! Run (Anthropic claude-haiku-4-5):
-//!   ANTHROPIC_API_KEY=sk-ant-... \
-//!     ./target/release/multiagent_lang001 \
-//!     --provider anthropic --runs 30 \
-//!     --output-csv sweep_results_rust/multiagent_lang001_anthropic_n30.csv
-
 use std::env;
 use std::fs::File;
 use std::io::Write;
@@ -42,11 +9,8 @@ use budget_spike::Budget;
 
 const MAX_OUTPUT_TOKENS: u64 = 200;
 const MAX_AGENT_STEPS: u64 = 20;
-const DEFAULT_CHILD_CAP_UC: u64 = 540;  // OpenAI LANG-001 default; pass --child-cap-uc 2000 for Anthropic.
+const DEFAULT_CHILD_CAP_UC: u64 = 540;
 
-// =============================================================================
-// Pricing (same shape as tc_live_harness.rs)
-// =============================================================================
 
 #[derive(Clone, Copy, Debug)]
 struct Pricing {
@@ -84,10 +48,6 @@ fn model_for(provider: &str) -> &'static str {
         _ => panic!("unknown provider: {}", provider),
     }
 }
-
-// =============================================================================
-// Common chat types (copied from tc_live_harness.rs for self-containment)
-// =============================================================================
 
 #[derive(Clone, Debug)]
 struct ChatMessage {
@@ -140,8 +100,6 @@ struct ChatResult {
     input_tokens: u64,
     output_tokens: u64,
 }
-
-// ----- OpenAI ----------------------------------------------------------------
 
 #[derive(Serialize)]
 struct OAIRequest<'a> {
@@ -310,8 +268,6 @@ async fn openai_call(
         output_tokens: body.usage.completion_tokens,
     })
 }
-
-// ----- Anthropic -------------------------------------------------------------
 
 #[derive(Serialize)]
 struct AntRequest<'a> {
@@ -492,10 +448,6 @@ async fn chat_call(
     }
 }
 
-// =============================================================================
-// LANG-001 workload (same content as tc_live_harness.rs::workload_lang001)
-// =============================================================================
-
 fn lang001_system() -> &'static str {
     "You are a database assistant. Use the sql_query tool. \
      The users table has columns: id (int), name (text), email (text). \
@@ -520,16 +472,11 @@ fn lang001_error_for(_tc: &ToolCall) -> String {
         .to_string()
 }
 
-// =============================================================================
-// One child agent: LANG-001 retry loop against its sub-budget.
-// Consumes Budget by value (affine); returns ChildOutcome.
-// =============================================================================
-
 #[derive(Debug, Clone)]
 struct ChildOutcome {
     child_id: usize,
-    spent_uc: u64,        // provider-billed total spend
-    residual_uc: u64,     // initial_cap_uc - spent_uc (saturating)
+    spent_uc: u64,       
+    residual_uc: u64,     
     initial_cap_uc: u64,
     calls_attempted: u32,
     calls_admitted: u32,
@@ -574,7 +521,6 @@ async fn run_lang001_child(
         let est_input_bytes = estimate_input_bytes(&messages, &tools);
         let est_uc = pricing.cost_uc(est_input_bytes, MAX_OUTPUT_TOKENS);
 
-        // Affine spend: budget consumed by value, residual returned.
         budget = match budget.spend(est_uc, || ()) {
             Err(_) => {
                 outcome = "compile_time_reservation_refused".to_string();
@@ -614,21 +560,13 @@ async fn run_lang001_child(
                 tool_call_id: Some(tc.id.clone()),
             });
         }
-
-        // Silence unused-variable warning for child_id; the value is
-        // recorded in the outcome at the end.
+        
         let _ = child_id;
     }
 
     if calls_admitted >= MAX_AGENT_STEPS as u32 && outcome == "completed_no_cap_hit" {
         outcome = "max_agent_steps_reached".to_string();
     }
-
-    // budget falls out of scope here: on the Ok path the affine Drop
-    // logs the residual; on the Err path the value was already moved
-    // into spend() and there's nothing to drop. We report spent_uc =
-    // total_spent_uc (provider-billed actual) and residual_uc =
-    // initial_cap_uc - spent_uc (saturating).
 
     ChildOutcome {
         child_id,
@@ -641,10 +579,6 @@ async fn run_lang001_child(
         wall_clock_ms: t0.elapsed().as_millis() as u64,
     }
 }
-
-// =============================================================================
-// One trial: split B0 into three children, run concurrently, aggregate.
-// =============================================================================
 
 #[derive(Debug)]
 struct TrialOutcome {
@@ -664,11 +598,7 @@ async fn run_one_trial(
 ) -> Result<TrialOutcome, String> {
     let b0_uc = child_cap_uc.saturating_mul(3);
     let parent = Budget::new(b0_uc);
-
-    // Budget::split(take) returns (kept, taken):
-    //   parent (3C).split(C) -> (kept=2C, taken=C)
-    //   rest   (2C).split(C) -> (kept=C, taken=C)
-    // After both splits we have three balanced C-uc children.
+    
     let (rest1, child0_budget) = parent.split(child_cap_uc)
         .map_err(|e| format!("parent split: {:?}", e))?;
     let (rest2, child1_budget) = rest1.split(child_cap_uc)
@@ -703,10 +633,6 @@ async fn run_one_trial(
         aggregate_overshoot,
     })
 }
-
-// =============================================================================
-// CLI + CSV output
-// =============================================================================
 
 struct Args {
     provider: String,

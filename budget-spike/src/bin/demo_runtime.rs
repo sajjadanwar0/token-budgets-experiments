@@ -1,6 +1,3 @@
-//! Synchronous runtime demo for the affine Budget API.
-//! Run: cargo run --bin demo_runtime
-
 use budget_spike::{Budget, BudgetError, estimate_cost};
 
 fn main() {

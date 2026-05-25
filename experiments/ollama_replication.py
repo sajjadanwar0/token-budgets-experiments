@@ -1,37 +1,3 @@
-#!/usr/bin/env python3
-"""
-ollama_replication.py — Ollama LANG-001 head-to-head, CORRECTED v2.
-
-CHANGES VS v1
-=============
-1. Docstrings added to ALL three @tool definitions (langgraph_agentguard
-   and token_budgets were missing them, causing 20/30 runs to fail).
-2. Synthetic cost formula switched from integer division to floating
-   point with rounding at the end. Previous (in_tok*590)//1_000_000
-   produced 0 uc for small token counts because of integer truncation.
-3. Cap is now a --cap-uc command-line argument with default 100 uc
-   (matching the §5.7 Ollama calibration; the prior 540 default was
-   from Groq/llama-3.3 and is too high for Ollama llama3.2).
-
-WHEN THIS HARNESS IS APPROPRIATE
-================================
-For Path C in INSTRUCTIONS_ROUND_2.md: characterising runtime mechanism
-behaviour on a locally-served model. It is NOT a substitute for the
-paid-API multi-runtime comparison in Tables 5/7, because Ollama llama3.2
-doesn't reproduce the LANG-001 retry pattern reliably.
-
-USAGE
-=====
-  python3 ollama_replication.py                  # cap=100 (default)
-  python3 ollama_replication.py --cap-uc 50      # tighter cap
-
-PREREQUISITES
-=============
-  ollama serve &
-  ollama pull llama3.2:latest
-  pip install langchain-ollama langgraph langchain-core requests
-"""
-
 import argparse
 import csv
 import json
@@ -82,8 +48,6 @@ class RunRecord:
 
 
 def synth_cost_uc(in_tok: int, out_tok: int) -> float:
-    """Floating-point synthetic cost; small token counts now produce
-    non-zero costs instead of integer-truncating to 0."""
     return (in_tok * PRICE_INPUT_PER_MTOK_UC / 1_000_000.0
             + out_tok * PRICE_OUTPUT_PER_MTOK_UC / 1_000_000.0)
 
@@ -105,7 +69,6 @@ def check_prereqs():
 
 
 def run_langgraph(iteration: int, cap_uc: int) -> RunRecord:
-    """LangGraph with recursion_limit, NO cost guard. Baseline."""
     from langchain_ollama import ChatOllama
     from langgraph.prebuilt import create_react_agent
     from langchain_core.tools import tool
@@ -113,7 +76,6 @@ def run_langgraph(iteration: int, cap_uc: int) -> RunRecord:
 
     @tool
     def execute_sql(query: str) -> str:
-        """Execute a SQL query against the customer database."""
         return TOOL_ERROR_MESSAGE
 
     llm = ChatOllama(base_url=OLLAMA_BASE_URL, model=MODEL, temperature=0.0)
@@ -160,8 +122,6 @@ def run_langgraph(iteration: int, cap_uc: int) -> RunRecord:
 
 
 def run_langgraph_agentguard(iteration: int, cap_uc: int) -> RunRecord:
-    """LangGraph + post-call cost callback that aborts on the next call
-    after cumulative spend crosses the cap."""
     from langchain_ollama import ChatOllama
     from langgraph.prebuilt import create_react_agent
     from langchain_core.tools import tool
@@ -169,7 +129,6 @@ def run_langgraph_agentguard(iteration: int, cap_uc: int) -> RunRecord:
 
     @tool
     def execute_sql(query: str) -> str:
-        """Execute a SQL query against the customer database."""
         return TOOL_ERROR_MESSAGE
 
     llm = ChatOllama(base_url=OLLAMA_BASE_URL, model=MODEL, temperature=0.0)
@@ -222,7 +181,6 @@ def run_langgraph_agentguard(iteration: int, cap_uc: int) -> RunRecord:
 
 
 def run_token_budgets(iteration: int, cap_uc: int) -> RunRecord:
-    """Token Budgets: pre-flight reservation refuses cap-violating calls."""
     from langchain_ollama import ChatOllama
     from langchain_core.tools import tool
     from langchain_core.callbacks import BaseCallbackHandler
@@ -231,7 +189,6 @@ def run_token_budgets(iteration: int, cap_uc: int) -> RunRecord:
 
     @tool
     def execute_sql(query: str) -> str:
-        """Execute a SQL query against the customer database."""
         return TOOL_ERROR_MESSAGE
 
     llm = ChatOllama(base_url=OLLAMA_BASE_URL, model=MODEL, temperature=0.0)
@@ -384,13 +341,11 @@ def main():
         print(f"  {runtime_name:>25}: mean={mean_cost:6.2f} uc  ({pct_cap:5.1f}% of cap)  "
               f"max={max_cost:6.2f}  overshoot {n_overshoot}/{len(runs)}")
 
-    print("\nNOTE ON OLLAMA llama3.2 BEHAVIOUR")
     print("-" * 70)
     print("Ollama llama3.2:latest is a 3B-param model and typically abandons")
     print("retry loops after 2-3 calls (see §5.7 of the paper). If all three")
     print("runtimes show 'completed' at low cost, that is the honest finding:")
     print("the LANG-001 retry pattern doesn't reproduce on this model. The")
-    print("comparison from Tables 5/7 needs a paid API. See INSTRUCTIONS_ROUND_2.md")
 
 
 if __name__ == "__main__":

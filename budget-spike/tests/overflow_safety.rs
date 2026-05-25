@@ -1,9 +1,5 @@
-//! Conservation, bounds, and overflow tests for `Budget` operations.
-
 use budget_spike::{Budget, BudgetError};
 use proptest::prelude::*;
-
-// ---------- Existing tests (unchanged) ----------
 
 #[test]
 fn spend_at_zero_returns_error() {
@@ -33,8 +29,6 @@ fn split_merge_round_trips() {
     let merged = parent.merge(child);
     assert_eq!(merged.available(), 1000);
 }
-
-// ---------- merge_checked overflow tests ----------
 
 #[test]
 fn merge_checked_at_overflow_boundary_returns_error() {
@@ -70,23 +64,17 @@ fn merge_checked_within_a2_succeeds() {
     assert_eq!(merged.available(), 3_000_000);
 }
 
-// ---------- Receipt / refund overflow tests ----------
-
 #[test]
 fn apply_refund_overflow_returns_error() {
     let near_max = Budget::new(u64::MAX - 100);
-    // Generate a Refund of 200 by reserve+confirm(0) on a fresh budget.
     let b_small = Budget::new(200);
     let (_b_small_after, r) = b_small.reserve(200).unwrap();
     let refund = r.confirm(0).unwrap().expect("refund of 200");
-    // Applying refund of 200 onto Budget(u64::MAX - 100) overflows.
     match near_max.apply_refund(refund) {
         Err(BudgetError::Overflow) => {}
         other => panic!("expected Overflow, got {:?}", other),
     }
 }
-
-// ---------- Property tests ----------
 
 proptest! {
     #[test]

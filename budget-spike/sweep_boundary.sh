@@ -1,27 +1,4 @@
 #!/usr/bin/env bash
-# sweep_boundary.sh - Boundary-stress validation driver for §V.F
-#
-# Runs the Rust tc_live_harness with per-provider caps tuned so the
-# discipline must fire MID-LOOP (admitting at least the first call,
-# refusing some later one). This addresses the harsh-review concern that
-# the original 90-run sweep refused pre-flight on Anthropic, never
-# exercising the boundary case the discipline is designed for.
-#
-# Per-provider caps (chosen to admit step 1 and refuse step 2 on lang001;
-# step counts may vary across workloads, but the design intent holds):
-#   OpenAI:   80 uc  (typical step-1 spend ~33 uc on lang001)
-#   Anthropic: 2000 uc  (typical step-1 spend ~950 uc)
-#   Groq:     300 uc  (typical step-1 spend ~181 uc)
-#
-# Usage:
-#   export OPENAI_API_KEY=...
-#   export ANTHROPIC_API_KEY=...
-#   export GROQ_API_KEY=...
-#   ./sweep_boundary.sh
-#
-# Output: 9 CSVs in sweep_results_boundary/ following the same column
-# format as the v29 main sweep, with cap_uc reflecting the per-provider
-# boundary cap.
 
 set -euo pipefail
 

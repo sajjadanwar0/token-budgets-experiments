@@ -1,6 +1,3 @@
-//! Demo: Budget bounds spend across async LLM calls (mock client).
-//! Run: cargo run --bin demo_async_mock
-
 use std::error::Error;
 use budget_spike::{
     Budget, CallError, BudgetError,
@@ -12,8 +9,6 @@ use budget_spike::{
 async fn main() -> Result<(), Box<dyn Error>> {
     println!("=== Budget Spike: Async Mock Demo ===\n");
 
-    // Budget: $0.02 = 20,000 micro-cents.
-    // Each call reserves ~5*3 + 200*15 = 3,015 uc -> ~6 calls before exhaustion.
     let mut budget = Budget::new(20_000);
     let client = MockClient::sonnet_like();
 

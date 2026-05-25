@@ -1,16 +1,3 @@
-#!/usr/bin/env python3
-"""
-Analyze the AnthropicEstimator A1 validation results.
-
-Reads results/runs.csv (produced by runner.py) and emits:
-  - results/a1_validation.json: structured summary
-  - results/summary.md: human-readable summary including a table suitable
-    for direct inclusion in the paper
-
-Compares the new AnthropicEstimator results against the prior byte-length
-baseline (which had 30/30 A1 failures with B/T ratio 0.72-0.79).
-"""
-
 import csv
 import json
 import statistics
@@ -41,10 +28,8 @@ def as_int(x):
 def analyze(records):
     valid = [r for r in records if not r["error"]]
     
-    # Overall A1 hold rate
     a1_holds = [r for r in valid if r["a1_holds"] == "True"]
     
-    # Per-workload breakdown
     per_workload = defaultdict(lambda: {"total": 0, "a1_holds": 0, "ratios": []})
     for r in valid:
         wl = r["workload"]
@@ -55,7 +40,6 @@ def analyze(records):
         if ratio is not None:
             per_workload[wl]["ratios"].append(ratio)
     
-    # Comparison vs byte-length baseline
     bt_ratios = [as_float(r["bt_ratio"]) for r in valid if as_float(r["bt_ratio"])]
     est_ratios = [as_float(r["est_ratio"]) for r in valid if as_float(r["est_ratio"])]
     
@@ -183,13 +167,11 @@ def main():
     records = load(csv_path)
     summary = analyze(records)
     
-    # Write JSON
     json_path = csv_path.parent / "a1_validation.json"
     with open(json_path, "w") as f:
         json.dump(summary, f, indent=2)
     print(f"Wrote {json_path}")
     
-    # Write Markdown
     md = render_markdown(summary)
     md_path = csv_path.parent / "summary.md"
     with open(md_path, "w") as f:

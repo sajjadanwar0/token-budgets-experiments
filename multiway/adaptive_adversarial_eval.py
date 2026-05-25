@@ -1,47 +1,3 @@
-#!/usr/bin/env python3
-"""adaptive_adversarial_eval.py — v62.2 reviewer should-fix item 9.
-
-Re-runs the AdaptiveEstimator vs static head-to-head on a corpus
-deliberately constructed to exercise the adaptive estimator's
-learning path. v62.1's evaluation used a benign corpus where
-actual_input_tokens / byte_length stayed below 1.0 throughout (BPE
-typically compresses to ~0.25 tok/char on English/code), so
-observed_max never moved above its 1.0 floor.
-
-This corpus contains 50 prompts in three categories where the
-tokens-per-char ratio is known to spike above 1.0:
-
-  - nested_tool_schemas (n=20):  JSON tool schemas with deeply
-    nested object types and many short keys. Each "}, "{" boundary
-    is a token, inflating the ratio above 1.0.
-
-  - unicode_combining_marks (n=15):  Devanagari / Arabic / combining-mark
-    sequences where BPE tokenizers fragment into many sub-tokens per
-    grapheme cluster, often 2-4 tokens per char.
-
-  - base64_dense (n=15):  Base64-encoded payloads where most chars
-    are tokenized individually with no shared prefixes; ratio
-    approaches 1.0 from below in BPE and exceeds it in some
-    tokenizer configurations.
-
-Expected outcome:
-  - observed_max climbs above 1.0 within the first ~5-10 prompts.
-  - Adaptive estimator's effective margin diverges from static's.
-  - Both estimators maintain 0/50 A1 violations (the soundness
-    check).
-
-Usage:
-  export ANTHROPIC_API_KEY=...   # if not in .zshrc/.bashrc
-  python3 adaptive_adversarial_eval.py
-
-Cost: ~$0.40 (50 calls × ~3000 input tok × $3/Mtok + small output).
-Wall time: ~10 min.
-
-Output CSVs:
-  multiway/sweep_results/adaptive_adversarial_results.csv
-  multiway/sweep_results/adaptive_adversarial_summary.csv
-"""
-
 from __future__ import annotations
 import csv
 import json
@@ -51,7 +7,9 @@ import sys
 import time
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import List, Optional
+from typing import List
+import base64
+import secrets
 
 try:
     from anthropic import Anthropic
@@ -64,35 +22,16 @@ except ImportError:
 SONNET_MODEL = "claude-sonnet-4-5-20250929"
 INPUT_RATE_UC_PER_TOK  = 3
 OUTPUT_RATE_UC_PER_TOK = 15
-MAX_OUTPUT_TOKENS = 100  # small to keep this experiment cheap
-OUTPUT_RESERVATION_UC = MAX_OUTPUT_TOKENS * OUTPUT_RATE_UC_PER_TOK  # 1500
+MAX_OUTPUT_TOKENS = 100
+OUTPUT_RESERVATION_UC = MAX_OUTPUT_TOKENS * OUTPUT_RATE_UC_PER_TOK
 
 STATIC_MARGIN = 2.0
 ADAPTIVE_EPSILON = 0.10
 OUT_DIR = Path(__file__).resolve().parent / "sweep_results"
 
-
-# ----------------------------------------------------------------------
-# Adversarial prompt corpus
-# ----------------------------------------------------------------------
-
 def _nested_tool_schemas(n: int) -> List[dict]:
-    """Wide-shallow JSON tool-schema payloads. Each "}, {" boundary
-    is at least one token in BPE; with many short keys at a shallow
-    depth the ratio can exceed 1.0.
-
-    Wide-shallow rather than deep-nested: a balanced depth-d, keys-k
-    tree has k^d leaves, which OOMs Python for d>5, k>10. Wide-shallow
-    (1-2 levels with 50-200 keys per level) gives the same
-    tokenization stress without the exponential blowup. A 200-key
-    flat object at ~3-5KB is enough to push the BPE ratio above 1.0
-    on Anthropic's tokenizer."""
     out = []
     for i in range(n):
-        # Depth=1 only; n_keys 20..80. With depth=1 we get exactly
-        # n_keys leaves (~50-150 chars each), so total schema size
-        # stays in the 1-12KB range — enough to stress BPE
-        # tokenization without exploding API cost.
         depth = 1
         n_keys = 20 + (i * 3) % 60   # 20..79 keys
         schema = _build_wide_schema(depth, n_keys, salt=i)
@@ -120,8 +59,6 @@ def _build_wide_schema(depth: int, n_keys: int, salt: int) -> dict:
     }
 
 def _unicode_combining(n: int) -> List[dict]:
-    """Devanagari / Arabic / Hebrew with combining marks. BPE
-    tokenizers typically allocate 2-4 tokens per grapheme cluster."""
     devanagari_base = "आपको हमारे साथ इस यात्रा में शामिल होकर बहुत खुशी हो रही है। "
     arabic_base     = "نحن سعداء جدا بانضمامك إلينا في هذه الرحلة العلمية المثيرة. "
     hebrew_base     = "אנו שמחים מאוד שהצטרפת אלינו במסע המחקרי המרתק הזה. "
@@ -130,7 +67,6 @@ def _unicode_combining(n: int) -> List[dict]:
     out = []
     for i in range(n):
         base = bases[i % len(bases)]
-        # Repeat 8-12 times to grow byte length
         text = base * (8 + (i % 5))
         prompt = (
                 "Translate the following text to English. Reply with the translation only.\n\n"
@@ -141,10 +77,6 @@ def _unicode_combining(n: int) -> List[dict]:
     return out
 
 def _base64_dense(n: int) -> List[dict]:
-    """Base64 payloads. BPE fragments these heavily; ratio
-    approaches 1.0 from below and can exceed it on some configurations."""
-    import base64
-    import secrets
     out = []
     for i in range(n):
         size = 500 + (i % 5) * 200   # 500..1300 bytes
@@ -163,11 +95,6 @@ def build_corpus() -> List[dict]:
           f"{len(set(p['category'] for p in prompts))} categories")
     return prompts
 
-
-# ----------------------------------------------------------------------
-# Estimators
-# ----------------------------------------------------------------------
-
 @dataclass
 class EstimatorReport:
     estimator: str
@@ -185,10 +112,9 @@ class StaticEstimator:
     def __init__(self, margin: float = STATIC_MARGIN):
         self.margin = margin
     def reserve_for(self, prompt_chars: int) -> int:
-        # input: chars * margin * input_rate, plus output reservation
         return int(prompt_chars * self.margin * INPUT_RATE_UC_PER_TOK) + OUTPUT_RESERVATION_UC
     def record(self, prompt_chars: int, actual_input_tokens: int):
-        pass  # static doesn't learn
+        pass
     @property
     def observed_max(self) -> float:
         return self.margin  # report the static margin
@@ -210,11 +136,6 @@ class AdaptiveEstimator:
     @property
     def observed_max(self) -> float:
         return self._observed_max
-
-
-# ----------------------------------------------------------------------
-# Driver
-# ----------------------------------------------------------------------
 
 def run_one(estimator_label: str, estimator, prompts: List[dict],
             client: Anthropic) -> List[EstimatorReport]:
@@ -239,7 +160,6 @@ def run_one(estimator_label: str, estimator, prompts: List[dict],
         billed_uc = in_tok * INPUT_RATE_UC_PER_TOK + out_tok * OUTPUT_RATE_UC_PER_TOK
         eff_margin = (reserved_uc / billed_uc) if billed_uc > 0 else float("inf")
 
-        # Record AFTER the call so the next iteration benefits
         estimator.record(chars, in_tok)
 
         reports.append(EstimatorReport(
@@ -256,7 +176,6 @@ def run_one(estimator_label: str, estimator, prompts: List[dict],
               f"ratio={in_tok/max(chars,1):.3f} reserved={reserved_uc} "
               f"billed={billed_uc} margin={eff_margin:.2f}x "
               f"obs_max={estimator.observed_max:.3f}")
-        # Tiny pause to be a courteous API consumer
         time.sleep(0.2)
     return reports
 
@@ -308,7 +227,6 @@ def main():
     print()
     print(f"Total calls: {len(all_reports)} (expected {2*len(prompts)})")
 
-    # Write per-call results
     results_path = OUT_DIR / "adaptive_adversarial_results.csv"
     with open(results_path, "w", newline="") as f:
         if all_reports:
@@ -318,7 +236,6 @@ def main():
                 w.writerow(asdict(r))
     print(f"  -> {results_path} ({len(all_reports)} rows)")
 
-    # Write summary
     summary = summarise(all_reports)
     summary_path = OUT_DIR / "adaptive_adversarial_summary.csv"
     with open(summary_path, "w", newline="") as f:
@@ -339,7 +256,6 @@ def main():
         print(f"    A1 violations = {s['a1_violations']} / {s['n_calls']}")
         print(f"    final observed_max = {s['final_observed_max']}")
 
-    # Did the adaptive estimator actually adapt?
     adaptive_summary = next((s for s in summary if s["estimator"].startswith("adaptive")), None)
     if adaptive_summary and adaptive_summary["final_observed_max"] is not None:
         if adaptive_summary["final_observed_max"] > 1.05:

@@ -1,7 +1,3 @@
-//! Demo: Real Anthropic API calls bounded by Budget.
-//! Requires: export ANTHROPIC_API_KEY=sk-ant-...
-//! Run: cargo run --bin demo_async_anthropic
-
 use std::error::Error;
 use budget_spike::{
     Budget, CallError, BudgetError,

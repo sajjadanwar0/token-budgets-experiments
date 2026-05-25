@@ -1,10 +1,3 @@
-//! Invariant monitor: receives events from concurrent Budget operations
-//! and checks Φ(s) ≤ B₀ at every step.
-//!
-//! Φ(s) is the sum of `.available` across all live Budgets. Tracked
-//! incrementally as Created/Split/Merge add to Φ and Spend/Dropped
-//! reduce it.
-
 use crate::budget::Event;
 use std::collections::HashMap;
 use tokio::sync::mpsc::UnboundedReceiver;
@@ -30,11 +23,9 @@ pub struct Violation {
     pub explanation: String,
 }
 
-/// Φ-monitor: per-budget-id liveness ledger.
 pub struct Monitor {
     b0: u64,
     seed: u64,
-    /// budget id -> current .available (live budgets only)
     live: HashMap<u64, u64>,
     total_spent: u64,
     total_dropped: u64,
@@ -74,8 +65,7 @@ impl Monitor {
                 ),
             });
         }
-        // Also check the invariant on total spent + Φ + dropped = B₀
-        // (since every micro-cent must be either still live, spent, or lost-on-drop)
+
         let accounted = phi + self.total_spent + self.total_dropped;
         if accounted > self.b0 {
             self.violations.push(Violation {

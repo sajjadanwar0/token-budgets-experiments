@@ -1,43 +1,3 @@
-#!/usr/bin/env python3
-"""Adversarial AnthropicEstimator audit harness (CORRECTED v2).
-
-Place at: experiments/anthropic_adversarial/run.py in
-token-budgets-experiments.
-
-CRITICAL difference from v1 (which was wrong):
-    v1 tested `count_tokens(prompt) >= input_tokens(prompt)`. Since
-    both numbers come from the same Anthropic tokenizer, the ratio
-    was always exactly 1.0000 — a tautology, not an audit.
-
-    v2 tests `byte_length(serialized_prompt) * safety_margin >=
-    input_tokens(prompt)`, which is what the AnthropicEstimator
-    actually does in src/estimator.rs (ByteLength base x 1.05
-    margin by default). This produces meaningful ratios because
-    byte-length and tokenizer-output are independent measurements
-    of the same content. The audit can therefore detect either:
-      (a) prompt classes where byte-length under-counts vs billing
-          (A1 violation under the configured margin), or
-      (b) the empirical headroom the default margin actually
-          provides on adversarial inputs.
-
-Byte-length computation matches budget-spike's
-estimate_input_bytes() exactly:
-  - sum of message.role and message.content lengths
-  - sum of tool name, description, and schema_json lengths
-  - 64-byte envelope slack per message
-  - applied to all classes uniformly
-
-Usage:
-    export ANTHROPIC_API_KEY=sk-ant-...
-    python run.py [--runs 5] [--margin 1.05]
-
-Output: results.csv with per-run details (class, byte_length,
-        estimate_with_margin, billed_input, ratio, a1_holds)
-        results.md with summary table for paste into the paper
-
-Cost: approximately $0.50 for default 35 runs.
-"""
-
 import argparse
 import csv
 import json
@@ -54,12 +14,7 @@ except ImportError:
 
 
 MODEL = "claude-haiku-4-5-20251001"
-ENVELOPE_BYTES_PER_MESSAGE = 64  # matches tc_live_harness's slack constant
-
-
-# -----------------------------------------------------------------------
-# Adversarial prompt classes (unchanged from v1)
-# -----------------------------------------------------------------------
+ENVELOPE_BYTES_PER_MESSAGE = 64
 
 def large_tool_definition(n_tools: int = 1, desc_chars: int = 4000) -> Dict[str, Any]:
     return {
@@ -151,7 +106,7 @@ def unicode_dense_tool_desc() -> Dict[str, Any]:
         "messages": [{"role": "user", "content": "Process data."}],
         "tools": [{
             "name": "unicode_tool",
-            "description": "处理数据 🚀🎉🔥 用户请求 obtenir résultats " * 200,
+            "description": "处理数据  用户请求 obtenir résultats " * 200,
             "input_schema": {"type": "object", "properties": {}},
         }],
     }
@@ -167,11 +122,6 @@ ADVERSARIAL_CLASSES = {
     "unicode_dense_tool_desc": unicode_dense_tool_desc,
 }
 
-
-# -----------------------------------------------------------------------
-# Byte-length estimator (mirrors tc_live_harness's estimate_input_bytes)
-# -----------------------------------------------------------------------
-
 def _stringify_content(content: Any) -> str:
     """Anthropic message content can be a string or a list of typed blocks.
     Return a UTF-8 string for byte-counting that captures all text. Tool
@@ -184,7 +134,6 @@ def _stringify_content(content: Any) -> str:
         parts: List[str] = []
         for block in content:
             if isinstance(block, dict):
-                # text blocks, tool_use blocks, tool_result blocks, etc
                 for k, v in block.items():
                     if isinstance(v, str):
                         parts.append(v)
@@ -197,17 +146,8 @@ def _stringify_content(content: Any) -> str:
 
 
 def byte_length_of_prompt(prompt: Dict[str, Any]) -> int:
-    """Byte-length of the prompt as the AnthropicEstimator's base would
-    compute it. Mirrors tc_live_harness's estimate_input_bytes:
-      - sum of role/content UTF-8 byte lengths
-      - sum of tool name/description/schema_json byte lengths
-      - 64-byte envelope slack per message
-    The schema is serialized to compact JSON (no whitespace) to match
-    the Rust side's serde_json::Value::to_string default.
-    """
     total = 0
 
-    # System
     system = prompt.get("system", "")
     if isinstance(system, list):
         for block in system:
@@ -220,7 +160,6 @@ def byte_length_of_prompt(prompt: Dict[str, Any]) -> int:
     else:
         total += len(system.encode("utf-8"))
 
-    # Messages
     messages = prompt.get("messages", [])
     for m in messages:
         role = m.get("role", "")
@@ -241,18 +180,9 @@ def byte_length_of_prompt(prompt: Dict[str, Any]) -> int:
 
 
 def anthropic_estimator_output(prompt: Dict[str, Any], margin: float) -> int:
-    """Match AnthropicEstimator::estimate() in src/estimator.rs:
-        raw = ByteLength.estimate(prompt)
-        return ceil(raw * margin)
-    """
     raw = byte_length_of_prompt(prompt)
     import math
     return int(math.ceil(raw * margin))
-
-
-# -----------------------------------------------------------------------
-# Main audit loop
-# -----------------------------------------------------------------------
 
 def run_audit(runs_per_class: int, margin: float, sleep_secs: float = 0.5) -> List[Dict]:
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
@@ -270,11 +200,9 @@ def run_audit(runs_per_class: int, margin: float, sleep_secs: float = 0.5) -> Li
         for run_i in range(runs_per_class):
             prompt = builder()
 
-            # AnthropicEstimator output (= byte_length x margin, ceil)
             bl = byte_length_of_prompt(prompt)
             estimate = anthropic_estimator_output(prompt, margin)
 
-            # Provider-billed input via max_tokens=1 call
             kwargs: Dict[str, Any] = {
                 "model": MODEL,
                 "max_tokens": 1,

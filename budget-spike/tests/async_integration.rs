@@ -1,5 +1,3 @@
-//! Async integration tests for Budget under tokio.
-
 use budget_spike::{
     Budget, BudgetError, CallError, call_with_budget,
     llm_client::MockClient,
@@ -32,30 +30,24 @@ async fn mock_terminates_cleanly_on_exhaustion() {
     assert!(matches!(result, Err(CallError::Budget(BudgetError::Insufficient { .. }))));
 }
 
-/// CRUCIAL: validates affine Budget semantics survive `tokio::spawn`.
 #[tokio::test]
 async fn split_across_spawn() {
     let parent = Budget::new(100_000);
     let (parent, child) = parent.split(40_000).expect("split should succeed");
 
-    // Move `child` into the spawned task.
     let handle: tokio::task::JoinHandle<Budget> = tokio::spawn(async move {
         let (child, _) = child.spend(30_000, || ()).expect("child spend in task");
-        child // return remainder (10_000 uc)
+        child 
     });
 
     let (parent, _) = parent.spend(50_000, || ()).expect("parent spend ok");
 
     let returned = handle.await.expect("task should complete");
     let merged = parent.merge(returned);
-
-    // Parent: 100_000 - 40_000 - 50_000 = 10_000
-    // Child:  40_000 - 30_000 = 10_000
-    // Total:  20_000
+    
     assert_eq!(merged.available(), 20_000);
 }
 
-/// Spend across `.await` in the same function (no spawn).
 #[tokio::test]
 async fn spend_then_await_then_spend() {
     let budget = Budget::new(50_000);
