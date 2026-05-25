@@ -1,0 +1,4 @@
+runtime,outcome,agent_steps,cap_uc,total_spent_uc,pct_of_cap,overshoot_uc,structural_undershoot_uc,wasted_call_cost_uc,provider,model,workload,trial
+token_capabilities,completed_no_cap_hit,10,1500,1366,91.07,0,0,0,mock,mock-llm,lang001,0
+token_capabilities_bytelen,compile_time_reservation_refused,8,1500,930,62.0,0,0,0,mock,mock-llm,lang001,0
+naive_guard,compile_time_reservation_refused,8,1500,930,62.0,0,0,0,mock,mock-llm,lang001,0
