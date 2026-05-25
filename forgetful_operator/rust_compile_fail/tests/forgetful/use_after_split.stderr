@@ -1,0 +1,16 @@
+error[E0382]: borrow of moved value: `parent`
+  --> tests/forgetful/use_after_split.rs:24:14
+   |
+20 |     let parent = Budget::<CAP>::mint(&mint, 100).unwrap();
+   |         ------ move occurs because `parent` has type `Budget<1000>`, which does not implement the `Copy` trait
+21 |     let (_child, _remainder) = parent.split(50).unwrap();
+   |                                       --------- `parent` moved due to this method call
+...
+24 |     let _x = parent.micro_cents();
+   |              ^^^^^^ value borrowed here after move
+   |
+note: `Budget::<MAX>::split` takes ownership of the receiver `self`, which moves `parent`
+  --> $TOKEN_BUDGETS/src/lib.rs
+   |
+   |     pub fn split(self, amount: u64) -> Result<(Self, Self), BudgetError> {
+   |                  ^^^^

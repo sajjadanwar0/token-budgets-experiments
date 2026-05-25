@@ -1,0 +1,4 @@
+condition,n_trials,overshoots,overshoot_rate,wilson_lo,wilson_hi,mean_spent_uc,max_spent_uc,errors,p_vs_racy_fisher
+python_racy,30,30,1.0000,0.8865,1.0000,69.00,69,0,
+python_locked,30,0,0.0000,0.0000,0.1135,23.00,23,0,1.69112e-17
+rust_affine_split,30,0,0.0000,0.0000,0.1135,0.00,0,0,1.69112e-17

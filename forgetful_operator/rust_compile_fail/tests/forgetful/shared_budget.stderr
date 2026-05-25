@@ -1,0 +1,19 @@
+error[E0382]: use of moved value: `budget`
+  --> tests/forgetful/shared_budget.rs:39:33
+   |
+27 |     let budget = {
+   |         ------ move occurs because `budget` has type `Budget<1000>`, which does not implement the `Copy` trait
+...
+33 |     let h1 = tokio::spawn(child(budget));
+   |                                 ------ value moved here
+...
+39 |     let h2 = tokio::spawn(child(budget));
+   |                                 ^^^^^^ value used here after move
+   |
+note: consider changing this parameter type in function `child` to borrow instead if owning the value isn't necessary
+  --> tests/forgetful/shared_budget.rs:19:25
+   |
+19 | async fn child(_budget: Budget<CAP>) -> u64 {
+   |          -----          ^^^^^^^^^^^ this parameter takes ownership of the value
+   |          |
+   |          in this function

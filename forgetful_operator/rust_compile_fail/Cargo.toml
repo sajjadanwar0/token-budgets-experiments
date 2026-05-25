@@ -1,0 +1,11 @@
+[package]
+name = "forgetful_operator_compile_fail"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+token-budgets = { path = "../../../token-budgets", features = ["system-authority"] }
+tokio = { version = "1.40", features = ["full"] }
+
+[dev-dependencies]
+trybuild = "1.0"

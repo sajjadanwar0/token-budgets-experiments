@@ -1,0 +1,5 @@
+error[E0599]: no method named `clone` found for struct `Budget<MAX>` in the current scope
+  --> tests/forgetful/clone_budget.rs:16:22
+   |
+16 |     let _b2 = budget.clone();
+   |                      ^^^^^ method not found in `Budget<1000>`

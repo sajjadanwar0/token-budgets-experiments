@@ -1,0 +1,19 @@
+[package]
+name = "forgetful_operator_rust_affine"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+token-budgets = { path = "../../../token-budgets", features = ["system-authority"] }
+
+tokio = { version = "1.40", features = ["full"] }
+reqwest = { version = "0.13.3", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+csv = "1.3"
+clap = { version = "4.5", features = ["derive"] }
+
+[[bin]]
+name = "forgetful_operator_rust_affine"
+path = "src/main.rs"
