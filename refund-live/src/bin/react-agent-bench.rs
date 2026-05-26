@@ -1,28 +1,3 @@
-//! Framework integration case study: ReAct agent with Token Budgets.
-//!
-//! Demonstrates the discipline in a realistic multi-step tool-use loop.
-//! Each task budget caps the total cost of the agent's reasoning +
-//! tool calls + final synthesis. Tasks that would exceed the budget
-//! terminate cleanly with no partial-completion fraud.
-//!
-//! Tools (mocked locally to avoid external API costs for this eval):
-//!   - calculator(expr)
-//!   - knowledge_lookup(topic)
-//!   - web_search(query) [mocked]
-//!
-//! Each agent task = ReAct loop, max 6 iterations:
-//!   1. Read task
-//!   2. THINK -> Plan
-//!   3. ACT -> Tool call
-//!   4. OBSERVE -> Result
-//!   5. (repeat 3-4)
-//!   6. SYNTHESIZE -> Final answer
-//!
-//! Budget threads through all iterations; each iteration reserves+confirms.
-//!
-//! Usage: ANTHROPIC_API_KEY=... cargo run --release --bin react-agent-bench
-//! Cost: ~$2-3 for N=50 tasks at $0.05 budget each.
-
 use anyhow::{Result};
 use token_budgets::Budget;
 use serde_json::{json, Value};
@@ -31,10 +6,10 @@ use std::fs::File;
 use std::io::Write;
 use std::time::{Duration, Instant};
 
-const TASK_BUDGET_NC: u64 = 50_000_000;  // $0.05 per task
+const TASK_BUDGET_NC: u64 = 50_000_000;
 type TaskBudget = Budget<TASK_BUDGET_NC>;
 
-const IN_RATE_NC: u64 = 1000;   // Anthropic Haiku
+const IN_RATE_NC: u64 = 1000;
 const OUT_RATE_NC: u64 = 5000;
 const MAX_ITERATIONS: usize = 6;
 const MAX_TOKENS_PER_ITER: u32 = 512;
@@ -197,10 +172,8 @@ async fn run_react_task(
         let assistant_text = parsed["content"][0]["text"].as_str().unwrap_or("").to_string();
         iterations = iter + 1;
 
-        // Check if agent issued a tool call or terminated
         if assistant_text.contains("calc(") || assistant_text.contains("lookup(") {
             tool_calls += 1;
-            // Mock tool response - in real integration, would dispatch to actual tool
             messages.push(json!({"role": "assistant", "content": assistant_text}));
             messages.push(json!({"role": "user", "content": "Tool result: <mock result for demo>"}));
         } else if assistant_text.contains("ANSWER:") {

@@ -8,19 +8,13 @@ description = "Live API experiment runners for the Token Budgets receipt/refund 
 
 [dependencies]
 token-budgets = { path = "../../token-budgets" }
-tiktoken-rs = "0.11"                              
-
-
+tiktoken-rs = "0.11"
 reqwest = { version = "0.13.3", features = ["json"] }
 tokio   = { version = "1", features = ["full"] }
-
-# Serialization
 serde      = { version = "1", features = ["derive"] }
 serde_json = "1"
 csv        = "1"
-
 clap = { version = "4", features = ["derive"] }
-
 anyhow = "1"
 
 [features]
@@ -28,7 +22,6 @@ default  = ["system-authority"]
 system-authority = ["token-budgets/system-authority"]
 tiktoken = ["token-budgets/tiktoken"]
 
-# ── 10 binary targets (one per experiment runner) ──
 [[bin]]
 name = "a1-adversarial"
 path = "src/bin/a1-adversarial.rs"

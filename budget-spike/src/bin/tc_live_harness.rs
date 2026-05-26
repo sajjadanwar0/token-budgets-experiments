@@ -55,9 +55,6 @@ fn model_for(provider: &str) -> &'static str {
         "anthropic" => "claude-haiku-4-5-20251001",
         "anthropic-sonnet" => "claude-sonnet-4-5-20250929",
         "groq" => "llama-3.3-70b-versatile",
-        // `llama3.2:latest` is what `ollama pull llama3.2` actually creates;
-        // verify with `ollama list`. The model behind this tag is the 3.2B
-        // Q4_K_M variant of Llama 3.2.
         "ollama" => "llama3.2:latest",
         _ => panic!("unknown provider: {}", provider),
     }

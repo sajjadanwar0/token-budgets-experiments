@@ -1,40 +1,7 @@
-#!/usr/bin/env python3
-"""
-Independent Adversarial Hold-Out Validation for AnthropicEstimator
-==================================================================
-
-Validates the 2.0x safety margin of AnthropicEstimator against an
-independently-generated adversarial corpus.
-
-DESIGN NOTES (for review)
--------------------------
-- Hold-out corpus is generated DETERMINISTICALLY in-script. No LLM
-  involvement, no overlap with calibration audit.
-- Four adversarial categories DISTINCT from the calibration audit
-  (which targeted nested tool schemas):
-    1. CJK_heavy        - Chinese/Japanese/Korean dense Unicode
-    2. code_heavy       - Python/Rust/JS source code
-    3. math_heavy       - LaTeX equations + scientific text
-    4. mixed_edge       - Emoji + base64 + multilingual switching
-- Validation rule (A1 satisfaction):
-      predicted_tokens = byte_length * 2.0
-      actual_tokens    = anthropic.messages.count_tokens(...)
-      a1_satisfied     = predicted_tokens >= actual_tokens
-- We report per-category and overall A1 satisfaction with Wilson 95% CI.
-- Estimated cost: under $0.10 (count_tokens is cheap).
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-    python3 anthropic_a1_holdout.py | tee a1_holdout.log
-    cat a1_holdout_results.csv
-"""
-
 import os
 import csv
 import sys
 import math
-import json
 
 try:
     import anthropic
@@ -42,50 +9,28 @@ except ImportError:
     sys.exit("Install: pip install anthropic")
 
 MODEL = "claude-haiku-4-5-20251001"
-MARGIN = 2.0  # The AnthropicEstimator's calibrated margin
+MARGIN = 2.0
 OUTPUT_CSV = "a1_holdout_results.csv"
 
-# ---------------------------------------------------------------------------
-# Deterministic adversarial corpus (no LLM, no external data)
-# ---------------------------------------------------------------------------
-
-# Category 1: CJK-heavy (high byte-density, low token-density typically)
 CJK_PROMPTS = [
-    # Chinese (Simplified): paragraph from a public-domain treatise
     "古之欲明明德於天下者,先治其國;欲治其國者,先齊其家;欲齊其家者,先修其身;欲修其身者,先正其心;欲正其心者,先誠其意;欲誠其意者,先致其知;致知在格物。",
-    # Chinese (Traditional)
     "天行健,君子以自強不息;地勢坤,君子以厚德載物。雲行雨施,品物流形。大明終始,六位時成,時乘六龍以御天。",
-    # Japanese: Manyoshu-style waka and prose
     "春過ぎて夏来るらし白妙の衣干したり天の香具山。我が背子と二人見ませばいくばくか此の降る雪の嬉しからまし。",
-    # Japanese with mixed kanji + hiragana + katakana + Latin
     "プログラミング言語Rustは2010年にGraydon Hoareが設計し、その後Mozillaが開発を引き継ぎました。所有権システム(ownership system)が特徴です。",
-    # Korean
     "한글은 1443년 세종대왕에 의해 창제되었으며, 1446년에 훈민정음이라는 이름으로 반포되었다. 자음 14개와 모음 10개로 구성된 표음문자이다.",
-    # Korean philosophical
     "수신제가치국평천하(修身齊家治國平天下)는 대학(大學)에 나오는 유교의 핵심 가르침으로, 자신의 몸을 닦고 집안을 가지런히 한 후에야 나라를 다스리고 천하를 평정할 수 있다는 뜻이다.",
-    # Mixed CJK with technical terms
     "深度学习(Deep Learning)模型如GPT-4使用Transformer架构,其核心是注意力机制(Attention Mechanism)。Token化过程将文本分割为子词(subword)单元。",
-    # Vietnamese (uses Latin but with extensive diacritics, adversarial for byte-tokenizer ratios)
     "Tiếng Việt là ngôn ngữ chính thức của Việt Nam, được hơn 90 triệu người bản ngữ sử dụng. Hệ thống chữ viết hiện đại dựa trên bảng chữ cái Latin với các dấu phụ.",
-    # Arabic (right-to-left, different byte structure)
     "اللغة العربية هي إحدى أكثر اللغات السامية انتشاراً في العالم، يتحدث بها أكثر من 422 مليون نسمة وتستخدم كلغة رسمية في 26 دولة.",
-    # Hebrew
     "הָאָדָם נוֹלָד חָפְשִׁי וְשָׁוֶה בִּכְבוֹדוֹ וּבִזְכֻיּוֹתָיו. כֻּלָּם חוֹנְנוּ בְּתְבוּנָה וּבְמַצְפּוּן.",
-    # Hindi (Devanagari)
     "भारत एक दक्षिण एशियाई देश है। यह क्षेत्रफल की दृष्टि से विश्व का सातवाँ बड़ा एवं जनसंख्या की दृष्टि से सबसे बड़ा देश है। राजधानी नई दिल्ली है।",
-    # Russian (Cyrillic)
     "Программирование на Rust требует понимания системы владения. Каждое значение имеет владельца, и когда владелец выходит из области видимости, значение освобождается.",
-    # Greek
     "Η Ελληνική γλώσσα είναι μία από τις παλαιότερες ινδοευρωπαϊκές γλώσσες με συνεχή προφορική και γραπτή παράδοση από τον 14ο αιώνα π.Χ. μέχρι σήμερα.",
-    # Thai (no spaces between words, adversarial)
     "ภาษาไทยเป็นภาษาราชการของประเทศไทย เป็นภาษาในตระกูลภาษาขร้า-ไท และมีระบบการเขียนที่ใช้อักษรไทยซึ่งดัดแปลงมาจากอักษรเขมรโบราณ",
-    # Compact mixed multi-script
     "中国Rust社区:こんにちは Здравствуйте مرحبا नमस्ते 안녕하세요 Γειά σας שלום สวัสดี",
 ]
 
-# Category 2: Source code (multiple languages)
 CODE_PROMPTS = [
-    # Python with type annotations and async
     """async def fetch_user_data(user_id: int, db: Database) -> Optional[User]:
     async with db.connection() as conn:
         result = await conn.execute(
@@ -94,14 +39,12 @@ CODE_PROMPTS = [
         )
         row = await result.fetchone()
         return User(**row) if row else None""",
-    # Rust ownership with generics
     """fn process<T: Iterator<Item = u32>>(iter: T, budget: Budget) -> Result<Vec<u32>, BudgetError> {
     let collected: Vec<u32> = iter.collect();
     let cost = collected.len() as u64 * 4;
     let _ = budget.spend(cost)?;
     Ok(collected.into_iter().map(|x| x * 2).collect())
 }""",
-    # JavaScript with React hooks
     """function useBudgetTracker(initialBudget) {
   const [budget, setBudget] = useState(initialBudget);
   const [history, setHistory] = useState([]);
@@ -114,7 +57,6 @@ CODE_PROMPTS = [
 
   return { budget, spend, history };
 }""",
-    # Haskell with monad transformers
     """processRequest :: (MonadIO m, MonadReader Config m, MonadError AppError m) 
                => Request 
                -> m Response
@@ -123,7 +65,6 @@ processRequest req = do
   validated <- validateRequest req `catchError` (throwError . ValidationFailed)
   result <- liftIO $ executeQuery (dbConfig cfg) (toQuery validated)
   pure $ Response { status = 200, body = toJSON result }""",
-    # SQL with CTEs
     """WITH recursive budget_tree AS (SELECT id, parent_id, name, allocated_cents, 0 as depth
                                       FROM budgets
                                       WHERE parent_id IS NULL
@@ -136,14 +77,12 @@ processRequest req = do
        FROM budget_tree
        WHERE allocated_cents > 1000
        ORDER BY depth, name;""",
-    # Regular expression-heavy code
     """const PATTERNS = {
   email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/,
   ipv4: /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
   uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
   semver: /^(\\d+)\\.(\\d+)\\.(\\d+)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$/,
 };""",
-    # Shell scripting with heredocs
     """#!/bin/bash
 set -euo pipefail
 for env in prod staging dev; do
@@ -158,7 +97,6 @@ data:
   margin_ratio: "2.0"
 EOF
 done""",
-    # Verilog (different paradigm)
     """module budget_tracker #(parameter WIDTH = 32) (
     input wire clk,
     input wire rst_n,
@@ -175,7 +113,6 @@ done""",
         end
     end
 endmodule""",
-    # Assembly (x86_64 AT&T)
     """budget_spend:
     pushq   %rbp
     movq    %rsp, %rbp
@@ -194,7 +131,6 @@ endmodule""",
 .Lreturn:
     popq    %rbp
     ret""",
-    # LISP/Scheme
     """(define (budget-spend! budget amount)
   (cond ((negative? amount)
          (error 'invalid-amount "amount must be non-negative" amount))
@@ -206,7 +142,6 @@ endmodule""",
          (cons 'ok (budget-balance budget)))))""",
 ]
 
-# Category 3: Mathematical / scientific (LaTeX-dense)
 MATH_PROMPTS = [
     r"""Lemma 1 (cap-soundness): Let $\mathcal{B} = (b_0, S, T)$ be a budget instance where 
 $S \subseteq T$ is the spent set and $T$ the total trace. Define $\sigma(t) = \sum_{s \in S, s \le t} c(s)$. 
@@ -225,15 +160,10 @@ $\forall p, E_P(p) \ge \mathrm{billable\_tokens}_P(p)$.""",
     r"""For the Schrödinger equation $i\hbar \frac{\partial \psi}{\partial t} = \hat{H}\psi$ with $\hat{H} = -\frac{\hbar^2}{2m}\nabla^2 + V(\mathbf{r})$, separable solutions take the form $\psi(\mathbf{r}, t) = \phi(\mathbf{r})e^{-iEt/\hbar}$ where $\hat{H}\phi = E\phi$.""",
 ]
 
-# Category 4: Mixed adversarial (emoji + base64 + multi-script + structured)
 MIXED_PROMPTS = [
-    # Emoji-dense
     "🎉🚀💻🔥📊📈🎯✨🌟💡🎨🔧⚙️🛠️🧪🔬🌍🌎🌏🌐🗺️🧭🚢✈️🚁🛸🛰️🛤️🚄🚅🚈🚉🛣️🛬🛫⛽🚦🚥🚧 Translate: Each emoji represents a concept; concatenate descriptions.",
-    # Base64 + commentary
     "Decode this base64 payload and explain what it does: aW1wb3J0IHRpa3Rva2VuOyBlbmMgPSB0aWt0b2tlbi5nZXRfZW5jb2RpbmcoJ2NsMTAwa19iYXNlJyk7IHRva2VucyA9IGVuYy5lbmNvZGUoIkhlbGxvLCB3b3JsZCEiKQ== Then suggest two alternative encodings.",
-    # JSON with deeply nested structure + Unicode keys
     """Parse this configuration: {"設定": {"予算": {"上限_uc": 540, "余裕率": 2.0, "プロバイダ": {"OpenAI": {"単価": 0.15}, "Anthropic": {"単価": 1.0, "_注釈": "クロード3.5以降"}, "Groq": null}, "_デバッグ": true}, "ログ": ["INFO: 初期化完了", "WARN: タイマー設定 ⏰", "ERROR: 認証失敗 🔒"]}}""",
-    # Mixed code + natural language + math
     r"""The function `compute_budget_margin` returns $\mu = 2.0$ for Anthropic. In Rust: ```rust
 let margin: f64 = match provider {
     Provider::Anthropic => 2.0_f64,  // 安全マージン
@@ -243,11 +173,8 @@ let margin: f64 = match provider {
 let predicted_uc = (byte_len as f64 * margin) as u64;
 ```
 where $\mathrm{byte\_len}$ is measured by `.len()` on the serialised message body.""",
-    # URLs with Unicode percent-encoding
     "Fetch these endpoints in order: https://api.example.com/v1/budgets?owner=用户123&limit=10 https://docs.example.com/索引?lang=zh-CN https://github.com/sajjadanwar0/токен-бюджеты/issues?q=label%3Aбагов Then report HTTP status codes.",
-    # Stream of base64 + emojis
     "🔐 H4sIAAAAAAAAA00OuwrCQBBE+xT5lP0LMXFNJTYWFmqsBC2tZGOuiSEPyG0Eg/679w0xQjKwwOzMzM6OkhKDLEgEbF54zw3O5dgxRSqYwlR+wfYbqGRYJjz0v9NEEEbgEYHaR3Vqs5iLM2lAGYAOdv7AABTPa/yvDBLHJEbUklEqWvNRQ4hwY7Bh== 🚀 Apply rot13 then base64-decode.",
-    # Math + code + Unicode
     r"""Given: $f(n) = O(n \log n)$ where $\log = \log_2$. Implementation:
 def msort(xs: list[int]) -> list[int]:
     if len(xs) <= 1: return xs
@@ -255,9 +182,7 @@ def msort(xs: list[int]) -> list[int]:
     L, R = msort(xs[:m]), msort(xs[m:])
     return merge(L, R)  # 마지막에 병합
 Time: $T(n) = 2T(n/2) + O(n) = O(n \log n)$. 空间复杂度: $O(n)$.""",
-    # Adversarial Unicode normalization (combining characters, RTL marks)
     "Café vs Café (different normalizations). Hebrew shalom: שָׁלוֹם with nikud. Mathematical script: 𝒜 𝓁 𝓰 𝑒 𝓫 𝓻 𝒶. Emoji ZWJ sequences: 👨‍👩‍👧‍👦 (family), 🏳️‍🌈 (rainbow flag). RTL mark test: a‏b c.",
-    # Code-switching: English ↔ Chinese ↔ Code
     """请实现一个 budget tracker in Rust。Requirements:
 1. 使用 affine ownership (i.e., implement Drop, don't implement Clone).
 2. `pub fn spend(self, amount: u64) -> Result<Self, BudgetError>` - 注意是 by-value self.
@@ -268,7 +193,6 @@ let b = Budget::new(1000);
 let b = b.spend(300)?;  // 还剩 700
 ```
 Return the full implementation 加上 unit tests.""",
-    # Boundary case: very repetitive (compresses well in tokenizer)
     "aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa",
 ]
 
@@ -337,7 +261,6 @@ def main():
         print(f"  [{idx:02d}] {category:<14} bl={bl:>4}  pred={predicted_tokens:>6.0f}  "
               f"actual={actual_tokens:>4}  ratio={ratio:>5.2f}  {status}")
 
-    # Per-category summary
     print()
     print("=" * 88)
     print("Per-category summary")
@@ -358,7 +281,6 @@ def main():
     overall_mean = sum(overall_ratios) / len(overall_ratios)
     overall_max = max(overall_ratios)
 
-    # Wilson 95% CI on satisfaction rate
     if total_n > 0:
         p = total_ok / total_n
         z = 1.96
@@ -388,7 +310,6 @@ def main():
               f"bl={worst['byte_length']} pred={worst['predicted_tokens']:.0f} "
               f"actual={worst['actual_tokens']} ratio={worst['ratio']:.3f}")
 
-    # Write CSV
     with open(OUTPUT_CSV, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=[
             "idx", "category", "byte_length", "predicted_tokens",

@@ -1,36 +1,3 @@
-#!/usr/bin/env python3
-"""
-multiworkload_bytelen_n30.py - TB-default (byte-length + 2.0x margin)
-on three Anthropic workloads at N=30.
-
-Upgrades the existing N=10 per cell multi-workload Anthropic table to
-N=30 per cell, matching the statistical depth of the gpt-4o
-multi-workload sweep and closing the brutal-review N=10 thinness
-attack.
-
-Three workloads: LANG-001 retry loop, clarification (self-terminating),
-arg_hallucination (forced-error loop). Cap = 2000 uc. Estimator:
-byte-length (UTF-8 of serialised request body) x 2.0 safety margin,
-matching the AnthropicEstimator default.
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-    cd ~/tb-reproduce/token-budgets-experiments/
-
-    # Sanity (1 workload, N=3)
-    python3 multiworkload_bytelen_n30.py --workload lang001 --n-trials 3 \\
-        --output /tmp/mw_sanity.csv
-
-    # Full sweep: 3 workloads x N=30 = 90 trials, ~$2.00, ~30 min
-    mkdir -p sweep_results
-    for wl in lang001 clarification arg_hallucination; do
-        python3 multiworkload_bytelen_n30.py --workload $wl --n-trials 30 \\
-            --output sweep_results/tb_bytelen_anthropic_${wl}_cap2000_n30.csv
-        sleep 5
-    done
-"""
-
 import argparse
 import csv
 import json
@@ -40,10 +7,6 @@ import sys
 import time
 
 from anthropic import Anthropic
-
-# ---------------------------------------------------------------------------
-# Workload definitions (must match the Rust harness exactly)
-# ---------------------------------------------------------------------------
 
 WORKLOADS = {
     "lang001": {
@@ -72,7 +35,7 @@ WORKLOADS = {
         "user": (
             "I need to book a flight for next month."
         ),
-        "fake_feedback": None,  # Workload self-terminates after clarification
+        "fake_feedback": None,
         "self_terminating": True,
     },
     "arg_hallucination": {
@@ -99,7 +62,6 @@ SAFETY_MARGIN = 2.0
 
 
 def serialize_request_body(model, max_tokens, system, messages):
-    """Serialise the request body for byte-length estimation."""
     payload = {
         "model": model,
         "max_tokens": max_tokens,
@@ -110,7 +72,6 @@ def serialize_request_body(model, max_tokens, system, messages):
 
 
 def predict_cost_bytelen(system, messages, max_completion_tokens, margin):
-    """TB-default estimator: byte-length * margin (input) + max_tokens * price (output)."""
     body = serialize_request_body(
         ANTHROPIC_HAIKU_4_5, max_completion_tokens, system, messages,
     )
@@ -140,7 +101,6 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
 
 
 def run_trial(trial_id, cap_uc, workload_name, max_steps=20):
-    """TB-default discipline: pre-flight reservation; refuse if predicted > remaining."""
     wl = WORKLOADS[workload_name]
     client = Anthropic()
     messages = [{"role": "user", "content": wl["user"]}]
@@ -195,8 +155,6 @@ def run_trial(trial_id, cap_uc, workload_name, max_steps=20):
         assistant_text = resp.content[0].text if resp.content else ""
         messages.append({"role": "assistant", "content": assistant_text})
 
-        # If self-terminating workload (clarification), the model is expected to
-        # stop after one round; we do not synthesise a fake follow-up.
         if wl["self_terminating"]:
             outcome = "completed_no_cap_hit"
             break

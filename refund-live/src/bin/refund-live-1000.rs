@@ -1,12 +1,3 @@
-//! 1000-call live API regime with statistical analysis of the A1
-//! margin distribution and conservation verification across the
-//! full run. Companion to the 10-call refund-live smoke test.
-//!
-//! Usage: N_CALLS=1000 ANTHROPIC_API_KEY=sk-ant-... \
-//!          cargo run --release --bin refund-live-1000
-//!
-//! Estimated cost: ~$0.10-3 depending on N_CALLS and prompt length.
-
 use anyhow::{Context, Result};
 use token_budgets::Budget;
 use serde::{Deserialize, Serialize};
@@ -17,7 +8,7 @@ use std::time::{Duration, Instant};
 
 const ANTHROPIC_PER_IN_TOKEN_UC: u64 = 1;
 const ANTHROPIC_PER_OUT_TOKEN_UC: u64 = 5;
-const BUDGET_CAP: u64 = 100_000_000; // $100
+const BUDGET_CAP: u64 = 100_000_000;
 const MAX_OUT_TOKENS: u32 = 200;
 const ANTHROPIC_URL: &str = "https://api.anthropic.com/v1/messages";
 const MODEL: &str = "claude-haiku-4-5-20251001";
@@ -262,7 +253,6 @@ async fn main() -> Result<()> {
     println!("max:    {:.3}x", max);
     println!();
 
-    // Conservation
     let expected_final = BUDGET_CAP - sum_actual as u64;
     if final_value == expected_final {
         println!("✓ Conservation: initial - actual = final (exact, {} uc)", final_value);
@@ -274,7 +264,6 @@ async fn main() -> Result<()> {
         );
     }
 
-    // CSV
     let mut csv = File::create("refund_live_1000_results.csv")?;
     writeln!(csv, "idx,reservation_uc,actual_uc,refund_uc,input_tokens,output_tokens,latency_ms,margin_ratio")?;
     for r in &records {

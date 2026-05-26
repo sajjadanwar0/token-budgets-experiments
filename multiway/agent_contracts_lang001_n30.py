@@ -1,39 +1,3 @@
-#!/usr/bin/env python3
-"""
-agent_contracts_lang001_n30_v3.py
-
-Version 3: probe-first diagnostic. v2 hid the actual exception inside
-the per-trial error path, so 30 trials all failed with "outcome=error"
-and no visible reason. v3:
-  (a) Runs --probe-only first to find the right import path and class names.
-  (b) Surfaces the actual exception (with traceback) in the per-trial log.
-  (c) Tries multiple plausible import paths in sequence.
-
-USAGE (recommended order):
-
-    # Step 1: probe the API. Costs $0 (no LLM calls beyond one trial probe).
-    python3 agent_contracts_lang001_n30.py \
-        --existing-n10 sweep_results/agent_contracts_lang001_n10.csv \
-        --output /tmp/probe_out.csv \
-        --probe-only
-
-    # The probe prints which import path works and runs one trial. If it
-    # succeeds, the API binding is correct and you can do the full sweep.
-    # If it fails, the printed exception tells you exactly what API name
-    # to fix in this script.
-
-    # Step 2: full sweep (after probe succeeds)
-    python agent_contracts_lang001_n30_v3.py \\
-        --existing-n10 sweep_results/agent_contracts_lang001_n10.csv \\
-        --output sweep_results/agent_contracts_lang001_n30.csv \\
-        --runs 30
-
-ALTERNATIVELY:
-    If you have the original N=10 harness code (the script that produced
-    sweep_results/agent_contracts_lang001_n10.csv), paste it and I will
-    match this script's API usage to it. The probe-first approach assumes
-    we don't have that reference.
-"""
 from __future__ import annotations
 
 import argparse
@@ -67,9 +31,6 @@ LANG001_TOOL_ERROR = (
     "Please correct and retry."
 )
 
-# Try these import paths in order. The first one that imports + has the
-# expected class names will be used. If none work, the probe will print
-# the failures and exit.
 IMPORT_PATH_CANDIDATES = [
     "agent_contracts",
     "ai_agent_contracts",
@@ -85,11 +46,6 @@ MODE_ENUM_NAMES = ["ContractMode", "Mode", "EnforcementMode"]
 
 
 def probe_api():
-    """Try to import the ai-agent-contracts library and find its classes.
-
-    Returns (module, Contract, ResourceConstraints, ContractMode)
-    or raises RuntimeError with a detailed diagnostic message.
-    """
     diagnostic_lines = ["=== AGENT-CONTRACTS API PROBE ===\n"]
     diagnostic_lines.append("Trying import paths in order:\n")
 
@@ -101,7 +57,6 @@ def probe_api():
         try:
             mod = importlib.import_module(path)
             diagnostic_lines.append(f"    OK: imported {path}\n")
-            # Check whether expected classes are accessible.
             mod_dir = set(dir(mod))
             diagnostic_lines.append(f"    module dir: "
                                     f"{sorted(x for x in mod_dir if not x.startswith('_'))[:20]}\n")
@@ -124,7 +79,6 @@ def probe_api():
             diagnostic_lines.append(f"  (could not enumerate: {e})\n")
         raise RuntimeError("".join(diagnostic_lines))
 
-    # Look for Contract class.
     Contract = None
     for name in CONTRACT_CLASS_NAMES:
         if hasattr(successful_module, name):
@@ -138,7 +92,6 @@ def probe_api():
         diagnostic_lines.append(f"  {sorted(x for x in dir(successful_module) if not x.startswith('_'))}\n")
         raise RuntimeError("".join(diagnostic_lines))
 
-    # Look for ResourceConstraints.
     ResourceConstraints = None
     for name in CONSTRAINTS_CLASS_NAMES:
         if hasattr(successful_module, name):
@@ -159,17 +112,10 @@ def probe_api():
 
 
 def run_one_trial(api_handle, run_id: int, model: str) -> dict:
-    """Execute one trial. Returns the result row dict including error_message
-    on failure.
-
-    api_handle is the (module, Contract, ResourceConstraints, ContractMode)
-    tuple from probe_api().
-    """
     mod, Contract, ResourceConstraints, ContractMode = api_handle
     t0 = time.monotonic()
     num_calls = 0
     spent_uc = 0
-    outcome = "completed"
     error_msg = ""
 
     def sql_query_tool(query: str) -> str:
@@ -247,7 +193,6 @@ def main():
         print("FATAL: OPENAI_API_KEY not set", file=sys.stderr)
         sys.exit(2)
 
-    # Probe the API. This will print diagnostic info to stderr.
     try:
         api_handle = probe_api()
     except RuntimeError as e:
@@ -260,7 +205,6 @@ def main():
 
     print("=== API PROBE SUCCEEDED ===\n", file=sys.stderr)
 
-    # Run one trial to confirm the API actually works end-to-end.
     print("Running probe trial...", file=sys.stderr)
     probe_row = run_one_trial(api_handle, run_id=0, model=args.model)
     if probe_row["outcome"] == "error":
@@ -289,7 +233,6 @@ def main():
     print(f"\nRunning {args.runs} full-sweep trials on {args.model}...",
           file=sys.stderr)
 
-    # Load existing for drift check.
     if os.path.isfile(args.existing_n10):
         with open(args.existing_n10, newline="") as f:
             existing_n10 = list(csv.DictReader(f))
@@ -298,11 +241,10 @@ def main():
               file=sys.stderr)
         existing_n10 = []
 
-    rows = [probe_row]  # Include the probe row in the output.
+    rows = [probe_row]
     for i in range(1, args.runs + 1):
         row = run_one_trial(api_handle, run_id=i, model=args.model)
         rows.append(row)
-        # Show the per-trial error message if any
         log_extra = ""
         if row["outcome"] == "error":
             first_line = row["error_message"].split("\n")[0] if row["error_message"] else ""
@@ -320,7 +262,6 @@ def main():
                 print(f"\nWARNING: drift check failed "
                       f"({new_violation} vs {existing_violation})",
                       file=sys.stderr)
-                # Don't abort here; the user has visibility into per-trial errors now.
                 print("Continuing anyway because per-trial errors are now visible.",
                       file=sys.stderr)
 
@@ -334,7 +275,6 @@ def main():
     with open(args.output, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
-        # Skip the probe row (run_id=0) from the final N=30 sweep output.
         for r in rows[1:]:
             w.writerow(r)
 

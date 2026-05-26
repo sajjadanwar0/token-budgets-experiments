@@ -1,65 +1,9 @@
-#!/usr/bin/env python3
-"""
-tokenizer_direct_lang001.py - Phase v41 of revision.
-
-Addresses Reviewer 3 §3.3 and Reviewer 4 §"Eliminate Heuristics" attacks:
-benchmark a sound tokenizer-direct estimator (Anthropic's own
-`count_tokens` API) against the LANG-001 retry-loop, mirroring our
-existing cap-sweep configuration on Anthropic.
-
-DESIGN
-------
-The tokenizer-direct estimator is sound by construction: it calls
-Anthropic's `messages.count_tokens` before each spend to get the
-exact input token count under the provider's own tokenizer, then
-reserves cost as:
-
-    predicted_uc = input_tokens * input_uc_per_token
-                 + max_completion_tokens * output_uc_per_token
-
-This guarantees A1 holds (the prediction is the exact bill the
-provider would charge, modulo the worst-case output bound).
-No 2.0x margin needed.
-
-TRADE-OFF
----------
-- SOUNDNESS: A1 holds by construction.
-- CAPITAL EFFICIENCY: ~100% (no over-reservation).
-- LATENCY: One extra `count_tokens` API call per spend (~50-200ms
-  round-trip + Anthropic API processing).
-- COST: count_tokens calls are NOT charged for tokens, but they
-  are subject to rate limits.
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-    cd ~/tb-reproduce/token-budgets-experiments/
-
-    # Sanity-check
-    python3 tokenizer_direct_lang001.py \\
-        --cap-uc 2000 --n-trials 3 --output /tmp/tokdirect_sanity.csv
-
-    # Full sweep matching our existing Anthropic cap sweep
-    mkdir -p sweep_results
-    for cap in 500 540 1000 2000 5000; do
-        python3 tokenizer_direct_lang001.py \\
-            --cap-uc $cap --n-trials 30 \\
-            --output sweep_results/tokenizer_direct_lang001_cap${cap}_n30.csv \\
-            2>&1 | tee /tmp/tokdirect_cap${cap}.log
-    done
-"""
-
 import argparse
 import csv
 import os
 import sys
 import time
-
 from anthropic import Anthropic
-
-# ---------------------------------------------------------------------------
-# LANG-001 workload (identical to tokencap_lang001_head_to_head.py)
-# ---------------------------------------------------------------------------
 
 LANG_001_SYSTEM = (
     "You are a SQL agent. The user will give you a task. You must write a "
@@ -80,21 +24,9 @@ LANG_001_FAKE_ERROR = (
 
 ANTHROPIC_HAIKU_4_5 = "claude-haiku-4-5-20251001"
 PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
-MAX_COMPLETION_TOKENS = 200  # the max_tokens we pass to messages.create
-
-
-# ---------------------------------------------------------------------------
-# Tokenizer-direct estimator
-# ---------------------------------------------------------------------------
+MAX_COMPLETION_TOKENS = 200
 
 def predict_cost_uc(client, messages, system, max_completion_tokens):
-    """Call Anthropic's count_tokens to get exact input token count, then
-    compute the worst-case cost reservation as:
-
-        cost_uc = input_tokens * 1 uc/token + max_completion_tokens * 5 uc/token
-
-    Returns (predicted_uc, input_tokens, latency_ms).
-    """
     start = time.monotonic()
     try:
         resp = client.messages.count_tokens(
@@ -113,14 +45,8 @@ def predict_cost_uc(client, messages, system, max_completion_tokens):
     )
     return predicted_uc, input_tokens, latency_ms, None
 
-
-# ---------------------------------------------------------------------------
-# Trial runner
-# ---------------------------------------------------------------------------
-
 def call_with_retry(client, *, model, max_tokens, temperature, system,
                     messages, max_retries=5):
-    """Standard Anthropic-call wrapper with 529-Overloaded retry."""
     for attempt in range(max_retries):
         try:
             return client.messages.create(
@@ -142,8 +68,6 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
 
 
 def run_trial(trial_id, cap_uc, max_steps=20):
-    """One LANG-001 trial using the tokenizer-direct estimator."""
-
     client = Anthropic()
     messages = [{"role": "user", "content": LANG_001_USER}]
 
@@ -153,13 +77,10 @@ def run_trial(trial_id, cap_uc, max_steps=20):
     steps = 0
     outcome = "max_steps_reached"
     error_repr = ""
-
-    # Telemetry on tokenizer-direct overhead
     count_tokens_calls = 0
     total_count_tokens_latency_ms = 0.0
 
     for step in range(max_steps):
-        # --- Tokenizer-direct pre-flight check ---
         predicted_uc, input_tokens, latency_ms, err = predict_cost_uc(
             client,
             messages=messages,
@@ -182,10 +103,8 @@ def run_trial(trial_id, cap_uc, max_steps=20):
             )
             break
 
-        # --- Reservation passes; debit predicted cost ---
         remaining_uc -= predicted_uc
 
-        # --- Make the actual LLM call ---
         resp, err_class, _ = call_with_retry(
             client,
             model=ANTHROPIC_HAIKU_4_5,
@@ -198,21 +117,14 @@ def run_trial(trial_id, cap_uc, max_steps=20):
         if err_class is not None:
             outcome = err_class
             error_repr = err_class
-            # Reservation was already debited; we'd refund in a real impl,
-            # but for cap-respecting analysis the cap was respected (we just
-            # paid for nothing).
             break
 
-        # --- Record actual usage + refund unused portion ---
         actual_input = resp.usage.input_tokens
         actual_output = resp.usage.output_tokens
         actual_cost = (
             actual_input * PRICING_UC_PER_TOKEN["input"]
             + actual_output * PRICING_UC_PER_TOKEN["output"]
         )
-        # Refund: predicted_uc - actual_cost
-        # (predicted was input + max_completion_tokens*5;
-        #  actual was input + actual_output*5; refund = (max - actual_output)*5)
         refund = predicted_uc - actual_cost
         if refund > 0:
             remaining_uc += refund
@@ -230,9 +142,6 @@ def run_trial(trial_id, cap_uc, max_steps=20):
         + total_output_tokens * PRICING_UC_PER_TOKEN["output"]
     )
     overshoot_uc = max(0, actual_total_cost_uc - cap_uc)
-
-    # Capital efficiency: actual / (cap_uc - remaining_uc)
-    # i.e., how much of the reserved budget was actually used
     reserved_total = cap_uc - remaining_uc
     if reserved_total > 0:
         capital_efficiency = actual_total_cost_uc / reserved_total
@@ -265,11 +174,6 @@ def run_trial(trial_id, cap_uc, max_steps=20):
         "count_tokens_mean_latency_ms": round(mean_count_tokens_latency, 1),
         "error_repr": error_repr,
     }
-
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
@@ -337,9 +241,6 @@ def main():
         print("\nNo rows produced; CSV not written.")
         sys.exit(1)
 
-    # --------------------------------------------------------------
-    # Summary
-    # --------------------------------------------------------------
     n = len(rows)
     refused = sum(1 for r in rows if r["outcome"] == "compile_time_reservation_refused")
     maxsteps = sum(1 for r in rows if r["outcome"] == "max_steps_reached")

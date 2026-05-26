@@ -1,9 +1,3 @@
-//! Adversarial A1 stress test at n=100 per class (10 classes → 1000 calls).
-//! Replaces the 10-call smoke test with a statistically powered run.
-//!
-//! Usage: ANTHROPIC_API_KEY=... cargo run --release --bin a1-adversarial-n100
-//! Cost:  ~$0.50 against Haiku 4.5.
-
 use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::env;
@@ -23,11 +17,9 @@ struct Resp { usage: Usage }
 #[derive(Deserialize)]
 struct Usage { input_tokens: u64, output_tokens: u64 }
 
-/// Generate variant `idx` (0..100) within `class`. Deterministic.
 fn build_prompt(class: &str, idx: usize) -> String {
     match class {
         "cjk_dense" => {
-            // 100 variants of dense Chinese text by combining base phrases
             const BASE: &[&str] = &[
                 "请用中文回答以下问题：什么是机器学习？",
                 "深度学习与传统机器学习有什么区别？",
@@ -232,9 +224,6 @@ async fn main() -> Result<()> {
                  100.0 * v as f64 / N_PER_CLASS as f64);
     }
 
-    // Statistical claim: 95% CI upper bound on true violation rate
-    // For n=100 with k violations, Clopper-Pearson upper = Beta_inv(0.975, k+1, n-k)
-    // For n=1000 with 0 violations, exact 95% CI upper ~= 0.30%
     println!();
     println!("Statistical interpretation (Clopper-Pearson):");
     println!("  N={}, observed violations k, 95% CI upper bound on true rate:", total);

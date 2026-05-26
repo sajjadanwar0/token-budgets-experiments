@@ -1,16 +1,3 @@
-//! Side-by-side empirical comparison of ByteLength vs Tiktoken estimators.
-//!
-//! Runs the same 100-call workload on Anthropic Haiku 4.5 with both
-//! estimators and reports the margin distribution for each. This is
-//! the empirical input for the §V.eval-margin-cost paragraph that
-//! claims tighter margins are available via tokenizer-direct estimators.
-//!
-//! Usage:
-//!   ANTHROPIC_API_KEY=... cargo run --release --bin compare-estimators \
-//!     --features tiktoken
-//!
-//! Cost: ~$0.50 for N=100 calls.
-
 use anyhow::Result;
 use token_budgets::{Budget, estimator::{ByteLength, TokenEstimator}};
 use serde_json::{json, Value};
@@ -22,10 +9,10 @@ use std::time::{Duration, Instant};
 #[cfg(feature = "tiktoken")]
 use token_budgets::estimator::Tiktoken;
 
-const BUDGET_CAP: u64 = 10_000_000_000;  // $10
+const BUDGET_CAP: u64 = 10_000_000_000;
 type B = Budget<BUDGET_CAP>;
 
-const IN_RATE_NC: u64 = 1000;   // Anthropic Haiku
+const IN_RATE_NC: u64 = 1000;
 const OUT_RATE_NC: u64 = 5000;
 
 fn prompts(n: usize) -> Vec<String> {
@@ -154,7 +141,6 @@ async fn main() -> Result<()> {
         eprintln!("       Rebuild with: cargo run --release --bin compare-estimators --features tiktoken");
     }
 
-    // Summarise per estimator
     let mut by_est: std::collections::BTreeMap<&str, Vec<&Row>> = Default::default();
     for r in &rows {
         by_est.entry(r.estimator).or_default().push(r);
@@ -175,7 +161,6 @@ async fn main() -> Result<()> {
                  name, rows.len(), over_res, p50, p95);
     }
 
-    // CSV out
     let mut csv = File::create("compare_estimators.csv")?;
     writeln!(csv, "idx,estimator,reservation_nc,actual_nc,input_tokens,output_tokens,margin_ratio")?;
     for r in &rows {

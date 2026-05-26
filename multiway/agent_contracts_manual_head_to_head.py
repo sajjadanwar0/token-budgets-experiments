@@ -1,33 +1,3 @@
-#!/usr/bin/env python3
-"""agent_contracts_manual_head_to_head.py — fallback if ContractedLLM is broken.
-
-Uses Agent Contracts' Contract and ResourceConstraints types as the
-contract SPECIFICATION (so AC's data model defines the cap), but
-enforces the cap manually via litellm — bypassing the ContractedLLM
-context manager that's failing on v0.3.1 with 'NoneType is not callable'.
-
-This is methodologically defensible for a head-to-head: both Token
-Budgets and Agent Contracts are pre-flight cost-check disciplines.
-Token Budgets enforces via an affine-typed Budget value; Agent
-Contracts enforces via a Contract instance that wraps a ContractedLLM.
-For comparable measurement, what matters is: same cap, same workload,
-same model, same temperature, same N — both run pre-flight cost
-checks and reject if cap would be exceeded. This script does exactly
-that, using AC's spec types so the contract definition is identical
-to what ContractedLLM would consume.
-
-If you get ContractedLLM working via ac_diagnostic.py, use
-agent_contracts_head_to_head.py instead — that's the more direct
-comparison. This script is for the case where v0.3.1's integration
-wrapper is broken on your machine.
-
-Run:
-  source ~/.zshrc
-  source .ac_venv/bin/activate
-  pip install ai-agent-contracts==0.3.1 litellm
-  python3 multiway/agent_contracts_manual_head_to_head.py
-"""
-
 from __future__ import annotations
 import csv
 import os
@@ -58,8 +28,8 @@ LANG_001_PROMPT = (
     "important clarification question."
 )
 
-MODEL_LITELLM = "claude-sonnet-4-5-20250929"   # try bare name first
-CAP_USD = 540 / 1_000_000   # 540 uc = $0.000540 (matches TB convention)
+MODEL_LITELLM = "claude-sonnet-4-5-20250929"
+CAP_USD = 540 / 1_000_000
 N_TRIALS = 30
 TEMPERATURE = 0
 MAX_OUTPUT_TOKENS = 200
@@ -90,19 +60,15 @@ class TrialResult:
 
 
 def estimate_input_cost_usd(prompt: str) -> float:
-    """Pre-flight input-cost estimate: prompt bytes / 4 char-per-tok approx.
-    Conservative for Anthropic (real tok/byte ~0.5-0.85 on English)."""
-    approx_tokens = len(prompt.encode("utf-8")) / 3.5   # ~3.5 char/tok
+    approx_tokens = len(prompt.encode("utf-8")) / 3.5
     return approx_tokens * SONNET_INPUT_USD_PER_TOK
 
 
 def estimate_output_cost_usd(max_tokens: int) -> float:
-    """Pre-flight worst-case output cost."""
     return max_tokens * SONNET_OUTPUT_USD_PER_TOK
 
 
 def build_contract_spec(cap_usd: float):
-    """Build AC Contract spec if AC is installed; otherwise local equivalent."""
     if AC_AVAILABLE:
         return Contract(
             id="lang001",
@@ -144,7 +110,6 @@ def run_one_trial(trial_id: int, contract) -> TrialResult:
         refused_reason = (f"pre-flight: est_call_cost=${est_call_cost:.6f} > "
                           f"cap=${cap_usd:.6f}")
     else:
-        # Cap not exceeded by pre-flight estimate; make the call
         try:
             response = litellm.completion(
                 model=MODEL_LITELLM,
@@ -202,7 +167,6 @@ def main():
     print(f"    n:         {N_TRIALS}")
     print(f"    output:    {OUT_PATH}")
 
-    # Pre-flight estimate for the workload — print once for context
     est_in = estimate_input_cost_usd(LANG_001_PROMPT)
     est_out = estimate_output_cost_usd(MAX_OUTPUT_TOKENS)
     print(f"\n    pre-flight estimate per call:")

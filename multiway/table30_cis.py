@@ -1,26 +1,10 @@
-#!/usr/bin/env python3
-"""
-Bootstrap CIs for Table 30 (multi-runtime gpt-4o LANG-001).
-
-Usage:
-    python3 table30_cis.py path/to/gpt4o_lang001_n10_full.csv
-
-Produces:
-  - Per-runtime overshoot rate with Wilson 95% CI
-  - Bootstrap 95% CI on the per-runtime overshoot rate
-  - Pairwise difference CIs: Token Budgets vs each baseline
-  - LaTeX-ready table snippet at end
-"""
-
 import csv
 import math
 import sys
 import random
 from collections import defaultdict
 
-
 def wilson_ci(k, n, alpha=0.05):
-    """Wilson score interval for a binomial proportion."""
     if n == 0:
         return (0.0, 0.0)
     z = 1.959963984540054  # Phi^-1(1 - 0.025)
@@ -32,7 +16,6 @@ def wilson_ci(k, n, alpha=0.05):
 
 
 def bootstrap_rate_ci(outcomes, B=10000, alpha=0.05, seed=42):
-    """Bootstrap CI on the proportion of successes in outcomes (list of 0/1)."""
     if not outcomes:
         return (0.0, 0.0)
     rng = random.Random(seed)
@@ -48,7 +31,6 @@ def bootstrap_rate_ci(outcomes, B=10000, alpha=0.05, seed=42):
 
 
 def bootstrap_diff_ci(outcomes_a, outcomes_b, B=10000, alpha=0.05, seed=42):
-    """Bootstrap CI on rate(B) - rate(A) where outcomes are 0/1 lists."""
     if not outcomes_a or not outcomes_b:
         return (0.0, 0.0)
     rng = random.Random(seed)
@@ -100,7 +82,6 @@ def main():
             "outcomes": outcomes,
         })
 
-    # Per-runtime CIs
     print("=" * 88)
     print(f"{'runtime':25s}  {'k/n':>6s}  {'rate':>6s}  {'Wilson 95% CI':>22s}  {'Bootstrap 95% CI':>22s}")
     print("=" * 88)
@@ -110,7 +91,6 @@ def main():
               f"[{r['boot_lo']:5.3f}, {r['boot_hi']:5.3f}]")
     print()
 
-    # Pairwise: token_capabilities vs each baseline
     tb_row = next((r for r in rows if "token_capabilities" in r["runtime"] or
                                        "token_budgets" in r["runtime"]), None)
     if tb_row is None:
@@ -130,28 +110,6 @@ def main():
         print()
         print("  ** = 95% CI excludes zero (statistically significant)")
         print()
-
-    # LaTeX snippet
-    print("=" * 88)
-    print("LaTeX snippet for Table 30 (drop in after current Table 30 caption):")
-    print("=" * 88)
-    print(r"""
-\begin{table}[h]
-\caption{Per-runtime overshoot rate with Wilson 95\% CI and bootstrap 95\% CI on the rate (10{,}000 resamples).}
-\centering
-\begin{tabular}{lrrrr}
-\toprule
-Runtime & $k/n$ & Rate & Wilson 95\% CI & Bootstrap 95\% CI \\
-\midrule""")
-    for r in rows:
-        rt = r["runtime"].replace("_", r"\_")
-        print(f"  {rt} & {r['k']}/{r['n']} & {r['rate']:.3f} & "
-              f"$[{r['wilson_lo']:.3f}, {r['wilson_hi']:.3f}]$ & "
-              f"$[{r['boot_lo']:.3f}, {r['boot_hi']:.3f}]$ \\\\")
-    print(r"""\bottomrule
-\end{tabular}
-\end{table}
-""")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,6 @@ from typing import List, Tuple
 
 
 def wilson_95_ci(k: int, n: int) -> Tuple[float, float]:
-    """Wilson 95% CI on proportion k/n. Returns (lo, hi)."""
     if n == 0:
         return (0.0, 0.0)
     z = 1.96
@@ -18,14 +17,6 @@ def wilson_95_ci(k: int, n: int) -> Tuple[float, float]:
 
 
 def fisher_exact_2x2(a: int, b: int, c: int, d: int) -> float:
-    """Compute Fisher's exact two-tailed p-value for the 2x2 table:
-        [[a, b], [c, d]]
-    where the rows are conditions and columns are (overshoot, no-overshoot).
-
-    Returns the two-tailed p-value. For our use case the counts will
-    often be at the boundary (e.g. 30/0 vs 0/30), so we use the
-    log-factorial direct computation to avoid overflow.
-    """
     n = a + b + c + d
     row1 = a + b
     row2 = c + d
@@ -115,7 +106,6 @@ def main():
         s = summarise(rows, name)
         summaries.append(s)
 
-    # Pairwise Fisher's exact: racy-vs-locked, racy-vs-rust
     p_racy_vs_locked = None
     p_racy_vs_rust = None
     if summaries[0]["n_trials"] > 0 and summaries[1]["n_trials"] > 0:
@@ -131,7 +121,6 @@ def main():
         d = summaries[2]["n_trials"] - c
         p_racy_vs_rust = fisher_exact_2x2(a, b, c, d)
 
-    # Print table
     print()
     print("Forgetful-Operator Experiment: Summary")
     print("=" * 78)

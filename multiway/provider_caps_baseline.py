@@ -1,49 +1,8 @@
-#!/usr/bin/env python3
-"""
-provider_caps_baseline.py - Provider-side per-call cap baseline.
-
-External review challenge: "the obvious alternative is the provider's own
-max_completion_tokens parameter. Show whether TB adds anything over what's
-already free." This script answers that challenge directly.
-
-The provider's max_completion_tokens (Anthropic) and max_tokens (OpenAI)
-parameters bound OUTPUT TOKENS PER CALL. They do NOT bound CUMULATIVE
-SESSION SPEND. This script measures whether per-call output-bounding
-alone is sufficient to keep cumulative session spend below a target cap,
-or whether session-level mechanisms (TB pre-flight, gateway post-hoc,
-tokencap, etc) are needed.
-
-Protocol:
-    Run LANG-001 retry-loop with max_completion_tokens=200, no
-    session-level cap. Measure cumulative spend after max_steps. Compare
-    to the same 5 caps used in Tables 37, 38, 42 (gateway baseline).
-
-Expected finding: max_completion_tokens alone overshoots every reasonable
-session cap because the agent loops to max_steps; total spend = sum of
-per-call costs, with no mechanism halting the loop based on cumulative
-dollars. This confirms the paper's framing (which is currently buried).
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-    cd ~/tb-reproduce/token-budgets-experiments/
-
-    # Sanity (N=3)
-    python3 provider_caps_baseline.py --n-trials 3 \\
-        --output /tmp/provider_caps_sanity.csv
-
-    # Full sweep: N=30 trials, ~$0.50, ~10 min
-    mkdir -p sweep_results
-    python3 provider_caps_baseline.py --n-trials 30 \\
-        --output sweep_results/provider_caps_baseline_lang001_n30.csv
-"""
-
 import argparse
 import csv
 import os
 import sys
 import time
-
 from anthropic import Anthropic
 
 LANG_001_SYSTEM = (
@@ -64,7 +23,7 @@ LANG_001_FAKE_ERROR = (
 ANTHROPIC_HAIKU_4_5 = "claude-haiku-4-5-20251001"
 PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
 MAX_COMPLETION_TOKENS = 200
-TARGET_CAPS = [500, 540, 1000, 2000, 5000]  # for comparison vs Tables 37/38/42
+TARGET_CAPS = [500, 540, 1000, 2000, 5000]
 
 
 def call_with_retry(client, *, model, max_tokens, temperature, system,
@@ -87,7 +46,6 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
 
 
 def run_trial(trial_id, max_steps=20):
-    """LANG-001 with max_completion_tokens=200 and NO session-level cap."""
     client = Anthropic()
     messages = [{"role": "user", "content": LANG_001_USER}]
 
@@ -128,7 +86,6 @@ def run_trial(trial_id, max_steps=20):
         messages.append({"role": "assistant", "content": assistant_text})
         messages.append({"role": "user", "content": LANG_001_FAKE_ERROR})
 
-    # Compute overshoot vs each target cap
     overshoots_per_cap = {cap: cumulative_spent_uc > cap for cap in TARGET_CAPS}
 
     return {

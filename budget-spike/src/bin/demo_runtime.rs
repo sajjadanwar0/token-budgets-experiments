@@ -1,9 +1,6 @@
 use budget_spike::{Budget, BudgetError, estimate_cost};
 
 fn main() {
-    println!("=== Budget Spike: Sync Runtime Demo ===\n");
-
-    // ── [1] Linear spend across 5 sequential tool calls ──
     println!("[1] Linear spend across 5 sequential tool calls");
     let mut b = Budget::new(500_000);
     println!("  initial available: {} uc", b.available());
@@ -26,8 +23,6 @@ fn main() {
         }
     }
     println!("  final available: {} uc\n", b.available());
-
-    // ── [2] Parent split into two children, each spends independently ──
     println!("[2] Parent split into two children, each spends independently");
     let parent = Budget::new(100_000);
     let (parent, sub_a) = parent.split(40_000).unwrap();
@@ -69,7 +64,6 @@ fn main() {
     }
     println!();
 
-    // ── [3] Insufficient budget aborts cleanly ──
     println!("[3] Insufficient budget aborts cleanly");
     let small = Budget::new(1_000);
     let err = small.spend(5_000, || ()).unwrap_err();

@@ -1,69 +1,3 @@
-#!/usr/bin/env python3
-"""
-m2_run.py - standalone M2 experiment runner
-
-Implements three pre-flight discipline adapters and writes CSV in the same
-schema as multiway_compare.py's _summarise() output (runtime, outcome,
-agent_steps, cap_uc, total_spent_uc, pct_of_cap, overshoot_uc,
-structural_undershoot_uc, wasted_call_cost_uc). No imports from
-multiway_compare.py; no edits to it. Run this script standalone.
-
-Three adapters:
-
-  1. token_capabilities (coarse fixed-form estimator)
-     Mirrors the existing run_token_capabilities adapter in
-     multiway_compare.py. Included here so the M2 CSV is self-contained
-     and the coarse-vs-bytelen estimator comparison can be done within
-     one CSV.
-
-  2. token_capabilities_bytelen (NEW for M2)
-     Same inline pre-flight discipline as (1) but with byte-length+2x
-     margin estimator matching the Rust impl
-     (token-budgets/src/estimator/default.rs). Isolates ESTIMATOR
-     CHOICE when compared against (1).
-
-  3. naive_guard (NEW for M2)
-     Bare 4-line counter discipline with no per-turn estimator
-     bookkeeping beyond the byte-length check. The receipt/refund
-     cycle is absent. Isolates LIBRARY DISCIPLINE when compared
-     against (2).
-
-The TB-Rust comparison row comes from a separate invocation of your
-tc_live_harness Rust binary. The LangGraph+AgentGuard control row
-comes from a separate invocation of your existing multiway_compare.py
-with --runtimes langgraph_with_guard.
-
-The three CSVs (this script's output + Rust output + LangGraph control
-output) are merged by m2_table_generator_v2.py.
-
-Usage:
-  # Smoke test with mock provider (no API key needed)
-  python3 m2_run.py --provider mock --cap-uc 1500 --runs 1 \
-      --output-csv m2_smoke.csv
-
-  # Live run on gpt-4o (requires OPENAI_API_KEY)
-  python3 m2_run.py --provider openai --cap-uc 1500 --runs 30 \
-      --output-csv m2_gpt4o_lang001_cap1500_n30.csv
-
-  # Live run on claude-haiku-4-5 (requires ANTHROPIC_API_KEY)
-  python3 m2_run.py --provider anthropic --cap-uc 2000 --runs 30 \
-      --output-csv m2_haiku_lang001_cap2000_n30.csv
-
-Then run the existing harness for the AgentGuard control:
-  python3 multiway_compare.py --provider openai --cap-uc 1500 \
-      --runtimes langgraph_with_guard --runs 30 \
-      --output-csv m2_gpt4o_ag_control.csv
-
-Then merge with the table generator:
-  python3 m2_table_generator_v2.py \
-      --gpt4o-csv  m2_gpt4o_lang001_cap1500_n30.csv \
-      --gpt4o-rust-csv m2_rust_gpt4o.csv \
-      --haiku-csv m2_haiku_lang001_cap2000_n30.csv \
-      --haiku-rust-csv m2_rust_haiku.csv \
-      --gpt4o-cap 1500 --haiku-cap 2000 \
-      --out-latex m2_table.tex --out-summary m2_summary.md
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -72,50 +6,31 @@ import os
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 
-
-# =============================================================================
-# Provider pricing
-#
-# IMPORTANT: these per-token rates are stated in micro-cents per million
-# tokens. The harness uses integer division `// 1_000_000` so the result is
-# an integer uc value. 1 uc = 10^-5 USD.
-#
-# Sync these to whatever PROVIDER_PRICING in your multiway_compare.py uses
-# if you want the CSV's total_spent_uc column to match exactly. The M2
-# comparison is INTERNALLY consistent regardless (all three adapters in
-# this file use the same dict), but cross-CSV merging with the existing
-# harness assumes the same pricing.
-# =============================================================================
-
 PROVIDER_PRICING: Dict[str, Dict[str, Any]] = {
     "openai": {
         "model": "gpt-4o",
-        # $2.50 / Mtok input, $10.00 / Mtok output
         "input_uc_per_mtok":  250_000,
         "output_uc_per_mtok": 1_000_000,
     },
     "anthropic": {
         "model": "claude-haiku-4-5-20251001",
-        # $1.00 / Mtok input, $5.00 / Mtok output
         "input_uc_per_mtok":  100_000,
         "output_uc_per_mtok": 500_000,
     },
     "groq": {
         "model": "llama-3.3-70b-versatile",
-        # $0.59 / Mtok input, $0.79 / Mtok output (Groq published rates)
         "input_uc_per_mtok":  59_000,
         "output_uc_per_mtok": 79_000,
     },
     "mock": {
         "model": "mock-llm",
-        "input_uc_per_mtok":  100_000,   # use anthropic-haiku-equivalent rates
+        "input_uc_per_mtok":  100_000,
         "output_uc_per_mtok": 500_000,
     },
 }
 
 
 def compute_cost_uc(input_tokens: int, output_tokens: int, provider: str) -> int:
-    """Returns cost in uc as an integer. Same shape as the existing harness."""
     p = PROVIDER_PRICING[provider]
     return (
             input_tokens * p["input_uc_per_mtok"]
@@ -123,32 +38,9 @@ def compute_cost_uc(input_tokens: int, output_tokens: int, provider: str) -> int
     ) // 1_000_000
 
 
-# =============================================================================
-# LANG-001 workload
-#
-# This reproduces the SQL retry loop documented in Section 2/5 of the paper.
-# Model: receives a SQL task description, calls a run_sql tool, the tool
-# returns a syntax error, the model retries with a different query, repeat.
-#
-# wl["tool_error"] and wl["tool_name"] match the names the existing harness
-# uses. If your WORKLOADS["lang001"] in multiway_compare.py differs, edit
-# this dict to match before running.
-# =============================================================================
-
 WORKLOADS: Dict[str, Dict[str, Any]] = {
     "lang001": {
         "name": "lang001",
-        # Workload semantics: a SQL-retry loop. The model proposes a query;
-        # the simulated "execution" returns a syntax-error message; the model
-        # retries with a different query. The retry loop continues until the
-        # cap fires.
-        #
-        # We use plain user/assistant turns rather than tool-calls so the
-        # script works on both OpenAI and Anthropic without needing
-        # tool_call_id wiring (OpenAI strictly requires that any role="tool"
-        # message be preceded by a matching tool_calls field on the assistant
-        # message). The growing prompt across turns is what drives cap firing;
-        # the tool-vs-text format does not affect M2's separability claim.
         "retry_error": (
             "ERROR: SQL syntax error at or near the start of the query. "
             "Re-write the query with correct PostgreSQL syntax and try again."
@@ -165,12 +57,6 @@ WORKLOADS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
-# =============================================================================
-# Per-step accounting (CSV nesting)
-# =============================================================================
-
-
 def _initial_messages(wl: Dict[str, Any]) -> List[Dict[str, Any]]:
     return [
         {"role": "system", "content": wl["system_prompt"]},
@@ -179,11 +65,6 @@ def _initial_messages(wl: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 def _byte_length_of_messages(messages: List[Dict[str, Any]]) -> int:
-    """UTF-8 byte length of the message content payload.
-
-    Mirrors what the Rust ByteLengthEstimator counts: the body bytes the
-    LLM call would actually transmit, not the LangChain or HTTP envelope.
-    """
     total = 0
     for m in messages:
         content = m.get("content", "")
@@ -197,26 +78,6 @@ def _byte_length_of_messages(messages: List[Dict[str, Any]]) -> int:
             total += len(str(content).encode("utf-8"))
     return total
 
-
-# =============================================================================
-# LLM client dispatch
-#
-# Three providers: openai, anthropic, mock. Plain user/assistant chat
-# (no tool-calls); the retry loop drives prompt growth via appended
-# user-error turns. The mock provider returns deterministic token counts
-# growing with --growth per step; useful for wiring tests and CI without
-# API cost.
-#
-# Returns a normalised dict:
-#   {
-#     "assistant_text": str,    # what the model said (for appending to history)
-#     "input_tokens":   int,    # provider-reported input tokens
-#     "output_tokens":  int,    # provider-reported output tokens
-#     "self_terminated": bool,  # True if the model's output suggests it's done
-#   }
-# =============================================================================
-
-
 def _llm_call(
         provider: str,
         messages: List[Dict[str, Any]],
@@ -227,8 +88,6 @@ def _llm_call(
 ) -> Dict[str, Any]:
     if provider == "mock":
         prompt_bytes = _byte_length_of_messages(messages)
-        # Bytes-as-tokens upper bound for mock accounting; growth simulates
-        # the prompt expanding with each retry turn appended.
         in_tok = prompt_bytes + mock_growth * mock_step_idx
         out_tok = 40
         return {
@@ -286,13 +145,6 @@ def _append_response(
         response: Dict[str, Any],
         wl: Dict[str, Any],
 ) -> List[Dict[str, Any]]:
-    """After an assistant response, append (i) the assistant message and
-    (ii) a user message with the retry-error to drive the next iteration.
-
-    The user-error message is what makes the prompt grow turn-over-turn:
-    each retry adds the assistant's previous attempt PLUS the error message,
-    so the byte-length estimator's reservation grows with each step until
-    the cap fires."""
     out = list(messages)
     text = response.get("assistant_text") or ""
     if not text:
@@ -300,12 +152,6 @@ def _append_response(
     out.append({"role": "assistant", "content": text})
     out.append({"role": "user",      "content": wl["retry_error"]})
     return out
-
-
-# =============================================================================
-# _summarise() shape matches multiway_compare.py
-# =============================================================================
-
 
 def _summarise(
         runtime: str,
@@ -328,13 +174,6 @@ def _summarise(
         "structural_undershoot_uc": undershoot_uc,
         "wasted_call_cost_uc":      0,
     }
-
-
-# =============================================================================
-# Adapter 1: token_capabilities (coarse fixed-form estimator)
-# Mirrors the existing run_token_capabilities in multiway_compare.py.
-# =============================================================================
-
 
 def run_token_capabilities(
         provider: str,
@@ -377,13 +216,6 @@ def run_token_capabilities(
 
     return _summarise("token_capabilities", outcome, cap_uc, agent_steps, cumulative_uc)
 
-
-# =============================================================================
-# Adapter 2: token_capabilities_bytelen (NEW for M2)
-# Same inline discipline, byte-length+2x margin estimator (matches Rust impl).
-# =============================================================================
-
-
 def run_token_capabilities_bytelen(
         provider: str,
         cap_uc: int,
@@ -402,7 +234,6 @@ def run_token_capabilities_bytelen(
     reserved_output_tokens = 200
 
     for step_idx in range(1, recursion_limit // 2 + 1):
-        # Byte-length+2x estimator (matches token-budgets/src/estimator/default.rs)
         prompt_bytes = _byte_length_of_messages(messages)
         est_input_tokens = int(prompt_bytes * anthropic_margin)
         est_uc = compute_cost_uc(est_input_tokens, reserved_output_tokens, provider)
@@ -427,17 +258,6 @@ def run_token_capabilities_bytelen(
 
     return _summarise("token_capabilities_bytelen", outcome, cap_uc, agent_steps, cumulative_uc)
 
-
-# =============================================================================
-# Adapter 3: naive_guard (NEW for M2)
-# Bare counter + byte-length check. NO refund discipline, NO library wrapping,
-# NO receipt cycle. The discipline is: estimate, check, decrement, call.
-# Difference from (2): no reservation/refund bookkeeping, no max-tracking
-# beyond a single counter. If the provider returns a transient error, the
-# reservation is lost (no refund).
-# =============================================================================
-
-
 def run_naive_guard(
         provider: str,
         cap_uc: int,
@@ -460,14 +280,10 @@ def run_naive_guard(
         est_input_tokens = int(prompt_bytes * anthropic_margin)
         est_uc = compute_cost_uc(est_input_tokens, reserved_output_tokens, provider)
 
-        # ============ THE 4-LINE GUARD ============
         if est_uc > remaining:
             outcome = "compile_time_reservation_refused"
             break
         remaining -= est_uc
-        # =========================================
-        # NO receipt, NO refund-on-error path. If the LLM call raises,
-        # the reservation is silently lost.
 
         try:
             resp = _llm_call(provider, messages, wl,
@@ -475,7 +291,6 @@ def run_naive_guard(
                              mock_growth=growth,
                              mock_step_idx=step_idx)
         except Exception:
-            # Bare counter: reservation already deducted, no refund.
             outcome = "completed_no_cap_hit"
             break
 
@@ -491,11 +306,6 @@ def run_naive_guard(
     return _summarise("naive_guard", outcome, cap_uc, agent_steps, cumulative_uc)
 
 
-# =============================================================================
-# main()
-# =============================================================================
-
-
 ADAPTERS = {
     "token_capabilities":         run_token_capabilities,
     "token_capabilities_bytelen": run_token_capabilities_bytelen,
@@ -506,8 +316,6 @@ DEFAULT_RUNTIMES = ",".join(ADAPTERS.keys())
 
 
 def _load_done_trials(csv_path: str) -> set:
-    """Read existing CSV (if any) and return the set of (runtime, trial)
-    pairs already recorded, so a resumed run skips them."""
     if not os.path.exists(csv_path) or os.path.getsize(csv_path) == 0:
         return set()
     done = set()
@@ -563,18 +371,13 @@ def main():
 
     wl = WORKLOADS[args.workload]
 
-    # Resume support: read existing rows so we skip already-done trials.
     done = _load_done_trials(args.output_csv)
     if done:
         print(f"Resume mode: {len(done)} (runtime, trial) pairs already in "
               f"{args.output_csv} -- will skip them.", file=sys.stderr)
 
-    # File state: open in append mode if it has content already, else write
-    # header first.
     file_has_content = os.path.exists(args.output_csv) and os.path.getsize(args.output_csv) > 0
 
-    # Canonical field order (matches multiway_compare.py's _summarise plus the
-    # metadata we add).
     FIELDNAMES = [
         "runtime", "outcome", "agent_steps", "cap_uc", "total_spent_uc",
         "pct_of_cap", "overshoot_uc", "structural_undershoot_uc",
@@ -612,9 +415,9 @@ def main():
                 row["workload"] = args.workload
                 row["trial"]    = trial
                 writer.writerow(row)
-                fh.flush()                # durable after each trial
+                fh.flush()
                 try:
-                    os.fsync(fh.fileno()) # belt-and-braces against power loss
+                    os.fsync(fh.fileno())
                 except (OSError, AttributeError):
                     pass
                 n_new += 1

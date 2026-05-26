@@ -1,28 +1,7 @@
-#!/usr/bin/env python3
-"""
-verify_agent_contracts_drift.py
-
-Verify that the first 10 outcomes of the N=30 Agent Contracts sweep match
-the existing N=10 baseline within tolerance. Run this AFTER the N=30 sweep
-completes (it does not invoke the library or the API).
-
-Usage:
-    python verify_agent_contracts_drift.py \
-        --n10 sweep_results/agent_contracts_lang001_n10.csv \
-        --n30 sweep_results/agent_contracts_lang001_n30.csv
-
-Exit codes:
-    0 — outcome distributions agree within tolerance; safe to use N=30 in paper
-    1 — outcomes diverge by more than tolerance; investigate before publishing
-
-Tolerance: |new_budget_violations - existing_budget_violations| <= 2 out of 10.
-"""
 from __future__ import annotations
-
 import argparse
 import csv
 import sys
-
 
 def load_outcomes(path: str, limit: int | None = None) -> list[str]:
     with open(path, newline="") as f:

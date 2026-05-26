@@ -1,25 +1,3 @@
-#!/usr/bin/env python3
-"""
-sonnet_b0_10000.py
-
-Fill the B0=10000 gap in the sonnet cap sweep. The paper already
-includes sonnet at B0=540, 5000, 20000 (Table 9b in v60+). This
-script adds B0=10000 for the same N=30 conditions, completing the
-B0 in {540, 5000, 10000, 20000} sweep.
-
-Output:
-  multiway/sweep_results/tb_sonnet_lang001_cap10000_n30.csv
-
-Cost estimate: 30 runs * mean 5 calls/run at sonnet pricing
-  = 30 * 5 * (mean 800 in * 3 + mean 200 out * 15) / 1e6
-  = ~$0.79
-Budget $2 to absorb retries.
-
-Requirements:
-  pip install anthropic
-  export ANTHROPIC_API_KEY=...
-"""
-
 import csv
 import os
 import sys
@@ -154,7 +132,6 @@ def run_trial(client, trial_id: int) -> dict:
             "content": "Continue if you have more steps; otherwise summarise.",
         })
 
-        # Heuristic stop: short response indicates wrap-up
         if len(assistant_text) < 100 and step > 0:
             break
 

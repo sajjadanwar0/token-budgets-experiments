@@ -11,7 +11,6 @@ ANTHROPIC_HAIKU_4_5 = "claude-haiku-4-5-20251001"
 PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
 
 def make_large_tool_def():
-    """4,000-character description + 20 nested arguments."""
     desc = "A complex tool that performs an operation. " * 100
     desc = desc[:4000]
     args = {f"arg{i}": {"type": "string", "description": f"argument {i}"}
@@ -30,7 +29,6 @@ def make_large_tool_def():
 
 
 def make_long_system_prompt():
-    """8,000-character system content."""
     sys_text = ("You are a sophisticated AI assistant. " * 200)[:8000]
     return {
         "system": sys_text,
@@ -40,7 +38,6 @@ def make_long_system_prompt():
 
 
 def make_multi_turn_history():
-    """15 turns, 500 chars per turn."""
     user_msg = "Please summarise this conversation. " * 15
     user_msg = user_msg[:500]
     asst_msg = "I have summarised it for you. " * 17
@@ -58,7 +55,6 @@ def make_multi_turn_history():
 
 
 def make_multi_tool_results():
-    """10 sequential tool-call/result pairs, 300 chars per result."""
     result_text = "Result data: " + ("x" * 285)
     messages = [{"role": "user", "content": "Call get_data 10 times sequentially."}]
     for i in range(10):
@@ -91,7 +87,6 @@ def make_multi_tool_results():
 
 
 def make_cache_control():
-    """Anthropic's prompt-caching with ephemeral cache regions."""
     system_blocks = [
         {"type": "text",
          "text": ("Context document. " * 400)[:4000],
@@ -106,7 +101,6 @@ def make_cache_control():
 
 
 def make_nested_tool_schema():
-    """5-level recursive JSON schema."""
     schema = {"type": "object",
               "properties": {"leaf": {"type": "string"}}}
     for level in range(5):
@@ -128,7 +122,6 @@ def make_nested_tool_schema():
 
 
 def make_unicode_dense_tool_desc():
-    """CJK + emoji in tool metadata."""
     desc = "工具用于处理数据 📊📈📉 复杂的计算流程 🔢🔣 " * 50
     tool = {
         "name": "unicode_tool",
@@ -153,18 +146,11 @@ ADVERSARIAL_CLASSES = {
     "unicode_dense_tool_desc": make_unicode_dense_tool_desc,
 }
 
-
-# ---------------------------------------------------------------------------
-# A1 evaluation
-# ---------------------------------------------------------------------------
-
 def serialize_request_body(payload):
-    """Same serialisation pattern as runner.py for byte_length."""
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 
 def evaluate_a1(client, class_name, factory, margin, max_retries=5):
-    """Return dict with predicted/actual/holds."""
     spec = factory()
     payload = {
         "model": ANTHROPIC_HAIKU_4_5,
@@ -179,7 +165,6 @@ def evaluate_a1(client, class_name, factory, margin, max_retries=5):
     byte_len = len(body.encode("utf-8"))
     predicted_input_uc = math.ceil(byte_len * margin)
 
-    # count_tokens to get billed input
     for attempt in range(max_retries):
         try:
             kwargs = {
@@ -218,11 +203,6 @@ def evaluate_a1(client, class_name, factory, margin, max_retries=5):
         "a1_holds": a1_holds,
         "error": err or "",
     }
-
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
@@ -282,7 +262,6 @@ def main():
         w.writerows(rows)
     print(f"\nWrote {len(rows)} rows -> {args.output}")
 
-    # ---- Summary: A1 pass rate per (margin, class) ----
     print(f"\n{'='*78}")
     print("SUMMARY: A1 pass rate (fraction of trials with predicted >= actual)")
     print(f"{'='*78}")

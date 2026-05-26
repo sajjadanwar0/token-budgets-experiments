@@ -1,25 +1,3 @@
-//! a1-rerun: Anthropic A1 (estimator soundness) characterization
-//!
-//! Runs two measurement cells against Anthropic's Messages API:
-//!   Cell 1: plain-text prompts (no tools)          -- expected: A1 holds
-//!   Cell 2: tool-augmented prompts (with tools)    -- expected: A1 fails on byte estimator
-//!
-//! For each call we record BOTH byte-length AND tiktoken(o200k_base)
-//! estimator results, so a single API call tells us how each estimator
-//! performs.
-//!
-//! For each call we record:
-//!   - request_body_bytes      : len of the serialized JSON sent to the API
-//!   - tiktoken_estimator_tokens : tiktoken(o200k_base) token count of the
-//!                                 serialized JSON body
-//!   - anthropic_input_tokens  : the `usage.input_tokens` field of the
-//!                                 API response (ground truth)
-//!   - bt_ratio = bytes / actual         (A1 holds iff bt_ratio >= 1)
-//!   - k_byte   = actual / bytes         (violation factor for byte estimator)
-//!   - k_tikt   = actual / tiktoken      (violation factor for tiktoken estimator)
-//!
-//! Output: a CSV row per call plus per-cell summary printed to stdout.
-
 use anyhow::{Context, Result};
 use clap::Parser;
 use reqwest::Client;
@@ -29,37 +7,24 @@ use std::time::Duration;
 use tiktoken_rs::o200k_base;
 use tokio::time::sleep;
 
-// -----------------------------------------------------------------------------
-// CLI
-// -----------------------------------------------------------------------------
-
 #[derive(Parser)]
 #[command(version, about = "A1 re-run on Anthropic")]
 struct Cli {
-    /// Output CSV path
     #[arg(long, default_value = "a1_rerun_results.csv")]
     output: String,
 
-    /// Anthropic model
     #[arg(long, default_value = "claude-haiku-4-5")]
     model: String,
 
-    /// max_tokens for each call (kept small to bound cost)
     #[arg(long, default_value = "150")]
     max_tokens: u32,
 
-    /// Number of prompts per class (3 classes per cell -> N = 3 * n_per_class per cell)
     #[arg(long, default_value = "10")]
     n_per_class: usize,
 
-    /// Delay between API calls in milliseconds (rate-limit friendly)
     #[arg(long, default_value = "300")]
     delay_ms: u64,
 }
-
-// -----------------------------------------------------------------------------
-// API types
-// -----------------------------------------------------------------------------
 
 #[derive(Debug, Serialize)]
 struct AnthropicRequest<'a> {
@@ -96,10 +61,6 @@ struct Usage {
     output_tokens: u32,
 }
 
-// -----------------------------------------------------------------------------
-// Output records
-// -----------------------------------------------------------------------------
-
 #[derive(Debug, Serialize, Clone)]
 struct Measurement {
     cell: String,
@@ -114,10 +75,6 @@ struct Measurement {
     k_byte: f64,
     k_tiktoken: f64,
 }
-
-// -----------------------------------------------------------------------------
-// Prompt corpus
-// -----------------------------------------------------------------------------
 
 const PLAIN_SHORT: &[&str] = &[
     "What is the capital of France?",
@@ -247,9 +204,6 @@ fn make_tools() -> Vec<ToolDef> {
     ]
 }
 
-// User prompts that go with the tool-augmented cells.
-// We use prompts that mirror the original failing experiment's structure:
-// LANG-001 (SQL retry), clarification, arg_hallucination.
 const TOOL_PROMPTS: &[(&str, &str)] = &[
     // (class, user_prompt)
     ("sql_retry", "Find the top 5 customers by total revenue in the last 30 days. Include their customer ID, name, and total. Format the result as a markdown table."),
@@ -264,18 +218,10 @@ const TOOL_PROMPTS: &[(&str, &str)] = &[
     ("arg_hallucination", "Find the runbook for handling a payment-processor outage and then send the link to #ops-incident with a brief summary."),
 ];
 
-// -----------------------------------------------------------------------------
-// Token counting
-// -----------------------------------------------------------------------------
-
 fn tiktoken_count(s: &str) -> Result<usize> {
     let bpe = o200k_base().map_err(|e| anyhow::anyhow!("o200k_base load failed: {e}"))?;
     Ok(bpe.encode_with_special_tokens(s).len())
 }
-
-// -----------------------------------------------------------------------------
-// One call
-// -----------------------------------------------------------------------------
 
 async fn one_call(
     client: &Client,
@@ -343,10 +289,6 @@ async fn one_call(
     })
 }
 
-// -----------------------------------------------------------------------------
-// Cell runners
-// -----------------------------------------------------------------------------
-
 async fn run_cell_1_plain(
     client: &Client,
     api_key: &str,
@@ -411,10 +353,6 @@ async fn run_cell_2_tools(
     Ok(())
 }
 
-// -----------------------------------------------------------------------------
-// Summary
-// -----------------------------------------------------------------------------
-
 fn summarize(measurements: &[Measurement]) {
     use std::collections::BTreeMap;
     let mut by_cell: BTreeMap<String, Vec<&Measurement>> = BTreeMap::new();
@@ -445,10 +383,6 @@ fn summarize(measurements: &[Measurement]) {
         eprintln!();
     }
 }
-
-// -----------------------------------------------------------------------------
-// Main
-// -----------------------------------------------------------------------------
 
 #[tokio::main]
 async fn main() -> Result<()> {

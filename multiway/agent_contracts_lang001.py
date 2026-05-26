@@ -1,74 +1,3 @@
-#!/usr/bin/env python3
-"""
-agent_contracts_lang001.py - Ye & Tan Agent Contracts head-to-head on LANG-001.
-
-PATCHED VERSION (v1.1): robust token-count extraction across openai-python
-and LiteLLM versions. The original v1 N=10 run extracted tokens via
-response.usage.prompt_tokens / .completion_tokens (classic OpenAI naming).
-openai-python and LiteLLM adopted the input_tokens / output_tokens
-convention in 2025+ (matching Anthropic's naming). v1's getattr-with-default
-silently returned 0 against the new convention, producing 0-uc spend rows on
-the N=30 re-run while leaving the contract's internal accounting (and the
-overshoot binary) correct.
-
-This patch:
-  - Adds _extract_token_counts() which tries both naming conventions and
-    handles both attribute-style and dict-style usage objects.
-  - Prints a one-time diagnostic warning if extraction still returns
-    (0, 0) on a response that has choices, surfacing further library drift.
-  - Leaves everything else in v1 identical to preserve direct comparability
-    with the existing N=10 CSV.
-
-WHAT THIS DOES
-==============
-Reproduces the LANG-001 SQL-retry workload under Agent Contracts' resource
-budget enforcement, parallel to the six runtimes already in Table 30 of
-the paper. Output CSV uses the same schema as multiway_compare.py so the
-result drops directly into Table 30 as a seventh row.
-
-Tested against ai-agent-contracts v0.3.1 (April 2026). API per
-flyersworder/agent-contracts README (Q. Ye, J. Tan, arXiv:2601.08815).
-
-INSTALLATION
-============
-This script assumes you've installed agent-contracts in your existing
-multiway venv. If not:
-
-  cd /path/to/token-budget-experiments/multiway
-  uv add ai-agent-contracts
-  uv sync
-  uv run python -c "import agent_contracts; print(agent_contracts.__version__)"
-
-USAGE
-=====
-  export OPENAI_API_KEY=sk-...
-  uv run python agent_contracts_lang001.py \\
-      --provider openai --model gpt-4o --runs 30 \\
-      --cap-usd 0.0054 \\
-      --output-csv sweep_results/agent_contracts_lang001_n30.csv
-
-(cost_usd=0.0054 == 540 micro-cents, matching Table 30's cap.)
-
-Cost: ~$1.50 for N=30 on gpt-4o. Run on gpt-4o-mini or anthropic
-claude-haiku-4-5 for cheaper experimentation.
-
-WHAT THE OUTCOME WILL TELL US
-=============================
-The paper expects Agent Contracts to behave like a post-call observer
-(its enforcement layer is runtime cost monitoring, not compile-time
-typing). If that's right, we expect:
-
-  - Mean overshoot approx 1x the cap-crossing call cost (similar to
-    LiteLLM and AgentGuard rows in Table 30, ~181% of cap)
-  - N/N overshoot (always admits the threshold-crossing call)
-
-If instead it does pre-flight reservation (like Token Budgets), we
-expect 0/N overshoot. Either result is publishable: the paper text
-in S6.2.0.4 currently characterizes their work as "complementary" with
-runtime hard enforcement; the empirical measurement either confirms
-or refines that characterization.
-"""
-
 import argparse
 import csv
 import os
@@ -92,9 +21,6 @@ except ImportError:
         "Importable name is 'agent_contracts' (no hyphen)."
     )
 
-
-# === LANG-001 workload (same as the other runners in Table 30) ===
-
 SQL_TOOL_SPEC = {
     "type": "function",
     "function": {
@@ -116,34 +42,20 @@ USER_PROMPT = (
     "the error message and retry with a corrected query."
 )
 
-# Simulated tool error: forces the LANG-001 retry-loop pattern.
 TOOL_ERROR_MESSAGE = (
     "ERROR: column 'tier' does not exist. Did you mean 'tier_name'?"
 )
 
-MAX_ITERATIONS = 25  # outer safety bound; should never bind
+MAX_ITERATIONS = 25
 
-
-# === Token-extraction patch (NEW in v1.1) ===
-# Tracks whether we've already warned about a possible upstream field-name
-# drift, so we don't spam the log on every call.
 _USAGE_WARNING_PRINTED = False
 
 
 def _get_usage_field(usage, candidate_names: Tuple[str, ...]) -> int:
-    """Try multiple field names on a usage object. Returns the first
-    non-None value found across attribute-style and dict-style access,
-    or 0 if no candidate is present.
-
-    Explicit `is not None` check (not truthiness) so a legitimate 0
-    does not fall through to a stale/missing field.
-    """
     for name in candidate_names:
-        # Attribute-style access (pydantic models, OpenAI Usage object).
         val = getattr(usage, name, None)
         if val is not None:
             return int(val)
-        # Dict-style access (TypedDicts, plain dicts).
         try:
             val = usage[name]
             if val is not None:
@@ -154,19 +66,6 @@ def _get_usage_field(usage, candidate_names: Tuple[str, ...]) -> int:
 
 
 def _extract_token_counts(response) -> Tuple[int, int]:
-    """Extract (input_tokens, output_tokens) from a LiteLLM/OpenAI response.
-
-    Handles two naming conventions:
-      classic (pre-2025):  usage.prompt_tokens   / usage.completion_tokens
-      modern  (post-2025): usage.input_tokens    / usage.output_tokens
-
-    openai-python and LiteLLM adopted the modern convention in 2025+,
-    matching Anthropic's naming. Older harness runs used classic.
-
-    Returns (0, 0) if usage data is unavailable. Prints a one-time
-    diagnostic warning if extraction returns (0, 0) on a response that
-    has choices (indicates further library drift beyond what's handled).
-    """
     global _USAGE_WARNING_PRINTED
 
     try:
@@ -179,9 +78,6 @@ def _extract_token_counts(response) -> Tuple[int, int]:
     in_tok = _get_usage_field(usage, ("prompt_tokens", "input_tokens"))
     out_tok = _get_usage_field(usage, ("completion_tokens", "output_tokens"))
 
-    # Diagnostic: if extraction returned zero but the response looks
-    # valid (has choices), warn once and dump the usage object's shape
-    # so the user can extend the candidate list.
     if in_tok == 0 and out_tok == 0 and not _USAGE_WARNING_PRINTED:
         try:
             has_choices = bool(response.choices)
@@ -209,19 +105,13 @@ def _extract_token_counts(response) -> Tuple[int, int]:
 
     return (in_tok, out_tok)
 
-
-# === Output schema ===
-
 @dataclass
 class RunRecord:
-    """Schema matches sweep_results/gpt4o_lang001_n10_full.csv so this CSV
-    drops into Table 30 as an additional row."""
     runtime: str
     run_id: int
     provider: str
     workload: str
-    outcome: str            # 'completed_no_cap_hit', 'agent_contracts_budget_violation',
-    # 'agent_contracts_hard_stop', 'iteration_limit', 'error'
+    outcome: str
     agent_steps: int
     cap_uc: int
     total_spent_uc: int
@@ -233,7 +123,6 @@ class RunRecord:
 
 
 def usd_to_uc(usd: float) -> int:
-    """Convert dollars to micro-cents (1 micro-cent = $10^-5)."""
     return int(round(usd * 100_000))
 
 
@@ -242,19 +131,12 @@ def uc_to_usd(uc: int) -> float:
 
 
 def run_one(iteration: int, cap_usd: float, model: str, provider: str) -> RunRecord:
-    """Single LANG-001 replica under Agent Contracts."""
-
     contract = Contract(
         id=f"lang001-rep-{iteration:02d}",
         name="LANG-001 SQL retry under Agent Contracts",
-        # BALANCED mode keeps the comparison most like the other runtimes
-        # (no aggressive cost-shaving from ECONOMICAL or extra-token bias
-        # from URGENT).
         mode=ContractMode.BALANCED,
         resources=ResourceConstraints(
             cost_usd=cap_usd,
-            # Leaving tokens / api_calls unset so cost is the sole binding
-            # constraint, matching Table 30's "cap_uc" semantics.
         ),
     )
 
@@ -275,12 +157,9 @@ def run_one(iteration: int, cap_usd: float, model: str, provider: str) -> RunRec
                         model=model,
                         messages=messages,
                         tools=[SQL_TOOL_SPEC],
-                        # Modest output cap to keep per-call cost predictable.
                         max_tokens=256,
                     )
                 except Exception as e:
-                    # Agent Contracts raises on budget violation. Catch and
-                    # categorise.
                     msg = str(e).lower()
                     if ("budget" in msg or "cost" in msg or "violation" in msg
                             or "exceeded" in msg or "contract" in msg):
@@ -290,18 +169,11 @@ def run_one(iteration: int, cap_usd: float, model: str, provider: str) -> RunRec
                     break
 
                 n_calls += 1
-
-                # PATCH (v1.1): extract usage via helper that handles both
-                # classic and modern field naming conventions. v1's inline
-                # getattr(usage, "prompt_tokens", 0) silently returned 0
-                # against the modern convention.
                 in_tok, out_tok = _extract_token_counts(response)
                 total_in_tok += in_tok
                 total_out_tok += out_tok
 
-                # LiteLLM response shape: response.choices[0].message
                 choice = response.choices[0].message
-                # Append assistant message to history
                 messages.append({
                     "role": "assistant",
                     "content": getattr(choice, "content", "") or "",
@@ -310,11 +182,9 @@ def run_one(iteration: int, cap_usd: float, model: str, provider: str) -> RunRec
 
                 tool_calls = getattr(choice, "tool_calls", None)
                 if not tool_calls:
-                    # Agent gave up or terminated naturally.
                     outcome = "completed_no_cap_hit"
                     break
 
-                # Execute tool (simulated SQL error to force the retry pattern).
                 for tc in tool_calls:
                     messages.append({
                         "role": "tool",
@@ -325,25 +195,19 @@ def run_one(iteration: int, cap_usd: float, model: str, provider: str) -> RunRec
                 outcome = "iteration_limit"
 
     except Exception as e:
-        # Top-level failure (auth, network, etc.)
         outcome = f"error:{type(e).__name__}"
 
     elapsed = time.time() - t0
-
-    # Compute synthetic cost in micro-cents using the same rates as
-    # multiway_compare.py so the row is dimensionally comparable to
-    # Table 30. (Agent Contracts tracks cost internally too, but we
-    # recompute here for schema parity.)
     if model.startswith("gpt-4o-mini"):
-        rate_in, rate_out = 15.0, 60.0     # uc/Mtok at $0.15 / $0.60
+        rate_in, rate_out = 15.0, 60.0
     elif model.startswith("gpt-4o"):
-        rate_in, rate_out = 250.0, 1000.0  # uc/Mtok at $2.50 / $10.00
+        rate_in, rate_out = 250.0, 1000.0
     elif "haiku" in model:
-        rate_in, rate_out = 100.0, 500.0   # uc/Mtok at $1.00 / $5.00
+        rate_in, rate_out = 100.0, 500.0
     elif "sonnet" in model:
-        rate_in, rate_out = 300.0, 1500.0  # uc/Mtok at $3.00 / $15.00
+        rate_in, rate_out = 300.0, 1500.0
     else:
-        rate_in, rate_out = 250.0, 1000.0  # fallback to gpt-4o rates
+        rate_in, rate_out = 250.0, 1000.0
 
     cost_uc = int(round(total_in_tok * rate_in / 1_000_000.0
                         + total_out_tok * rate_out / 1_000_000.0))

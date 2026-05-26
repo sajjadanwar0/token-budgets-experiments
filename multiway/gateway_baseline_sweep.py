@@ -1,46 +1,3 @@
-#!/usr/bin/env python3
-"""
-gateway_baseline_sweep.py - Gateway-pattern baseline at multiple caps.
-
-A "gateway-pattern" system (LiteLLM proxy budgets, AgentGuard, tokencap,
-Helicone keys) tracks cumulative spend AFTER each call completes and
-refuses subsequent calls when cumulative spend exceeds the cap. It is
-structurally post-hoc: the call that pushes spend over the cap is
-always admitted, only the *next* call is blocked.
-
-This script implements the gateway pattern as a clean local simulation:
-no LiteLLM proxy server required, no third-party gateway account. The
-algorithm is exactly the LiteLLM `max_budget` enforcement: check
-`cumulative_spent < cap` before each call; admit if yes, refuse if no;
-update cumulative after the actual call's billed cost is known.
-
-This sweep matches Tables 37 (tokencap) and 38 (tokenizer-direct) at the
-same 5 caps (500, 540, 1000, 2000, 5000 uc), enabling a four-way
-comparison at each cap:
-
-    Gateway   (this script):  post-hoc, expected 30/30 overshoot per cap
-    tokencap                  (Table 37): post-hoc, observed 30/30 overshoot
-    TB default                (Table 33): pre-flight, observed 0/30 overshoot
-    TB tokenizer-direct       (Table 38): pre-flight, observed 0/30 overshoot
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-    cd ~/tb-reproduce/token-budgets-experiments/
-
-    # Sanity (cap=2000, N=3)
-    python3 gateway_baseline_sweep.py --cap-uc 2000 --n-trials 3 \\
-        --output /tmp/gateway_sanity.csv
-
-    # Full sweep: 5 caps x N=30 = 150 trials, ~$0.50, ~15 min
-    mkdir -p sweep_results
-    for cap in 500 540 1000 2000 5000; do
-        python3 gateway_baseline_sweep.py --cap-uc $cap --n-trials 30 \\
-            --output sweep_results/gateway_baseline_lang001_cap${cap}_n30.csv
-        sleep 5
-    done
-"""
-
 import argparse
 import csv
 import os
@@ -106,8 +63,6 @@ def run_trial(trial_id, cap_uc, max_steps=20):
     error_repr = ""
 
     for step in range(max_steps):
-        # Gateway check: post-hoc cumulative budget. Pre-flight check is
-        # "have we already exceeded the cap?" (NOT "would this call exceed it").
         if cumulative_spent_uc >= cap_uc:
             outcome = "gateway_post_hoc_refused"
             refused_calls += 1
@@ -139,7 +94,6 @@ def run_trial(trial_id, cap_uc, max_steps=20):
             actual_input * PRICING_UC_PER_TOKEN["input"]
             + actual_output * PRICING_UC_PER_TOKEN["output"]
         )
-        # POST-HOC: update cumulative AFTER call has been billed
         cumulative_spent_uc += actual_cost
 
         steps += 1

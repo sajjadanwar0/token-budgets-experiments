@@ -1,39 +1,3 @@
-#!/usr/bin/env python3
-"""
-anthropic_multiworkload_n30.py
-
-Runs LANG-001 retry-loop reproduction on Anthropic Sonnet under
-the Token Budgets discipline for two additional workloads at N=30:
-  - arg-hallucination (smolagents-style mid-action argument fabrication)
-  - clarification (CrewAI-style infinite clarification loop)
-
-Existing artefacts:
-  multiway/sweep_results/tokenizer_direct_arg-hallucination_cap{2000,5000}_n10.csv
-  multiway/sweep_results/tokenizer_direct_clarification_cap{2000,5000}_n10.csv
-
-These were at N=10. This script bumps to N=30 on Anthropic Sonnet
-(claude-sonnet-4-5-20250929) for direct comparison against the
-N=30 baseline already in the paper (claude_sonnet_lang001_n30_full.csv).
-
-Output files (committed to multiway/sweep_results/):
-  tb_sonnet_arg-hallucination_cap{2000,5000}_n30.csv
-  tb_sonnet_clarification_cap{2000,5000}_n30.csv
-
-Cost estimate: 4 caps x 30 runs x mean 4 calls/run x mean 600 input
-+ 200 output tokens at sonnet pricing ($3/M input, $15/M output)
-  = 120 runs * 4 calls/run * (600 * 3 + 200 * 15) / 1e6
-  = 120 * 4 * (1800 + 3000) / 1e6
-  = ~$2.30
-Budget liberally for $5 to absorb retries.
-
-Requirements:
-  pip install anthropic tiktoken
-  export ANTHROPIC_API_KEY=...
-
-Usage:
-  python anthropic_multiworkload_n30.py
-"""
-
 import csv
 import os
 import sys
@@ -47,25 +11,17 @@ except ImportError:
     print("ERROR: pip install anthropic", file=sys.stderr)
     sys.exit(1)
 
-# =========================================================================
-# Configuration
-# =========================================================================
-
 MODEL = "claude-sonnet-4-5-20250929"
 PROVIDER = "anthropic"
-INPUT_RATE_UC_PER_TOK = 3       # $3 / Mtok input
-OUTPUT_RATE_UC_PER_TOK = 15     # $15 / Mtok output
-SAFETY_MARGIN = 2.0             # AnthropicEstimator default
+INPUT_RATE_UC_PER_TOK = 3
+OUTPUT_RATE_UC_PER_TOK = 15
+SAFETY_MARGIN = 2.0
 N_TRIALS = 30
-CAPS = [2000, 5000]             # token caps to sweep
+CAPS = [2000, 5000]
 WORKLOADS = ["arg-hallucination", "clarification"]
 MAX_STEPS_PER_TRIAL = 10
 OVERLOAD_BACKOFF_S = [2, 5, 10, 20, 30]
 OUTPUT_DIR = Path("multiway/sweep_results")
-
-# =========================================================================
-# Workload prompts (derived from the catalog cases referenced in paper)
-# =========================================================================
 
 WORKLOAD_PROMPTS = {
     "arg-hallucination": {
@@ -97,7 +53,6 @@ WORKLOAD_PROMPTS = {
     },
 }
 
-# Simulated user response for the clarification loop (forces multi-turn)
 CLARIFICATION_USER_REPLIES = [
     "It's about something I'm working on.",
     "Yes, technical.",
@@ -107,13 +62,8 @@ CLARIFICATION_USER_REPLIES = [
     "OK fine, just start.",
 ]
 
-# =========================================================================
-# Token Budget runtime port (matches the Rust Budget<MAX> discipline)
-# =========================================================================
-
 @dataclass
 class Budget:
-    """Affine budget capability. Returns new Budget after spend."""
     initial_uc: int
     max_uc: int
     _consumed: bool = field(default=False)
@@ -133,20 +83,12 @@ class Budget:
 
 
 def estimate_uc(prompt_chars: int, max_output_tokens: int) -> int:
-    """AnthropicEstimator with 2.0x safety margin.
-    Reserves byte_length * 2.0 * input_rate + max_output_tokens * output_rate."""
     estimated_input_tokens = int(prompt_chars * SAFETY_MARGIN)
     reserved_input_uc = estimated_input_tokens * INPUT_RATE_UC_PER_TOK
     reserved_output_uc = max_output_tokens * OUTPUT_RATE_UC_PER_TOK
     return reserved_input_uc + reserved_output_uc
 
-
-# =========================================================================
-# Harness
-# =========================================================================
-
 def call_anthropic_with_retry(client, messages, system, max_tokens):
-    """Call API with 529 overload retry. Returns (response, retries_used)."""
     for attempt, backoff in enumerate([0] + OVERLOAD_BACKOFF_S):
         if backoff > 0:
             time.sleep(backoff)
@@ -166,14 +108,7 @@ def call_anthropic_with_retry(client, messages, system, max_tokens):
 
 
 def run_trial(client, workload: str, cap_tokens: int, trial_id: int) -> dict:
-    """One trial of the retry-loop reproduction.
-
-    Returns row for CSV with columns:
-      workload, cap_tokens, cap_uc, trial_id, steps, total_input_tokens,
-      total_output_tokens, total_billed_uc, total_reserved_uc,
-      overshoot, refused_at_step, refused_reason, retries_total
-    """
-    cap_uc = cap_tokens * INPUT_RATE_UC_PER_TOK * SAFETY_MARGIN  # convert token-cap to uc with margin
+    cap_uc = cap_tokens * INPUT_RATE_UC_PER_TOK * SAFETY_MARGIN
     budget = Budget(initial_uc=int(cap_uc), max_uc=int(cap_uc))
 
     spec = WORKLOAD_PROMPTS[workload]
@@ -190,13 +125,11 @@ def run_trial(client, workload: str, cap_tokens: int, trial_id: int) -> dict:
     max_output_tokens = 500  # per-call cap
 
     for step in range(MAX_STEPS_PER_TRIAL):
-        # Build the prompt (concatenated message history for byte-length estimate)
         prompt_chars = sum(
             len(m["content"]) if isinstance(m["content"], str) else 0
             for m in messages
         ) + len(spec["system"])
 
-        # Pre-flight reservation
         required_uc = estimate_uc(prompt_chars, max_output_tokens)
         try:
             budget = budget.spend(required_uc)
@@ -206,7 +139,6 @@ def run_trial(client, workload: str, cap_tokens: int, trial_id: int) -> dict:
             break
         total_reserved_uc += required_uc
 
-        # Make the API call
         try:
             resp, retries = call_anthropic_with_retry(
                 client, messages, spec["system"], max_output_tokens
@@ -217,7 +149,6 @@ def run_trial(client, workload: str, cap_tokens: int, trial_id: int) -> dict:
             refused_reason = f"api_error: {e}"
             break
 
-        # Track actual billed cost
         actual_input_uc = resp.usage.input_tokens * INPUT_RATE_UC_PER_TOK
         actual_output_uc = resp.usage.output_tokens * OUTPUT_RATE_UC_PER_TOK
         actual_call_uc = actual_input_uc + actual_output_uc
@@ -226,10 +157,6 @@ def run_trial(client, workload: str, cap_tokens: int, trial_id: int) -> dict:
         total_billed_uc += actual_call_uc
         steps += 1
 
-        # Refund unused reservation
-        # (in Rust this is the Refund / spend_with_receipt pattern;
-        # in this Python harness we reconcile by adding back to the budget
-        # the difference between reserved and actual)
         refund = required_uc - actual_call_uc
         if refund > 0:
             budget = Budget(
@@ -237,15 +164,12 @@ def run_trial(client, workload: str, cap_tokens: int, trial_id: int) -> dict:
                 max_uc=budget.max_uc,
             )
 
-        # Append assistant response to history
         assistant_text = "".join(
             b.text for b in resp.content if hasattr(b, "text")
         )
         messages.append({"role": "assistant", "content": assistant_text})
 
-        # Workload-specific continuation logic
         if workload == "clarification":
-            # If this is a question, simulate user reply
             if "?" in assistant_text:
                 reply_idx = min(step, len(CLARIFICATION_USER_REPLIES) - 1)
                 messages.append({
@@ -253,10 +177,8 @@ def run_trial(client, workload: str, cap_tokens: int, trial_id: int) -> dict:
                     "content": CLARIFICATION_USER_REPLIES[reply_idx],
                 })
             else:
-                # Agent stopped asking; we're done
                 break
         elif workload == "arg-hallucination":
-            # Always continue; the prompt forces multi-step exploration
             messages.append({
                 "role": "user",
                 "content": "Continue with the next step. Be specific.",
@@ -318,7 +240,6 @@ def main():
                     )
                     print(f"steps={row['steps']} billed={row['total_billed_uc']} [{indicator}]{refused}")
 
-            # Quick summary
             with open(out_path, "r") as f:
                 reader = csv.DictReader(f)
                 rows = list(reader)

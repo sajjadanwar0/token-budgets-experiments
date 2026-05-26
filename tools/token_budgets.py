@@ -1,30 +1,3 @@
-"""
-token_budgets_py — Python port of the Token Budgets affine discipline.
-
-Problem (Reviewers 1, 4): the catalogue is dominated by Python
-frameworks (LangChain, AutoGPT, AutoGen, CrewAI), but the
-discipline is Rust-only. Operators of Python agents cannot
-benefit. Reviewer 4: "the ecosystems that need the fix cannot
-use it."
-
-Fix: this module implements a Budget class that enforces the
-affine discipline at RUNTIME (Python has no compile-time
-affine type system). Any operation that "consumes" the Budget
-(spend, split, merge) sets an internal _consumed=True flag.
-Subsequent operations on the same instance raise AffineViolation.
-
-Trade-off vs Rust:
-- Rust: compile-time integrity (`rustc` rejects bad programs)
-- Python: runtime detection (AffineViolation at the point of misuse)
-
-The cap-soundness guarantee is preserved in both: the arithmetic
-of `spend(amount)` reduces the available capacity by exactly
-`amount`, with no path that admits double-spend.
-
-Drop-in compatibility with LangChain callbacks; see
-LangChainBudgetCallback below.
-"""
-
 from __future__ import annotations
 import threading
 from dataclasses import dataclass, field
@@ -43,16 +16,6 @@ class BudgetExhausted(RuntimeError):
 
 @dataclass
 class Budget:
-    """An affine budget capability.
-
-    Once a method consumes `self` (spend, split, merge_with),
-    subsequent uses raise AffineViolation. The intended usage is:
-
-        budget = Budget(initial_uc=1000, max_uc=10_000)
-        budget, after = budget.spend(100)
-        # `before` is no longer usable; `budget` is the new one
-    """
-
     initial_uc: int
     max_uc: int
     _consumed: bool = field(default=False, init=False)
@@ -119,21 +82,7 @@ class Budget:
             other._consumed = True
             return Budget(initial_uc=total, max_uc=self.max_uc)
 
-
-# ---------------------------------------------------------------------
-# Pool variant with the typestate-equivalent closure pattern.
-# Mirrors the Rust pool_typestate.rs design at runtime.
-# ---------------------------------------------------------------------
-
-
 class BudgetPool:
-    """Multi-tenant pool with closure-based reservation API.
-
-    The `with_reservation` method REQUIRES the closure to call
-    `receipt.confirm(...)` or `receipt.forfeit(...)` before
-    returning. Failure to do so raises AffineViolation at exit.
-    """
-
     def __init__(self, available_uc: int):
         self.available_uc = available_uc
         self.outstanding_uc = 0
@@ -148,7 +97,6 @@ class BudgetPool:
         try:
             resolved = callback(receipt)
         except Exception:
-            # Closure raised before resolving — forfeit
             self._forfeit_internal(receipt.reserved_uc)
             raise
         if not isinstance(resolved, ResolvedReceipt):
@@ -209,15 +157,11 @@ class ReservationReceipt:
         return ResolvedReceipt(value, _private=_PRIVATE_TOKEN)
 
 
-# Sentinel for module-private construction.
 _PRIVATE_TOKEN = object()
 
 
 @dataclass
 class ResolvedReceipt(Generic[T]):
-    """Witness that a receipt was resolved. Can only be
-    constructed by ReservationReceipt.confirm/forfeit."""
-
     inner: T
     _private: Any = None
 
@@ -228,26 +172,7 @@ class ResolvedReceipt(Generic[T]):
                 "ReservationReceipt.confirm() or forfeit()"
             )
 
-
-# =====================================================================
-# LangChain integration: drop-in callback that enforces a Budget
-# across an entire LangChain agent run.
-# =====================================================================
-
-
 class LangChainBudgetCallback:
-    """LangChain BaseCallbackHandler that bounds total cost using
-    a Budget.
-
-    Usage:
-        budget = Budget(initial_uc=10_000, max_uc=100_000)
-        cb = LangChainBudgetCallback(budget, rate_per_input_token_uc=15,
-                                     rate_per_output_token_uc=60)
-        agent.invoke({...}, config={"callbacks": [cb]})
-        # If the agent's running spend exceeds the budget,
-        # cb raises BudgetExhausted which aborts the chain.
-    """
-
     def __init__(
             self,
             budget: Budget,
@@ -282,18 +207,12 @@ class LangChainBudgetCallback:
                 f"running spend {self._spent_so_far} exceeded budget"
             )
 
-
-# =====================================================================
-# Tests
-# =====================================================================
-
 if __name__ == "__main__":
     # Test 1: basic spend
     b = Budget(initial_uc=1000, max_uc=10_000)
     b2 = b.spend(100)
     assert b2.micro_cents() == 900
 
-    # Test 2: double-spend rejected
     try:
         b.spend(50)
     except AffineViolation:
@@ -301,19 +220,16 @@ if __name__ == "__main__":
     else:
         raise AssertionError("expected AffineViolation")
 
-    # Test 3: split conservation
     b = Budget(initial_uc=1000, max_uc=10_000)
     taken, kept = b.split(300)
     assert taken.micro_cents() + kept.micro_cents() == 1000
 
-    # Test 4: pool with_reservation
     pool = BudgetPool(available_uc=10_000)
     result = pool.with_reservation(
         500, lambda r: r.confirm(423, "agent output")
     )
     assert result == "agent output"
 
-    # Test 5: pool resource-leak detection
     try:
         pool.with_reservation(500, lambda r: "forgot to resolve")
     except AffineViolation:

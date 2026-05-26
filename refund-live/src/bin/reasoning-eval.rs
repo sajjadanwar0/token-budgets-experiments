@@ -1,44 +1,3 @@
-//! reasoning-eval.rs — recalibrated v2 (v62.2 reviewer must-fix items 1-3)
-//!
-//! Changes from v1:
-//!   * Configurable per-call reasoning reservation via CLI flag
-//!     --reasoning-uc <N> (default 15360 for Anthropic, matching
-//!     thinking.budget_tokens=1024 at $15/Mtok output rate). v1 had
-//!     this hardcoded inside the parent crate's ReasoningProvider
-//!     variant at 1500 uc; v62.1 §5.X showed that was too low. We
-//!     bypass spend_with_reasoning() and call spend() with
-//!     visible_uc + reasoning_uc manually so the value is CLI-driven
-//!     without modifying the parent crate.
-//!
-//!   * Tight-cap mode: --tight-cap sets cap to 100,000 uc on Anthropic
-//!     and 50,000 uc on OpenAI/DeepSeek, so the discipline is actually
-//!     exercised rather than observed under slack.
-//!
-//!   * Workload sweep: --workload one of
-//!     {train-meeting, integral, optimization, sequence}.
-//!
-//! Build (from refund-live/):
-//!   cp src/bin/reasoning-eval.rs src/bin/reasoning-eval.v1.rs.bak
-//!   # (Replace src/bin/reasoning-eval.rs with this file)
-//!   cargo build --release --bin reasoning-eval
-//!
-//! Recommended run order:
-//!   # 1) Mitigation validation (item 1)
-//!   cargo run --release --bin reasoning-eval -- \
-//!       --provider anthropic --n 20 --workload train-meeting \
-//!       --reasoning-uc 15360
-//!
-//!   # 2) Tight-cap stress (item 2)
-//!   cargo run --release --bin reasoning-eval -- \
-//!       --provider anthropic --n 20 --workload train-meeting \
-//!       --reasoning-uc 15360 --tight-cap
-//!
-//!   # 3) Workload sweep (item 3)
-//!   for w in train-meeting integral optimization sequence; do
-//!     cargo run --release --bin reasoning-eval -- \
-//!         --provider anthropic --n 20 --workload $w --reasoning-uc 15360
-//!   done
-
 use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -47,7 +6,6 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::time::Duration;
 use tokio::time::sleep;
-
 use token_budgets::{Budget, BudgetMint};
 
 const SONNET_MODEL:   &str = "claude-sonnet-4-5-20250929";

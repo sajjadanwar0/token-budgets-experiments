@@ -1,45 +1,3 @@
-#!/usr/bin/env python3
-"""
-multiway_compare.py - Week 3 deliverable for the Token Capabilities paper.
-
-Five-way runtime head-to-head on the LANG-001 reproduction (the
-deterministic SQL retry-loop from langgraph_real_harness.py).
-
-The five runtimes, mapped to the three-layer enforcement taxonomy of
-Section 2.3 of the paper:
-
-  Layer                  | Mechanism                           | This script
-  -----------------------+-------------------------------------+-------------
-  Compile-time           | TC Budget (Rust affine type)        | run_token_capabilities
-  Runtime (cost)         | AgentGuard-style callback wallet    | run_langgraph_with_guard
-  Runtime (structural)   | LangGraph recursion_limit           | run_langgraph_only
-  Runtime (structural)   | CrewAI max_iter                     | run_crewai
-  Runtime (structural)   | AutoGen max_turns                   | run_autogen
-
-The architectural difference being characterised:
-  - Compile-time: reservation refused before network. Wasted cost = 0.
-  - Cost runtime: callback fires AFTER the k-th call completes. Overshoot
-    = k-th call's cost.
-  - Structural runtime: trips at iteration count, regardless of dollar
-    cost. Typically UNDER-spends the configured cap by a large factor;
-    bounds the wrong axis.
-
-Output: CSV with one row per (runtime, run_id) pair plus a console
-summary table.
-
-Usage (mock-only, free, deterministic):
-    python3 multiway_compare.py --runs 10 --output-csv results.csv
-
-Usage (live LLM, requires API keys):
-    export OPENAI_API_KEY=sk-...
-    python3 multiway_compare.py --runs 10 --provider openai \\
-        --output-csv live_results.csv
-
-The mock mode is the headline experiment for the paper; the live mode
-is for ecological validity (already partially covered by the existing
-N=10 cross-provider experiment in Section 5 of the paper).
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -50,13 +8,10 @@ import time
 from dataclasses import dataclass, asdict
 from operator import add
 from typing import Annotated, Any, Callable, Dict, List, Optional, TypedDict
+from langgraph.graph import END, START, StateGraph
+from langgraph.errors import GraphRecursionError
 
-# =============================================================================
-# Shared: pricing, mock LLM, SQL tool
-# =============================================================================
-# The mock LLM and SQL tool are reproduced inline so this script is
-# self-contained for AWS Lightsail deployment. Pricing matches
-# langgraph_real_harness.py + Groq added (Llama-3.3-70B on Groq).
+
 
 PROVIDER_PRICING: Dict[str, Dict[str, float]] = {
     "openai": {
@@ -70,8 +25,6 @@ PROVIDER_PRICING: Dict[str, Dict[str, float]] = {
         "output_per_token": 5.00 / 1_000_000,
     },
     "groq": {
-        # Llama-3.3-70B on Groq, prices per Groq pricing page May 2026.
-        # If pricing has changed, update the two values below.
         "model": "llama-3.3-70b-versatile",
         "input_per_token": 0.59 / 1_000_000,
         "output_per_token": 0.79 / 1_000_000,
@@ -82,11 +35,6 @@ PROVIDER_PRICING: Dict[str, Dict[str, float]] = {
         "output_per_token": 0.60 / 1_000_000,
     },
 }
-
-
-# =============================================================================
-# Mock LLM (LangChain BaseChatModel-compatible)
-# =============================================================================
 
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -101,31 +49,18 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.tools import tool
 from pydantic import Field
 
-
-# =============================================================================
-# Workload definitions (3 catalog-derived reproductions)
-# =============================================================================
-# Each workload is a triple of (tool callable, system prompt, user prompt,
-# fake-tool-args, fake-error-message). The mock model emits a tool_call
-# against the workload's tool; the tool node returns the workload's fixed
-# error. This drives a retry loop with deterministic per-step token growth
-# regardless of which workload is selected.
-
 @tool
 def sql_query(query: str) -> str:
-    """Run a SQL query against the users table and return the result."""
     return ""
 
 
 @tool
 def delete_record(id: str = "", name: str = "") -> str:
-    """Delete a record. Accepts either an id or a name."""
     return ""
 
 
 @tool
 def lookup_customer(name: str) -> str:
-    """Look up a customer account by name."""
     return ""
 
 
@@ -179,13 +114,6 @@ WORKLOADS: Dict[str, Dict[str, Any]] = {
 
 
 class MockToolChatModel(BaseChatModel):
-    """Deterministic mock parameterised by workload.
-
-    Token-count grows by `growth_per_step` per agent turn so cumulative
-    cost is non-trivial. Each agent call returns an AIMessage with one
-    tool_call against the workload's tool; the tool node then returns the
-    workload's fixed error and the loop re-fires.
-    """
     growth_per_step: int = Field(default=60)
     base_input_tokens: int = Field(default=60)
     workload_tool_name: str = Field(default="sql_query")
@@ -196,8 +124,6 @@ class MockToolChatModel(BaseChatModel):
         return "mock-tool-chat-model"
 
     def bind_tools(self, tools: List[Any], **kwargs: Any) -> "MockToolChatModel":
-        """No-op: the mock always emits a workload-specific tool_call regardless
-        of the bound tools list. Kept for langchain API compatibility."""
         return self
 
     def _generate(
@@ -236,25 +162,12 @@ class MockToolChatModel(BaseChatModel):
             },
         )
 
-
-# Backwards-compat alias for any external callers
 MockSQLChatModel = MockToolChatModel
 
-
-# =============================================================================
-# Cost computation helper
-# =============================================================================
-
 def compute_cost_uc(in_tok: int, out_tok: int, provider: str) -> int:
-    """Return cost in micro-cents (uc) at the provider's per-token rate."""
     p = PROVIDER_PRICING[provider]
     cost_dollars = in_tok * p["input_per_token"] + out_tok * p["output_per_token"]
     return int(round(cost_dollars * 1_000_000))
-
-
-# =============================================================================
-# Runtime 1: LangGraph only (recursion_limit, no cost guard)
-# =============================================================================
 
 class _AgentState(TypedDict):
     messages: Annotated[List[BaseMessage], add]
@@ -264,9 +177,6 @@ def _build_langgraph(llm: Any, callback: Optional[BaseCallbackHandler],
                      guard_check: Optional[Callable[[], bool]],
                      guard_error_class: Optional[type],
                      workload: Optional[Dict[str, Any]] = None) -> Any:
-    """Construct the LangGraph StateGraph used by both runtime 1 and 2."""
-    from langgraph.graph import END, START, StateGraph
-
     wl = workload or WORKLOADS["lang001"]
     tool_error_msg = wl["tool_error"]
     default_tool_name = wl["tool_name"]
@@ -317,8 +227,6 @@ class StepRecord:
 
 
 class CostTrackingCallback(BaseCallbackHandler):
-    """Captures per-step cost for any LangChain LLM via on_llm_end."""
-
     def __init__(self, provider: str) -> None:
         self.provider = provider
         self.steps: List[StepRecord] = []
@@ -337,7 +245,6 @@ class CostTrackingCallback(BaseCallbackHandler):
         ))
 
     def _extract_usage(self, response) -> tuple[int, int]:
-        # Defensive across providers (OpenAI, Anthropic, Groq, mock).
         llm_out = getattr(response, "llm_output", None) or {}
         usage = llm_out.get("token_usage") or llm_out.get("usage") or {}
         in_tok = int(usage.get("prompt_tokens", 0)
@@ -371,9 +278,6 @@ def _initial_messages(workload: Optional[Dict[str, Any]] = None) -> List[BaseMes
 def run_langgraph_only(provider: str, cap_uc: int, growth: int,
                        recursion_limit: int,
                        workload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """LangGraph with recursion_limit only (no cost guard)."""
-    from langgraph.errors import GraphRecursionError
-
     wl = workload or WORKLOADS["lang001"]
     llm = _make_llm(provider, growth, wl)
     cb = CostTrackingCallback(provider)
@@ -395,21 +299,12 @@ def run_langgraph_only(provider: str, cap_uc: int, growth: int,
         cumulative_uc=cb.cumulative_uc,
     )
 
-
-# =============================================================================
-# Runtime 2: LangGraph + AgentGuard-style RuntimeBudgetGuard
-# =============================================================================
-
 class BudgetExceededError(RuntimeError):
     """Raised by the RuntimeBudgetGuard when cumulative cost crosses the cap.
     The k-th call that crossed the threshold has already been billed."""
 
 
 class RuntimeBudgetGuard(CostTrackingCallback):
-    """AgentGuard-style runtime mitigation: subscribe to on_llm_end, deduct,
-    trip a flag when cumulative >= cap. Architecturally, the guard fires
-    AFTER the k-th call has been issued and billed."""
-
     def __init__(self, provider: str, cap_uc: int) -> None:
         super().__init__(provider)
         self.cap_uc = cap_uc
@@ -427,7 +322,6 @@ class RuntimeBudgetGuard(CostTrackingCallback):
 def run_langgraph_with_guard(provider: str, cap_uc: int, growth: int,
                              recursion_limit: int,
                              workload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """LangGraph + AgentGuard-style cost callback. Trips after k-th call."""
     from langgraph.errors import GraphRecursionError
 
     wl = workload or WORKLOADS["lang001"]
@@ -459,21 +353,8 @@ def run_langgraph_with_guard(provider: str, cap_uc: int, growth: int,
     summary["wasted_call_cost_uc"] = wasted_uc
     return summary
 
-
-# =============================================================================
-# Runtime 3: CrewAI (max_iter)
-# =============================================================================
-
 def run_crewai(provider: str, cap_uc: int, growth: int,
                max_iter: int) -> Dict[str, Any]:
-    """CrewAI with max_iter as the structural counter.
-
-    LIVE-ONLY: CrewAI's pydantic validators reject langchain BaseChatModel
-    and langchain @tool primitives, so this runtime requires a real
-    provider. Use --provider openai|anthropic|groq.
-
-    Targets crewai >=0.80 and uses litellm-format model strings.
-    """
     if provider == "mock":
         return _skipped(
             "crewai",
@@ -487,7 +368,6 @@ def run_crewai(provider: str, cap_uc: int, growth: int,
     except ImportError:
         return _unavailable("crewai", "pip install crewai")
 
-    # CrewAI-native tool that returns the same FRO syntax error.
     class _SqlTool(BaseTool):
         name: str = "sql_query"
         description: str = ("Run a SQL query against the users table. "
@@ -497,14 +377,12 @@ def run_crewai(provider: str, cap_uc: int, growth: int,
             return ("Error: SQL syntax error near 'FRO': invalid keyword. "
                     "Did you mean 'FROM'? Please fix the query and retry.")
 
-    # litellm-format model string (CrewAI uses litellm under the hood).
     model_str = {
         "openai": f"openai/{PROVIDER_PRICING['openai']['model']}",
         "anthropic": f"anthropic/{PROVIDER_PRICING['anthropic']['model']}",
         "groq": f"groq/{PROVIDER_PRICING['groq']['model']}",
     }[provider]
 
-    # Verify the API key env var is set so we fail fast with a useful msg.
     _api_key_env(provider)
 
     agent = Agent(
@@ -537,13 +415,9 @@ def run_crewai(provider: str, cap_uc: int, growth: int,
         else:
             raise
 
-    # Read aggregate token usage from CrewAI's usage_metrics.
     in_tok, out_tok = _crewai_extract_usage(crew)
     total_uc = compute_cost_uc(in_tok, out_tok, provider)
 
-    # CrewAI doesn't expose per-step token counts; if max_iter tripped we
-    # synthesize a per-step ledger by even division so the CSV shape
-    # matches the other runtimes. The aggregate cumulative_uc is exact.
     if outcome == "structural_max_iter_hit" and max_iter > 0 and (in_tok or out_tok):
         per_in = in_tok // max_iter
         per_out = out_tok // max_iter
@@ -559,7 +433,7 @@ def run_crewai(provider: str, cap_uc: int, growth: int,
                 cost_uc=step_uc,
                 cumulative_uc=cum,
             ))
-        # Final step gets the rounding remainder so totals reconcile.
+
         if steps:
             steps[-1] = StepRecord(
                 step=steps[-1].step,
@@ -589,11 +463,6 @@ def run_crewai(provider: str, cap_uc: int, growth: int,
 
 
 def _crewai_extract_usage(crew: Any) -> tuple[int, int]:
-    """Extract aggregate prompt/completion tokens from CrewAI's usage_metrics.
-
-    The shape varies by version: older CrewAI exposed a dict with
-    'prompt_tokens'/'completion_tokens'; newer versions return a
-    UsageMetrics object with attributes. We try both."""
     usage = getattr(crew, "usage_metrics", None)
     if usage is None:
         return 0, 0
@@ -607,22 +476,7 @@ def _crewai_extract_usage(crew: Any) -> tuple[int, int]:
                   or getattr(usage, "output_tokens", 0))
     return in_tok, out_tok
 
-
-# =============================================================================
-# Runtime 4: AutoGen (max_turns / max_consecutive_auto_reply)
-# =============================================================================
-
-def run_autogen(provider: str, cap_uc: int, growth: int,
-                max_turns: int) -> Dict[str, Any]:
-    """AutoGen with max_consecutive_auto_reply as the structural counter.
-
-    LIVE-ONLY: AutoGen v0.2's mock-LLM path requires a function-calling
-    shim that's more code than the value justifies. Use a real provider
-    via --provider openai|anthropic|groq.
-
-    Targets `pyautogen >=0.2, <0.3`. For AutoGen v0.4+ (autogen-agentchat),
-    rewrite the wrapper against the new API.
-    """
+def run_autogen(provider: str, cap_uc: int, growth: int, max_turns: int) -> Dict[str, Any]:
     if provider == "mock":
         return _skipped(
             "autogen",
@@ -635,12 +489,8 @@ def run_autogen(provider: str, cap_uc: int, growth: int,
     except ImportError:
         return _unavailable("autogen", "pip install pyautogen>=0.2,<0.3")
 
-    # Verify API key fail-fast.
     api_key = _api_key_env(provider)
 
-    # AutoGen v0.2 uses an OpenAI-format config_list. Anthropic/Groq go via
-    # OpenAI-compatible endpoints (Anthropic: api_type=anthropic; Groq has
-    # an OpenAI-compatible base_url at api.groq.com/openai/v1).
     cfg = {
         "model": PROVIDER_PRICING[provider]["model"],
         "api_key": api_key,
@@ -667,8 +517,6 @@ def run_autogen(provider: str, cap_uc: int, growth: int,
         code_execution_config=False,
     )
 
-    # Register the sql_query function with both agents (AutoGen's
-    # function-calling pattern). The tool body returns the same FRO error.
     @user_proxy.register_for_execution()
     @assistant.register_for_llm(description="Run a SQL query against the users table")
     def sql_query_autogen(query: str) -> str:
@@ -681,20 +529,13 @@ def run_autogen(provider: str, cap_uc: int, growth: int,
         max_turns=max_turns,
     )
 
-    # AutoGen exposes per-message cost via chat_result.cost (v0.2.x) which
-    # is a dict like {'gpt-4o-mini': {'cost': 0.00012, 'prompt_tokens': X,
-    # 'completion_tokens': Y}}. Extract aggregate.
     in_tok, out_tok = _autogen_extract_usage(chat_result)
     total_uc = compute_cost_uc(in_tok, out_tok, provider)
 
-    # If max_turns was reached, classify as structural; AutoGen's
-    # initiate_chat returns normally rather than raising.
     n_msgs = len(getattr(chat_result, "chat_history", []) or [])
     outcome = ("structural_max_turns_hit" if n_msgs >= max_turns * 2
                else "completed_no_cap_hit")
 
-    # Synthesize per-step ledger from aggregate (AutoGen v0.2 doesn't
-    # expose per-message token counts cleanly across versions).
     if outcome == "structural_max_turns_hit" and max_turns > 0 and (in_tok or out_tok):
         per_in = in_tok // max_turns
         per_out = out_tok // max_turns
@@ -733,13 +574,10 @@ def run_autogen(provider: str, cap_uc: int, growth: int,
 
 
 def _autogen_extract_usage(chat_result: Any) -> tuple[int, int]:
-    """Pull aggregate prompt/completion tokens from AutoGen's chat_result.cost."""
     cost = getattr(chat_result, "cost", None)
     if not cost:
         return 0, 0
-    # cost shape: {'usage_excluding_cached_inference': {'<model>': {...}},
-    #              'usage_including_cached_inference': {'<model>': {...}}}
-    # We use the excluding-cached version to match what the user actually paid.
+
     bucket = cost.get("usage_excluding_cached_inference") or cost
     in_tok = 0
     out_tok = 0
@@ -751,20 +589,9 @@ def _autogen_extract_usage(chat_result: Any) -> tuple[int, int]:
     return in_tok, out_tok
 
 
-# =============================================================================
-# Runtime 5: Token Capabilities (Python sim of Rust Budget)
-# =============================================================================
-
 def run_token_capabilities(provider: str, cap_uc: int, growth: int,
                            recursion_limit: int,
                            workload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Python simulation of TC's compile-time-checked reservation.
-
-    Models what `call_with_budget` does in the Rust implementation:
-    estimate cost upfront, check against budget, refuse before issuing
-    the network call if the reservation cannot be satisfied. The k-th
-    call that would cross the cap is REJECTED before billing.
-    """
     wl = workload or WORKLOADS["lang001"]
     llm = _make_llm(provider, growth, wl)
     cb = CostTrackingCallback(provider)
@@ -773,7 +600,6 @@ def run_token_capabilities(provider: str, cap_uc: int, growth: int,
 
     outcome: str = "completed_no_cap_hit"
     for step_idx in range(1, recursion_limit // 2 + 1):
-        # Conservative byte-length estimator (mock-compatible)
         agent_turns = sum(1 for m in messages if isinstance(m, AIMessage))
         est_input = 60 + growth * agent_turns
         est_output = 40
@@ -783,7 +609,6 @@ def run_token_capabilities(provider: str, cap_uc: int, growth: int,
             outcome = "compile_time_reservation_refused"
             break
 
-        # Reservation passes: deduct, issue (mock or real) call.
         remaining -= est_uc
         ai = llm.invoke(messages, config={"callbacks": [cb]})
         messages.append(ai)
@@ -801,11 +626,6 @@ def run_token_capabilities(provider: str, cap_uc: int, growth: int,
         cb_steps=cb.steps,
         cumulative_uc=cb.cumulative_uc,
     )
-
-
-# =============================================================================
-# Helpers
-# =============================================================================
 
 def _make_llm(provider: str, growth: int, workload: Optional[Dict[str, Any]] = None) -> Any:
     wl = workload or WORKLOADS["lang001"]
@@ -863,7 +683,7 @@ def _summarise(runtime: str, outcome: str, cap_uc: int,
         "pct_of_cap": round(pct_of_cap, 2),
         "overshoot_uc": overshoot_uc,
         "structural_undershoot_uc": undershoot_uc,
-        "wasted_call_cost_uc": 0,  # overridden by guard
+        "wasted_call_cost_uc": 0,
         "per_step": [asdict(s) for s in cb_steps],
     }
 
@@ -884,7 +704,6 @@ def _unavailable(name: str, install_hint: str) -> Dict[str, Any]:
 
 
 def _skipped(name: str, reason: str, cap_uc: int) -> Dict[str, Any]:
-    """Recorded skip — runtime not applicable to current provider, not an error."""
     return {
         "runtime": name,
         "outcome": f"skipped_{reason}",
@@ -898,40 +717,12 @@ def _skipped(name: str, reason: str, cap_uc: int) -> Dict[str, Any]:
         "per_step": [],
     }
 
-
-# =============================================================================
-# Runtime 6: LiteLLM proxy budget (deployed-system anchor for §V.G)
-# =============================================================================
-#
-# This runtime drives the same LangGraph state machine as runtime 1, but
-# routes every LLM call through the LiteLLM `BudgetManager` (which is the
-# same cost-attribution code path the LiteLLM proxy uses in production
-# deployments). When cumulative spend on the configured user crosses the
-# budget, BudgetManager.is_valid_user_budget returns False and we raise
-# a BudgetExceededError mirroring the AgentGuard semantics.
-#
-# This is functionally identical to a deployed LiteLLM proxy with
-# max_budget configured, but in-process so we can run it inside the same
-# harness as the other five runtimes. The cost-attribution mechanism is
-# LiteLLM's own (pricing computed from model name + provider via
-# litellm.completion_cost), not our re-implementation. This addresses
-# the harsh-review concern that the AgentGuard row in v29 was a
-# self-implementation rather than a head-to-head against a deployed
-# system.
-
 class LiteLLMBudgetCallback(CostTrackingCallback):
-    """LangChain callback that updates LiteLLM's BudgetManager on every
-    LLM-end event and trips a flag when BudgetManager reports over-budget.
-
-    Lazy-imports litellm because most users will not have it installed;
-    the runtime registers cleanly only if litellm is available.
-    """
     def __init__(self, provider: str, cap_uc: int) -> None:
         super().__init__(provider)
         from litellm import BudgetManager
         self.user_id = "tc_eval_user"
         self.bm = BudgetManager(project_name="tc_eval_project")
-        # cap_uc is in micro-cents; BudgetManager wants dollars
         self.cap_dollars = cap_uc / 1_000_000
         self.bm.create_budget(total_budget=self.cap_dollars, user=self.user_id)
         self._tripped = False
@@ -942,13 +733,8 @@ class LiteLLMBudgetCallback(CostTrackingCallback):
     def on_llm_end(self, response: Any, **kwargs: Any) -> None:
         # First do our own ledger update (parent class)
         super().on_llm_end(response, **kwargs)
-        # Then update LiteLLM's BudgetManager. We construct a synthetic
-        # completion-shaped object that BudgetManager.update_cost can
-        # read; alternatively, we compute cost ourselves and call
-        # BudgetManager.update_cost(completion_obj=None, model=..., input_text=..., output_text=...)
         try:
             from litellm import completion_cost
-            # Pull token counts from the response usage_metadata
             generations = getattr(response, "generations", None) or []
             for batch in generations:
                 for gen in batch:
@@ -958,7 +744,6 @@ class LiteLLMBudgetCallback(CostTrackingCallback):
                     usage = getattr(msg, "usage_metadata", None) or {}
                     in_tok = int(usage.get("input_tokens", 0))
                     out_tok = int(usage.get("output_tokens", 0))
-                    # Compute call cost via litellm with the same model name
                     model = PROVIDER_PRICING[self.provider]["model"]
                     cost = completion_cost(
                         model=model,
@@ -974,16 +759,11 @@ class LiteLLMBudgetCallback(CostTrackingCallback):
                         input_text="",  # we already have token counts
                         output_text="",
                     )
-                    # Some BudgetManager versions don't accept null
-                    # completion_obj; fall back to manual ledger:
                     new_total = current + cost
                     self.bm.user_dict[self.user_id]["current_cost"] = new_total
                     if new_total >= self.cap_dollars:
                         self._tripped = True
         except Exception as e:
-            # If LiteLLM's BudgetManager API is missing fields, fall back
-            # to checking our own ledger against the cap. This degrades
-            # the runtime gracefully to AgentGuard semantics.
             if self.cumulative_uc >= self.cap_uc_target:
                 self._tripped = True
 
@@ -995,16 +775,8 @@ class LiteLLMBudgetCallback(CostTrackingCallback):
 def run_litellm_proxy(provider: str, cap_uc: int, growth: int,
                       recursion_limit: int,
                       workload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """LangGraph harness driven through LiteLLM's BudgetManager.
-
-    LiteLLM's cost-attribution code path is the same one the LiteLLM
-    proxy uses in production. This runtime sits in the post-call
-    observation class (Lemma 2 of the paper): the threshold-crossing
-    call is issued before its cost is observed, and the proxy can only
-    reject subsequent calls.
-    """
     try:
-        import litellm  # noqa: F401
+        import litellm
     except ImportError:
         return {
             "runtime": "litellm_proxy",
@@ -1018,8 +790,6 @@ def run_litellm_proxy(provider: str, cap_uc: int, growth: int,
             "wasted_call_cost_uc": 0,
             "per_step": [],
         }
-
-    from langgraph.errors import GraphRecursionError
 
     wl = workload or WORKLOADS["lang001"]
     llm = _make_llm(provider, growth, wl)
@@ -1049,11 +819,6 @@ def run_litellm_proxy(provider: str, cap_uc: int, growth: int,
     )
     summary["wasted_call_cost_uc"] = wasted_uc
     return summary
-
-
-# =============================================================================
-# Driver
-# =============================================================================
 
 RUNTIMES: Dict[str, Callable[..., Dict[str, Any]]] = {
     "langgraph_only": run_langgraph_only,
@@ -1129,10 +894,6 @@ def main() -> int:
                 kwargs["workload"] = workload
             elif runtime_name == "crewai":
                 kwargs["max_iter"] = args.max_iter
-                # crewai/autogen are live-only; workload-passing not yet wired
-                # for those wrappers (live runs use real prompts via
-                # System+Human messages). We pass the workload anyway so the
-                # error path is informative.
             elif runtime_name == "autogen":
                 kwargs["max_turns"] = args.max_turns
 
@@ -1161,7 +922,6 @@ def main() -> int:
             rows.append(row)
             detail.append({**row, "per_step": result["per_step"]})
 
-    # Console summary
     print()
     print("=" * 110)
     print(f"{'runtime':<24} {'outcome':<38} {'steps':>6} {'spent_uc':>10} "
@@ -1171,7 +931,6 @@ def main() -> int:
         rt_rows = [r for r in rows if r["runtime"] == runtime_name]
         if not rt_rows:
             continue
-        # Take first row's outcome as exemplar (mock is deterministic)
         ex = rt_rows[0]
         avg_spent = sum(r["total_spent_uc"] for r in rt_rows) / len(rt_rows)
         avg_pct = sum(r["pct_of_cap"] for r in rt_rows) / len(rt_rows)

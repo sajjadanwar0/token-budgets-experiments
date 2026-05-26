@@ -1,40 +1,8 @@
-#!/usr/bin/env python3
-"""
-tokenizer_direct_temperature_sweep.py - Tokenizer-direct under temperature variance.
-
-Sweeps T ∈ {0.0, 0.3, 0.7, 1.0} on LANG-001 with the tokenizer-direct
-estimator. Tests whether soundness-by-construction holds across realistic
-production temperatures (the existing Table 38 was T=0 only).
-
-Expected finding: 0/N overshoot at every T (sound by construction).
-Variation: actual_output token count and refusal patterns may vary with T.
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-    cd ~/tb-reproduce/token-budgets-experiments/
-
-    # Sanity (T=0.7, 3 trials)
-    python3 tokenizer_direct_temperature_sweep.py \\
-        --temperature 0.7 --cap-uc 2000 --n-trials 3 \\
-        --output /tmp/td_temp_sanity.csv
-
-    # Full sweep: 4 temperatures x N=10 = 40 trials, ~$0.30, ~12 min
-    mkdir -p sweep_results
-    for T in 0.0 0.3 0.7 1.0; do
-        python3 tokenizer_direct_temperature_sweep.py \\
-            --temperature $T --cap-uc 2000 --n-trials 10 \\
-            --output sweep_results/tokenizer_direct_lang001_T${T}_cap2000_n10.csv
-        sleep 5
-    done
-"""
-
 import argparse
 import csv
 import os
 import sys
 import time
-
 from anthropic import Anthropic
 
 LANG_001_SYSTEM = (

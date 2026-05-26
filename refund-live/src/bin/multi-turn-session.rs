@@ -1,13 +1,3 @@
-//! Multi-turn conversation workload evaluation.
-//!
-//! For each of N_SESSIONS sessions, threads one Budget through ~12
-//! conversational turns. Message history grows each turn; tests whether
-//! the discipline holds under realistic agentic load where input tokens
-//! grow super-linearly with turn count.
-//!
-//! Usage: ANTHROPIC_API_KEY=... cargo run --release --bin multi-turn-session
-//! Output: multi_turn_sessions.csv + multi_turn_turns.csv
-
 use anyhow::{Result};
 use token_budgets::Budget;
 use serde_json::{json, Value};
@@ -16,7 +6,7 @@ use std::fs::File;
 use std::io::Write;
 use std::time::{Duration, Instant};
 
-const SESSION_BUDGET_NC: u64 = 150_000_000;  // $0.15 per session, in nano-cents
+const SESSION_BUDGET_NC: u64 = 150_000_000;
 const ANTHROPIC_IN_RATE_NC: u64 = 1000;
 const ANTHROPIC_OUT_RATE_NC: u64 = 5000;
 const MAX_TOKENS_PER_TURN: u32 = 512;
@@ -271,7 +261,6 @@ async fn main() -> Result<()> {
             let refund_amount = refund.amount();
             budget = Some(refund.apply_to(after_reserve)?);
 
-            // Append assistant response to history
             let assistant_text = parsed["content"][0]["text"].as_str().unwrap_or("").to_string();
             messages.push(json!({"role": "assistant", "content": assistant_text}));
 
@@ -324,7 +313,6 @@ async fn main() -> Result<()> {
     println!("Total spent:         ${:.4}", total_actual_usd);
     println!();
 
-    // Per-scenario summary
     println!("Per-scenario stats:");
     let scenario_names: Vec<&str> = scenarios.iter().map(|s| s.name).collect();
     for sn in scenario_names {
@@ -337,7 +325,6 @@ async fn main() -> Result<()> {
                  sn, subs.len(), avg_turns, avg_cost, exh);
     }
 
-    // CSV: per-session summary
     let mut s_csv = File::create("multi_turn_sessions.csv")?;
     writeln!(s_csv, "idx,scenario,turns_completed,turns_attempted,total_reserved_nc,total_actual_nc,total_refund_nc,final_budget_nc,violations,exhausted_early")?;
     for s in &sessions {
@@ -347,7 +334,6 @@ async fn main() -> Result<()> {
                  s.final_budget_nc, s.violations, s.exhausted_early)?;
     }
 
-    // CSV: per-turn records
     let mut t_csv = File::create("multi_turn_turns.csv")?;
     writeln!(t_csv, "session_idx,turn_idx,scenario,reservation_nc,actual_nc,refund_nc,input_tokens,output_tokens,body_bytes,margin_ratio,violated,latency_ms")?;
     for t in &all_turns {

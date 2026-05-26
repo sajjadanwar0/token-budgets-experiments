@@ -1,48 +1,9 @@
-#!/usr/bin/env python3
-"""
-margin_sensitivity_sweep.py - Priority A item 5 of v43 revision.
-
-Addresses the brutal-review attack: "Why 2.0× margin? No sensitivity
-analysis is given." This script runs the byte-length estimator with
-varying safety margins {1.0, 1.5, 2.0, 2.5, 3.0} on the LANG-001
-workload, measuring overshoot rate and capital efficiency at each
-margin.
-
-DESIGN
-------
-This is a Python re-implementation of the byte-length + margin
-estimator used in the Rust crate's AnthropicEstimator. It mirrors:
-
-    predicted_uc = byte_length(rendered_prompt) * margin * input_pricing
-                 + max_completion_tokens * output_pricing
-
-The same LANG-001 retry-loop workload is used as the existing
-sweeps so results are directly comparable to Table 38
-(tokenizer-direct) and the Table 33 cap-sweep.
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-
-    # Sanity (3 trials)
-    python3 margin_sensitivity_sweep.py --margin 2.0 --cap-uc 2000 \\
-        --n-trials 3 --output /tmp/margin_sanity.csv
-
-    # Full sweep: 5 margins x 1 cap (=2000) x N=15 = 75 trials, ~$1
-    mkdir -p sweep_results
-    for margin in 1.0 1.5 2.0 2.5 3.0; do
-        python3 margin_sensitivity_sweep.py \\
-            --margin $margin --cap-uc 2000 --n-trials 15 \\
-            --output sweep_results/margin_sensitivity_margin${margin}_cap2000_n15.csv
-        sleep 5
-    done
-"""
-
 import argparse
 import csv
 import os
 import sys
 import time
+import json
 
 from anthropic import Anthropic
 
@@ -65,18 +26,11 @@ LANG_001_FAKE_ERROR = (
 
 ANTHROPIC_HAIKU_4_5 = "claude-haiku-4-5-20251001"
 PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
-# 100 matches the Rust harness setup (Table 32 sweep used max_tokens≈100;
-# see runner.py and tb_rust_anthropic_cap2000_n30.csv where output_uc=511
-# implies max_completion_tokens ≈ 102).
+
 MAX_COMPLETION_TOKENS = 100
 
 
 def serialize_request_body(messages, system, max_completion_tokens):
-    """Mirror the deployed Rust AnthropicEstimator: serialize the request
-    body to UTF-8 JSON exactly like the Anthropic client would, since
-    that is what the Rust crate's ByteLength estimator measures.
-    From runner.py: 'sort_keys=True, separators=(",", ":")'."""
-    import json
     payload = {
         "model": ANTHROPIC_HAIKU_4_5,
         "max_tokens": max_completion_tokens,
@@ -85,27 +39,11 @@ def serialize_request_body(messages, system, max_completion_tokens):
     }
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
-
 def predict_cost_bytelen(messages, system, max_completion_tokens, margin):
-    """Byte-length estimator with safety margin, matching the deployed
-    Rust AnthropicEstimator<ByteLength>::estimate exactly:
-
-        input_uc  = ceil(byte_length(request_body) × safety_margin)
-        output_uc = max_completion_tokens × output_pricing  (NO margin)
-        total_uc  = input_uc + output_uc
-
-    The byte_length is treated 1:1 as input tokens (pessimistic by ~4x
-    for English; this *is* the source of the discipline's conservatism,
-    NOT an additional /4 conversion).
-
-    Source: token-budgets/src/estimator.rs lines 217-223.
-    """
     import math
     request_body = serialize_request_body(messages, system, max_completion_tokens)
     byte_len = len(request_body.encode("utf-8"))
-    # Bytes treated 1:1 as input tokens at $1/M input pricing
     predicted_input_uc = math.ceil(byte_len * margin * PRICING_UC_PER_TOKEN["input"])
-    # Output is already hard-capped by max_completion_tokens; no margin needed
     predicted_output_uc = max_completion_tokens * PRICING_UC_PER_TOKEN["output"]
     return predicted_input_uc + predicted_output_uc
 
@@ -144,7 +82,6 @@ def run_trial(trial_id, cap_uc, margin, max_steps=20):
     error_repr = ""
 
     for step in range(max_steps):
-        # Byte-length pre-flight prediction
         predicted_uc = predict_cost_bytelen(
             messages, LANG_001_SYSTEM, MAX_COMPLETION_TOKENS, margin
         )
@@ -178,7 +115,6 @@ def run_trial(trial_id, cap_uc, margin, max_steps=20):
             actual_input * PRICING_UC_PER_TOKEN["input"]
             + actual_output * PRICING_UC_PER_TOKEN["output"]
         )
-        # Refund unused reservation
         refund = predicted_uc - actual_cost
         if refund > 0:
             remaining_uc += refund

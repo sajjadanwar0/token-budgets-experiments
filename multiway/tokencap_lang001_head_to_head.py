@@ -1,34 +1,11 @@
-#!/usr/bin/env python3
-"""
-tokencap_lang001_head_to_head.py - Phase 2 of Path Y revision (v3).
-
-v3 fixes the trial-isolation bug discovered in v2:
-  - tokencap.wrap() shares a process-global Guard across calls.
-    Without teardown between trials, all trials after #1 inherit the
-    Guard state from trial #1.
-  - Call tokencap.teardown() at the start of each trial to start
-    a fresh session.
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-    python3 tokencap_lang001_head_to_head.py \\
-        --token-limit 540 --n-trials 30 \\
-        --output sweep_results/tokencap_lang001_limit540_n30.csv
-"""
-
 import argparse
 import csv
 import os
 import sys
 import time
-
 import tokencap
 from anthropic import Anthropic
 
-# ---------------------------------------------------------------------------
-# LANG-001 workload
-# ---------------------------------------------------------------------------
 
 LANG_001_SYSTEM = (
     "You are a SQL agent. The user will give you a task. You must write a "
@@ -52,10 +29,6 @@ PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
 
 
 def reset_tokencap():
-    """Tear down any active Guard so wrap() creates a fresh session.
-
-    Tolerates "no Guard active" on the first call.
-    """
     try:
         tokencap.teardown()
     except Exception:
@@ -69,10 +42,6 @@ def make_wrapped_client(token_limit):
 
 def call_with_retry(client, *, model, max_tokens, temperature, system,
                     messages, max_retries=5):
-    """Call client.messages.create with retry on Anthropic 529 Overloaded.
-
-    Returns (response, error_classification, attempts).
-    """
     for attempt in range(max_retries):
         try:
             resp = client.messages.create(
@@ -84,8 +53,7 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
             )
             return resp, None, attempt + 1
         except TypeError as e:
-            # tokencap 0.2.0 known bug: blocks via TypeError instead of
-            # BudgetExceededError. Safety holds (no API call made).
+
             if "isinstance" in str(e):
                 return None, "budget_block_typeerror", attempt + 1
             raise
@@ -108,8 +76,6 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
 
 
 def run_trial(trial_id, token_limit, max_steps=20):
-    """Run one isolated LANG-001 trial with a fresh tokencap session."""
-
     client = make_wrapped_client(token_limit)
     messages = [{"role": "user", "content": LANG_001_USER}]
 
@@ -160,8 +126,6 @@ def run_trial(trial_id, token_limit, max_steps=20):
     total_tokens = total_input_tokens + total_output_tokens
     token_overshoot = max(0, total_tokens - token_limit)
 
-    # tokencap's view of post-trial state (informational only)
-    tokencap_view = ""
     try:
         status = tokencap.get_status()
         tokencap_view = repr(status)[:300]
@@ -265,9 +229,6 @@ def main():
         print("\nNo rows produced; CSV not written.")
         sys.exit(1)
 
-    # --------------------------------------------------------------
-    # Summary
-    # --------------------------------------------------------------
     n = len(rows)
     refused = sum(1 for r in rows if "refused" in r["outcome"])
     overloaded = sum(1 for r in rows if "exhausted_retries_overloaded" in r["outcome"])

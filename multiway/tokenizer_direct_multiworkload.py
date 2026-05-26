@@ -1,60 +1,9 @@
-#!/usr/bin/env python3
-"""
-tokenizer_direct_multiworkload.py - Priority A item 2 of v43 revision.
-
-Runs the tokenizer-direct estimator on TWO additional workloads
-beyond LANG-001, addressing the brutal-review attack that
-tokenizer-direct's "sound by construction" claim has been validated
-on only one workload.
-
-Workloads:
-  - arg-hallucination: agent generates fake function-call arguments,
-    re-tries on validation failure. Stresses the input growth pattern
-    via function definitions accumulating in messages.
-  - clarification: agent asks clarifying questions in a loop. Stresses
-    the conversational growth pattern with long system prompt and
-    growing user turns.
-
-Both workloads are real LangChain-class reproductions used elsewhere
-in the paper (Table 19, Table 20). Output is comparable to
-tokenizer_direct_lang001 caps.
-
-USAGE
------
-    export ANTHROPIC_API_KEY=sk-ant-...
-    cd ~/tb-reproduce/token-budgets-experiments/
-
-    # Sanity (3 trials each, ~$0.10)
-    python3 tokenizer_direct_multiworkload.py \\
-        --workload arg-hallucination --cap-uc 2000 --n-trials 3 \\
-        --output /tmp/tokdirect_argh_sanity.csv
-
-    python3 tokenizer_direct_multiworkload.py \\
-        --workload clarification --cap-uc 2000 --n-trials 3 \\
-        --output /tmp/tokdirect_clar_sanity.csv
-
-    # Full sweep (N=10 per cell, 2 workloads x 2 caps = ~$0.50)
-    mkdir -p sweep_results
-    for wl in arg-hallucination clarification; do
-        for cap in 2000 5000; do
-            python3 tokenizer_direct_multiworkload.py \\
-                --workload $wl --cap-uc $cap --n-trials 10 \\
-                --output sweep_results/tokenizer_direct_${wl}_cap${cap}_n10.csv
-        done
-    done
-"""
-
 import argparse
 import csv
 import os
 import sys
 import time
-
 from anthropic import Anthropic
-
-# ---------------------------------------------------------------------------
-# Workload definitions (mirror the LANG-001 / Table 19 / Table 20 patterns)
-# ---------------------------------------------------------------------------
 
 WORKLOADS = {
     "arg-hallucination": {
@@ -103,7 +52,6 @@ MAX_COMPLETION_TOKENS = 200
 
 
 def predict_cost_uc(client, messages, system, max_completion_tokens):
-    """count_tokens-based prediction, sound by construction."""
     start = time.monotonic()
     try:
         resp = client.messages.count_tokens(

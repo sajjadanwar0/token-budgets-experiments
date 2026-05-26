@@ -20,7 +20,6 @@ class Cell:
     temperature: float
     n_runs: int = 0
     n_overshoot: int = 0
-    # Cell-level binary outcome for T=0 cells.
     cell_has_overshoot: bool = False
 
 

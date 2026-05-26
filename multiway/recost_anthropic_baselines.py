@@ -1,40 +1,4 @@
-#!/usr/bin/env python3
-"""
-recost_anthropic_baselines_v2.py
-
-Version 2 of the Anthropic baseline cost reanalysis. The v1 script
-expected raw input_tokens / output_tokens columns; your harness only
-recorded total_spent_uc (computed at haiku-4-5 rates).
-
-THE 3X SHORTCUT (algebra in the README, "the 3x recost shortcut"
-section): because haiku-4-5 and sonnet-4-5 have identical 1:5
-input:output price ratios, sonnet_cost = haiku_cost * 3 for every call
-regardless of token mix. The recost is therefore a single
-multiplication, not a token-by-token reconstruction.
-
-ASSUMPTIONS (each load-bearing; documented in the output CSV header):
-  - The harness's compute_cost_uc used haiku-4-5 rates ($1/Mtok input,
-    $5/Mtok output) as stated in paper v57.1 S5.5.1. If your harness
-    used different rates, override --multiplier explicitly.
-  - Sonnet-4-5 standard-tier pricing is exactly 3.0x haiku-4-5 (i.e.
-    $3/Mtok input and $15/Mtok output). If Anthropic has changed
-    pricing since the paper's data collection, verify against the
-    current pricing page and pass --multiplier accordingly.
-  - The cap value (cap_uc) is unchanged by the recost; only the spend
-    figures move. Overshoot rates may change at the boundary.
-
-USAGE:
-    cd token-budgets-experiments/multiway
-    python recost_anthropic_baselines_v2.py \\
-        --input sweep_results/claude_sonnet_lang001_n30_full.csv \\
-        --output sweep_results/claude_sonnet_lang001_n30_recosted.csv
-
-ALSO ACCEPTS:
-    --multiplier FLOAT     Override the haiku-to-sonnet ratio (default 3.0).
-                           Pass 1.0 to produce a passthrough CSV.
-"""
 from __future__ import annotations
-
 import argparse
 import csv
 import sys
@@ -45,13 +9,6 @@ HAIKU_TO_SONNET_MULTIPLIER = 3.0
 
 
 def detect_columns(rows: list[dict]) -> tuple[str, Optional[str], str]:
-    """Probe column names for runtime, total_spent_uc, overshoot_uc.
-
-    Returns (runtime_col, spent_col, overshoot_col).
-    Spent column is required (we cannot recost without it). Overshoot
-    column is required (we recompute overshoot at the new spend).
-    Runtime column is optional (used only for the per-runtime summary).
-    """
     if not rows:
         print("FATAL: input CSV has 0 rows", file=sys.stderr)
         sys.exit(2)
@@ -114,7 +71,6 @@ def main():
           f"spent={spent_col}, overshoot={overshoot_col}", file=sys.stderr)
     print(f"Applying multiplier: {args.multiplier}x", file=sys.stderr)
 
-    # Recompute each row. Preserve all original columns; add recosted ones.
     cap_col_candidates = ("cap_uc", "cap", "budget_uc")
     cap_col = next((c for c in cap_col_candidates if c in rows[0]), None)
     pct_col_candidates = ("pct_of_cap", "percent_of_cap", "pct_cap")
@@ -135,7 +91,6 @@ def main():
         new_row["spent_uc_recosted"] = recosted_spent
         new_row["recost_multiplier"] = args.multiplier
 
-        # Recompute overshoot at the new spend, if we know the cap.
         if cap_col is not None and row.get(cap_col):
             try:
                 cap_uc = int(float(row[cap_col]))
@@ -154,7 +109,6 @@ def main():
 
         out_rows.append(new_row)
 
-    # Write the recosted CSV with the original columns plus the new ones.
     fieldnames = list(out_rows[0].keys())
     with open(args.output, "w", newline="") as f:
         f.write(
@@ -172,8 +126,7 @@ def main():
         for r in out_rows:
             w.writerow(r)
 
-    # Per-runtime summary.
-    print(f"\n=== RECOSTED PER-RUNTIME SUMMARY (multiplier={args.multiplier}x) ===",
+    print(f"\n RECOSTED PER-RUNTIME SUMMARY (multiplier={args.multiplier}x) ",
           file=sys.stderr)
     if runtime_col is None:
         print("(no runtime column; reporting global aggregate only)", file=sys.stderr)

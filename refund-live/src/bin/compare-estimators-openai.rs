@@ -1,17 +1,3 @@
-//! Side-by-side empirical comparison of ByteLength vs Tiktoken estimators
-//! against OpenAI gpt-4o-mini.
-//!
-//! cl100k_base is the actual tokenizer for OpenAI's GPT-4 family models,
-//! so the soundness contract holds and this is the fair comparison
-//! for the v26 paper's "tighter-margin via tokenizer-direct estimator"
-//! claim.
-//!
-//! Usage:
-//!   OPENAI_API_KEY=... cargo run --release --bin compare-estimators-openai \
-//!     --features tiktoken
-//!
-//! Cost: ~$0.10 for N=100 calls at gpt-4o-mini pricing.
-
 use anyhow::Result;
 use token_budgets::{Budget, ByteLength, TokenEstimator};
 use serde_json::{json, Value};
@@ -23,10 +9,8 @@ use std::time::{Duration, Instant};
 #[cfg(feature = "tiktoken")]
 use token_budgets::Tiktoken;
 
-const BUDGET_CAP: u64 = 10_000_000_000;  // $10
+const BUDGET_CAP: u64 = 10_000_000_000;
 type B = Budget<BUDGET_CAP>;
-
-// gpt-4o-mini pricing: $0.15/M input, $0.60/M output -> in nano-cents
 const IN_RATE_NC: u64 = 150;
 const OUT_RATE_NC: u64 = 600;
 const MAX_TOKENS: u32 = 256;
@@ -178,7 +162,6 @@ async fn main() -> Result<()> {
         eprintln!("       Rebuild with: cargo run --release --bin compare-estimators-openai --features tiktoken");
     }
 
-    // Summarise per estimator
     let mut by_est: std::collections::BTreeMap<&str, Vec<&Row>> = Default::default();
     for r in &rows {
         by_est.entry(r.estimator).or_default().push(r);
@@ -200,7 +183,6 @@ async fn main() -> Result<()> {
                  name, rows.len(), over_res, mn, p50, p95);
     }
 
-    // CSV out
     let mut csv = File::create("compare_estimators_openai.csv")?;
     writeln!(csv, "idx,estimator,reservation_nc,actual_nc,input_tokens,output_tokens,margin_ratio")?;
     for r in &rows {

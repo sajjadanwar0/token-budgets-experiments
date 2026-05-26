@@ -1,15 +1,3 @@
-//! Multi-provider regime. Now supports Anthropic, OpenAI, Gemini, Ollama.
-//!
-//! Usage:
-//!   PROVIDER=ollama MODEL=llama3.2 MAX_TOKENS=1024 N_CALLS=300 \
-//!     cargo run --release --bin refund-live-multi
-//!
-//! For Ollama, no API key needed. Default endpoint is
-//! http://localhost:11434/v1/chat/completions; override with
-//! OLLAMA_URL=http://other-host:11434/v1/chat/completions
-//!
-//! Output CSV: refund_live_ollama_llama3_2_1024_300.csv
-
 use anyhow::{anyhow, Context, Result};
 use token_budgets::Budget;
 use serde_json::{json, Value};
@@ -18,7 +6,7 @@ use std::fs::File;
 use std::io::Write;
 use std::time::{Duration, Instant};
 
-const BUDGET_CAP: u64 = 100_000_000_000;  // $100 in nano-cents
+const BUDGET_CAP: u64 = 100_000_000_000;
 type B = Budget<BUDGET_CAP>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -72,15 +60,12 @@ impl Provider {
         }
     }
 
-    /// Per-token rates in nano-cents (10^-9 USD).
-    /// For Ollama (local), nominal rates of 1 nc each so budget arithmetic
-    /// still meaningfully bounds calls but doesn't reflect real dollar cost.
     fn rates_nc(&self) -> (u64, u64) {
         match self {
             Self::Anthropic => (1000, 5000),
             Self::OpenAI    => (150, 600),
             Self::Gemini    => (75, 300),
-            Self::Ollama    => (1, 1),  // local: integer placeholder rates
+            Self::Ollama    => (1, 1),
         }
     }
 
@@ -148,10 +133,6 @@ impl Provider {
                 Some((m.get("promptTokenCount")?.as_u64()?, m.get("candidatesTokenCount")?.as_u64()?))
             }
             Self::Ollama => {
-                // Ollama on OpenAI-compat endpoint returns:
-                // {"usage": {"prompt_tokens": N, "completion_tokens": M, "total_tokens": N+M}}
-                // OR the native ollama endpoint returns:
-                // {"prompt_eval_count": N, "eval_count": M}
                 let u = resp.get("usage");
                 if let Some(u) = u {
                     Some((
@@ -168,10 +149,6 @@ impl Provider {
         }
     }
 }
-
-// ... rest of the binary (CallRecord struct, build_prompt, main) is
-// IDENTICAL to the existing refund-live-multi.rs. Copy from there.
-// The only changes are in the Provider enum and its impl block above.
 
 struct CallRecord {
     idx: usize,
@@ -231,7 +208,7 @@ async fn main() -> Result<()> {
     let (in_rate_nc, out_rate_nc) = provider.rates_nc();
 
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(180))  // longer for local Ollama
+        .timeout(Duration::from_secs(180))
         .build()?;
 
     println!("=== Provider: {} | model: {} | max_tokens: {} | N: {} ===",

@@ -1,6 +1,3 @@
-//! Provider adapters: Gemini, vLLM, and existing Anthropic/OpenAI.
-//! Closes the "three-provider only" critique.
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy)]
@@ -11,7 +8,6 @@ pub enum Provider {
     VLLM { endpoint: &'static str, model: &'static str },
 }
 
-/// Per-token rates in micro-cents (1 uc = $0.000001).
 #[derive(Debug, Clone, Copy)]
 pub struct Rates {
     pub per_in_token_uc: u64,
@@ -80,7 +76,6 @@ impl Provider {
         }
     }
 
-    /// Parse provider response and extract (input_tokens, output_tokens).
     pub fn parse_usage(&self, response: &serde_json::Value) -> Option<(u64, u64)> {
         match self {
             Provider::Anthropic { .. } => {
