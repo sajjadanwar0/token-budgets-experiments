@@ -1,0 +1,19 @@
+[package]
+name = "condition_e_rust_shared"
+version = "0.1.0"
+edition = "2024"
+authors = ["Sajjad Khan"]
+
+[dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json"] }
+csv = "1.3"
+clap = { version = "4", features = ["derive"] }
+budget-spike = { path = "../budget-spike" }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
