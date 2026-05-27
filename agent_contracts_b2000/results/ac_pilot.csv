@@ -1,0 +1,4 @@
+trial_id,outcome,steps_admitted,cumulative_spend_uc,cap_uc,final_remaining_uc,pre_flight_refusals,refusal_reservation_uc,elapsed_s,error
+0,admit_then_refuse,1,249,2000,1751,1,1963,2.770217180252075,
+1,admit_then_refuse,1,249,2000,1751,1,1963,2.8209245204925537,
+2,admit_then_refuse,1,249,2000,1751,1,1963,2.6244044303894043,

@@ -1,0 +1,10 @@
+# Agent Contracts head-to-head harness at B_0 = 2,000 uc
+# Pin to v0.3.1 because v0.3.2 has the ContractedLLM state-transition bug
+# documented in the paper section 6.1.0.2. We use Contract / ResourceConstraints /
+# ResourceMonitor directly (which work on both versions), but pinning to 0.3.1
+# ensures the harness reproduces against a known-good baseline.
+ai-agent-contracts==0.3.1
+
+# litellm is the provider gateway named in the paper section 6.1.0.2 workaround.
+# Pin loosely; any 1.x version that supports tool calling should work.
+litellm>=1.50.0,<2.0.0
