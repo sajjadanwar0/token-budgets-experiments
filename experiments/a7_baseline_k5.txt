@@ -1,0 +1,29 @@
+==========================================================================
+ A7 fault injection: provider under-reporting vs cap-respecting
+==========================================================================
+Cap B_0 = 2000 uc | margin 2.0x | 1000 trials/k
+
+    k    overshoot               95% CI   mean over%   max over%
+--------------------------------------------------------------------------
+  5.0   211/1000   [0.187, 0.237]          53.7%      241.2%
+
+Interpretation
+--------------------------------------------------------------------------
+At k=5.0 (provider under-reports 5x): 211/1000 trials overshoot, mean 53.7% over cap.
+The discipline cannot detect this: it only sees reported
+charges, so the ledger admits calls the true cost has already
+exhausted. This is the A7 trust-boundary limitation conceded
+in the limitations section, now quantified.
+
+Paragraph for the paper (section 8.6 / threats):
+--------------------------------------------------------------------------
+  To quantify the A7 (charge-truthfulness) trust boundary, we ran a
+  fault-injection experiment (1000 trials per condition,
+  cap 2000 uc) simulating a provider that under-reports
+  usage by a factor k. At k=1 the discipline is cap-respecting
+  (0 overshoot). At k=[worst k], it overshoots on [N]/[trials]
+  sessions by a mean of [X]%, undetectably, because the ledger
+  observes only reported charges. This confirms A7 as a genuine
+  limitation shared with all client-side accounting; [if you ran
+  --reconcile-every:] periodic ground-truth reconciliation bounds
+  the overshoot to the inter-reconciliation window.
