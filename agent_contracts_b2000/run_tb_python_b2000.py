@@ -1,35 +1,6 @@
-#!/usr/bin/env python3
-"""
-Token Budgets Python equivalent at B_0 = 2,000 uc — the apples-to-apples
-Python counterpart to run_ac_b2000.py.
-
-This harness uses the *same* prompts, model, temperature, max_output_tokens,
-estimator, and trial count as run_ac_b2000.py (imported as a module so
-calibration stays single-source), but enforces the cap via a plain integer
-counter + pre-flight check (no Agent Contracts library, no Rust crate).
-
-Running both this and run_ac_b2000.py against the same prompts isolates the
-algorithm/discipline from the library implementation:
-
-  - run_tb_python_b2000.py: plain pre-flight counter (this script)
-  - run_ac_b2000.py:        Agent Contracts ResourceMonitor (Python library)
-  - tc_live_harness B_0=2000: Token Budgets crate (Rust, compile-time affine)
-
-Expected result at the discriminating cap B_0 = 2,000 uc on haiku-4-5:
-  - All three frameworks produce identical cap-respecting outcomes (0/30
-    overshoot, admit-1-refuse-1 pattern), because the cap-respecting outcome
-    is supplied by estimator soundness + pre-flight discipline, not by the
-    affine type system or by a particular library implementation.
-
-Usage:
-    pip install -r requirements.txt
-    export ANTHROPIC_API_KEY=sk-ant-...
-    python3 run_tb_python_b2000.py --trials 30 --output tb_python_b2000_results.csv
-"""
 from __future__ import annotations
 
 import argparse, csv, json, os, sys, time
-from dataclasses import dataclass
 from pathlib import Path
 
 try:
@@ -38,8 +9,6 @@ try:
 except ImportError:
     _HAVE_LITELLM = False
 
-# Share constants, prompts, and helpers with the AC harness — single source
-# of truth for calibration. NOTE: imports from run_ac_b2000 (no _v2 suffix).
 from run_ac_b2000 import (
     MODEL, TEMPERATURE, MAX_OUTPUT_TOKENS, MAX_AGENT_STEPS,
     CAP_USD, UC_PER_USD, PRICE_IN_PER_MTOK_USD, PRICE_OUT_PER_MTOK_USD,
@@ -50,8 +19,6 @@ from run_ac_b2000 import (
 
 def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False,
                   verbose: bool = False) -> TrialResult:
-    """Same control flow as run_ac_b2000.run_one_trial, but with a plain
-    integer counter instead of an Agent Contracts ResourceMonitor."""
     t0 = time.time()
 
     remaining_usd = CAP_USD
@@ -77,7 +44,6 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False,
     steps_admitted = 0
     pre_flight_refusals = 0
     refusal_reservation_uc = 0
-    outcome = "step_limit"
 
     for step in range(MAX_AGENT_STEPS):
         estimate_usd = estimate_call_cost_usd(messages, tools_def, system)

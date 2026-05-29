@@ -1,25 +1,11 @@
-#!/usr/bin/env python3
-"""
-Compare per-trial outcomes across AC, TB-Python, and (optionally) TB-Rust
-CSVs at the discriminating cap B_0 = 2,000 uc.
-
-Produces a paper-ready summary table and a Wilson 95% CI on the per-replica
-overshoot rate for each framework. Also runs Fisher's exact test pairwise.
-
-Usage:
-    python3 analyze.py \\
-        --ac     ac_b2000_results.csv \\
-        --tb-py  tb_python_b2000_results.csv \\
-        --tb-rs  /path/to/tc_live_harness_b2000_haiku.csv \\
-        --output comparison_summary.txt
-"""
 from __future__ import annotations
 import argparse
 import csv
 import math
-import sys
 from collections import Counter
 from pathlib import Path
+from math import lgamma, exp
+
 
 
 def read_results(path: Path) -> list[dict]:
@@ -40,9 +26,6 @@ def wilson_ci(successes: int, n: int, z: float = 1.96) -> tuple[float, float]:
 
 
 def fisher_exact_2x2(a: int, b: int, c: int, d: int) -> float:
-    """Two-sided Fisher's exact test p-value on a 2x2 table.
-    a, b: row 1; c, d: row 2."""
-    from math import lgamma, log, exp
     n = a + b + c + d
     if n == 0: return 1.0
 
@@ -99,7 +82,6 @@ def render(summaries: list[dict]) -> str:
     out.append("=" * 75)
     out.append("")
 
-    # Table 1: overshoot
     out.append(f"{'Framework':<22} {'n':>4} {'overshoot':>12} {'95% CI':>22}")
     out.append("-" * 68)
     for s in summaries:
@@ -108,7 +90,6 @@ def render(summaries: list[dict]) -> str:
         out.append(f"{s['label']:<22} {s['n']:>4} {rate:>12} {ci:>22}")
     out.append("")
 
-    # Table 2: mechanism behaviour
     out.append(f"{'Framework':<22} {'mean spend (uc)':>16} "
                f"{'max':>8} {'mean steps':>12} {'refusals':>10}")
     out.append("-" * 75)
@@ -127,7 +108,6 @@ def render(summaries: list[dict]) -> str:
             out.append(f"    {outcome:24s} {cnt:>4d} / {s['n']}")
     out.append("")
 
-    # Pairwise Fisher
     if len(summaries) >= 2:
         out.append("Pairwise Fisher's exact test (on overshoot counts):")
         for i in range(len(summaries)):
@@ -138,7 +118,6 @@ def render(summaries: list[dict]) -> str:
                 out.append(f"  {a['label']:>22}  vs  {b['label']:<22}  p = {p:.4f}")
         out.append("")
 
-    # Interpretation
     all_zero = all(s["overshoots"] == 0 for s in summaries)
     if all_zero:
         out.append("Interpretation: all frameworks 0/N overshoot at the discriminating cap.")

@@ -1,45 +1,3 @@
-#!/usr/bin/env python3
-"""
-a7_fault_injection.py
-
-Tests Assumption A7 (provider charge-truthfulness) by simulating a provider
-that under-reports actual token usage by a factor k. This is the experiment
-R3, R7, R9, R13, and R15 asked for: you concede in section 8.6 that A7 is an
-unverified trust assumption; this QUANTIFIES what happens when it is violated.
-
-THE MODEL (faithful to the token-budgets reservation cycle)
-  For each call i:
-    1. estimate input cost, reserve r_i = estimate * margin
-    2. pre-flight check: admit call only if r_i <= remaining_ledger
-    3. the call incurs a TRUE cost c_i (drawn from your per-call cost model)
-    4. the provider REPORTS c_i' = c_i / k   (k=1 truthful; k>1 under-reports)
-    5. confirm(c_i'): remaining_ledger -= c_i'   (refund r_i - c_i')
-  The ledger tracks remaining_ledger using REPORTED charges; we separately
-  track TRUE cumulative spend = sum(c_i). Overshoot = TRUE spend > cap.
-
-WHAT IT DEMONSTRATES
-  At k=1 (truthful), the discipline is cap-respecting (0 overshoot), as the
-  paper claims. At k>1, the ledger is fooled into admitting more calls than
-  the cap allows, so TRUE spend exceeds the cap silently -- the discipline
-  cannot detect this because it only sees reported charges. The overshoot
-  magnitude scales with k. This is the honest demonstration of the conceded
-  limitation, and the OPTIONAL reconciliation mode shows how periodic
-  ground-truth polling bounds the damage.
-
-USAGE
-  # default synthetic per-call cost model (mean ~928 uc, matching LANG-001)
-  python3 a7_fault_injection.py --cap 2000 --trials 1000 \
-      --k 1.0 1.5 2.0 5.0 10.0 --output a7_results.txt
-
-  # ground the per-call cost distribution in YOUR real live-API logs:
-  python3 a7_fault_injection.py --cap 2000 --trials 1000 \
-      --cost-col actual_cost_uc --cost-csv /path/to/your_live_runs.csv \
-      --k 1.0 2.0 5.0 --output a7_results.txt
-
-  # with reconciliation every R calls (poll ground-truth, correct ledger):
-  python3 a7_fault_injection.py --cap 2000 --trials 1000 \
-      --k 2.0 5.0 --reconcile-every 3 --output a7_recon.txt
-"""
 from __future__ import annotations
 import argparse, csv, math, random, statistics
 from pathlib import Path
@@ -87,14 +45,6 @@ def load_pair_model(csv_path: Path, cost_col: str, reservation_col: str):
 
 def load_cost_model(csv_path: Path | None, cost_col: str,
                     default_mean: float, default_sd: float):
-    """Return a callable rng -> per-call true cost (uc).
-
-    WARNING: this independent-draw model only faithfully holds A1 when the
-    cost is (near-)deterministic. For variable real costs, prefer the PAIRED
-    model via --reservation-col, which preserves the estimate/actual
-    correlation. With independent draws, low-estimate/high-cost samples
-    create spurious A1 violations that contaminate the k=1 baseline.
-    """
     if csv_path is not None:
         with csv_path.open(newline="") as f:
             rows = list(csv.DictReader(f))
@@ -127,42 +77,27 @@ def load_cost_model(csv_path: Path | None, cost_col: str,
 
 def run_trial(cap: float, k: float, margin: float, sampler, rng,
               reconcile_every: int | None, paired: bool) -> dict:
-    """Run one session to termination; return outcome dict.
-
-    Termination: the loop stops when the next call's reservation exceeds the
-    remaining LEDGER (pre-flight refusal) -- exactly the discipline's behaviour.
-    We then check whether TRUE spend exceeded the cap.
-
-    paired=True: sampler returns (reservation, actual) drawn together from real
-    data, so A1 (reservation >= actual) is preserved exactly as in the real
-    runs. This is the correct model. paired=False: independent-draw fallback
-    (only faithful for near-deterministic cost).
-    """
-    remaining_ledger = cap          # what the discipline thinks it has
-    true_spend = 0.0                # ground truth (provider's real charges)
+    remaining_ledger = cap
+    true_spend = 0.0
     reported_spend = 0.0
     steps = 0
-    max_steps = 10_000              # safety bound
+    max_steps = 10_000
 
     while steps < max_steps:
         if paired:
-            reservation, c_true = sampler(rng)   # correlated real pair
+            reservation, c_true = sampler(rng)
         else:
             est = sampler(rng)
             reservation = est * margin
-            c_true = sampler(rng)                 # independent (fallback only)
-        # pre-flight: admit only if reservation fits the LEDGER
+            c_true = sampler(rng)
         if reservation > remaining_ledger:
-            break                               # correct pre-flight refusal
-        # the call happens: TRUE cost realised
+            break
         true_spend += c_true
-        # provider REPORTS under-counted charge
         c_reported = c_true / k
         reported_spend += c_reported
-        # confirm: ledger deducts the REPORTED charge (refund the rest)
         remaining_ledger -= c_reported
         steps += 1
-        # optional reconciliation: every R calls, poll ground truth and correct
+
         if reconcile_every and steps % reconcile_every == 0:
             remaining_ledger = cap - true_spend
             reported_spend = true_spend

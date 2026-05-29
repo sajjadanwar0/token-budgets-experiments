@@ -1,42 +1,7 @@
-#!/usr/bin/env python3
-"""
-Agent Contracts head-to-head harness at the discriminating cap B_0 = 2,000 uc.
-
-Implements the workaround documented in the paper's section 6.1.0.2: the
-ContractedLLM context manager has a state-transition bug in ai-agent-contracts
-v0.3.x that prevents direct usage, so we use Contract / ResourceConstraints /
-ResourceMonitor directly and enforce the cap via litellm.completion calls.
-
-LiteLLM uses OpenAI's universal message format and converts to provider-native
-format internally, so the message stack uses OpenAI-style tool_calls / role:tool
-messages throughout.
-
-DEFAULT_PROMPTS calibrated to produce admit-1-refuse-1 at B_0=2,000 uc on
-claude-haiku-4-5:
-  - Initial JSON payload: ~8,500 bytes
-  - Step 0 byte-length estimate: ~1,800 uc, admits (< 2,000 cap)
-  - Step 0 actual on haiku: ~200-300 uc (Anthropic tokenization)
-  - Step 1 byte-length estimate after retry: ~1,900 uc, REFUSES pre-flight
-
-Unit convention: 1 uc = 10^-5 USD. So B_0 = 2,000 uc = $0.02.
-
-Usage:
-    pip install -r requirements.txt
-    export ANTHROPIC_API_KEY=sk-ant-...
-    python3 run_ac_b2000.py --trials 30 --output ac_b2000_results.csv
-
-Dry-run (no API cost):
-    python3 run_ac_b2000.py --trials 3 --dry-run
-
-Diagnostic:
-    python3 run_ac_b2000.py --trials 3 --verbose
-"""
 from __future__ import annotations
-
 import argparse, csv, json, os, sys, time
 from dataclasses import dataclass
 from pathlib import Path
-
 import agent_contracts as ac
 
 try:
@@ -61,11 +26,6 @@ PRICE_OUT_PER_MTOK_USD = 5.0
 
 MARGIN = 2.0
 
-
-# Calibrated for ~8,500-byte JSON payload on claude-haiku-4-5 / B_0=2000.
-# Trimmed from a longer production-realistic system prompt: only the schema
-# + core rules are kept; query examples and optimization guidance removed
-# to hit the byte target while leaving the prompt operationally meaningful.
 DEFAULT_PROMPTS = {
     "system": (
         "You are a senior data analyst agent operating against an "
@@ -258,7 +218,6 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False,
     steps_admitted = 0
     pre_flight_refusals = 0
     refusal_reservation_uc = 0
-    outcome = "step_limit"
 
     for step in range(MAX_AGENT_STEPS):
         estimate_usd = estimate_call_cost_usd(messages, tools_def, system)
