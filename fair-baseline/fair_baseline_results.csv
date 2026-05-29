@@ -1,9 +1,0 @@
-cap_uc,mechanism,n_calls,n_admitted,n_refused,spent_uc,overshoot_uc,overshoot_pct_of_cap,mean_reservation_per_call_uc,mean_actual_per_call_uc,cap_crossing_call
-5000,TB,30,1,29,2047,0,0.0,4144,1966,-1
-5000,Callback,30,3,27,6128,1128,22.56,4144,1966,3
-6500,TB,30,2,28,4086,0,0.0,4144,1966,-1
-6500,Callback,30,4,26,8174,1674,25.753846153846155,4144,1966,4
-8000,TB,30,2,28,4086,0,0.0,4144,1966,-1
-8000,Callback,30,4,26,8174,174,2.175,4144,1966,4
-10000,TB,30,3,27,6128,0,0.0,4144,1966,-1
-10000,Callback,30,5,25,10207,207,2.07,4144,1966,5

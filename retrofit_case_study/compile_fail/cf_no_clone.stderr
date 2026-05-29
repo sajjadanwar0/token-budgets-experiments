@@ -1,5 +1,0 @@
-error[E0599]: no method named `clone` found for struct `Budget` in the current scope
- --> compile_fail/cf_no_clone.rs:4:18
-  |
-4 |     let _dup = b.clone();   // ERROR: no method named `clone` / Clone not implemented
-  |                  ^^^^^ method not found in `Budget`

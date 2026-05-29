@@ -9,28 +9,30 @@ reproduce the analyses.
 
 ```
 .
-├── agent_contracts_b2000/   # Agent Contracts discriminating-cap head-to-head (Table 9)
+├── agent_contracts_b2000/   # Agent Contracts discriminating-cap head-to-head (B0=2000)
 ├── budget-spike/            # LANG-001 retry-loop reproduction + multi-agent harness
 ├── experiments/             # anthropic_estimator (A1), a7_fault_injection, eval_at_scale
-├── fair-baseline/           # Independent baseline cohort analysis (paper §2.3)
-├── forgetful_operator/      # Forgetful-Operator experiment incl. Condition E (Table 15)
-├── governor-bench/          # Microbench for the governor-runtime extension
-├── multiway/                # Multi-runtime sweep result CSVs (sweep_results/)
-├── refund-live/             # Live refund + A7 fault-injection data (§5.27)
+├── forgetful_operator/      # Forgetful-Operator experiment incl. Condition E
+├── multiway/                # Multi-runtime sweep drivers + result CSVs (sweep_results/)
+├── refund-live/             # Live refund + A7 fault-injection data
 ├── tools/                   # Sweep drivers, incl. multiway_compare.py
 ├── LICENSE-APACHE  LICENSE-MIT  README.md
 ```
 
+(The independent keyword-neutral baseline cohort for paper §2.3 lives in the
+separate `token-budgets-baseline` repository, not here.)
+
 ## Headline results (shipped CSVs, no API access required)
 
-| Result                                          | File                                                                 | Paper ref |
-|-------------------------------------------------|----------------------------------------------------------------------|-----------|
-| Five-runtime + Agent Contracts on gpt-4o (N=30) | `multiway/sweep_results/gpt4o_lang001_n30_full.csv`                  | Table 5   |
-| Cross-provider replication on Anthropic (N=30)  | `multiway/sweep_results/claude_sonnet_lang001_n30_full.csv`         | Table 6   |
-| Discriminating cap B0=2000, three-way (N=30)    | `agent_contracts_b2000/results/`                                     | Table 9   |
-| A1 validation (30/30 at margin 2.0)             | `experiments/anthropic_estimator/results/a1_validation.json`         | §5.30     |
-| refund-live 1000-session sweep                  | `refund-live/refund_live_1000_results.csv`                           | §5.27 (A7)|
-| Forgetful-Operator Condition E (0/30)           | `forgetful_operator/condition_e_rust_shared/condition_e_results.csv` | Table 15  |
+| Result                                          | File                                                                 | Paper ref          |
+|-------------------------------------------------|----------------------------------------------------------------------|--------------------|
+| Five-runtime + Agent Contracts on gpt-4o (N=30) | `multiway/sweep_results/gpt4o_lang001_n30_full.csv`                  | §4.5 / Fig. 1      |
+| Cross-provider replication on Anthropic (N=30)  | `multiway/sweep_results/claude_sonnet_lang001_n30_full.csv`         | App. D / Table 6   |
+| Discriminating cap B0=2000, three-way (N=30)    | `agent_contracts_b2000/results/`                                     | §4.5               |
+| A1 validation (30/30 at margin 2.0)             | `experiments/anthropic_estimator/results/a1_validation.json`         | §4.5               |
+| refund-live 1000-session sweep                  | `refund-live/refund_live_1000_results.csv`                           | Table 5 (A7)       |
+| A7 fault-injection table (k = 1,2,5,10)         | `experiments/a7_results_paired.txt`                                  | Table 5            |
+| Forgetful-Operator Condition E (0/30)           | `forgetful_operator/condition_e_rust_shared/condition_e_results.csv` | Table 4            |
 
 ## Table 5 reconciliation (no API calls)
 
