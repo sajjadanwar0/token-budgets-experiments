@@ -55,7 +55,6 @@ PROVIDERS = [
 WORKLOADS = ["lang001", "clarification", "arg_hallucination"]
 N_RUNS_PER_CELL = 50
 
-
 def check_ollama_available() -> bool:
     try:
         import urllib.request
@@ -74,7 +73,6 @@ def check_ollama_available() -> bool:
         print(f"Ollama not reachable at localhost:11434 ({e}).")
         print("  Run: ollama serve   (in another terminal)")
         return False
-
 
 def preflight(providers: List[ProviderConfig]) -> bool:
     env_vars = {
@@ -110,7 +108,6 @@ def categorize_row(row: Dict[str, str]) -> str:
     if outcome.startswith("api_error"):
         return "api_error"
     return "unknown"
-
 
 def run_cell(
         provider: ProviderConfig,

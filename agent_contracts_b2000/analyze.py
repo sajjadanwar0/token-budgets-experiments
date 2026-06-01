@@ -6,15 +6,11 @@ from collections import Counter
 from pathlib import Path
 from math import lgamma, exp
 
-
-
 def read_results(path: Path) -> list[dict]:
     with path.open() as f:
         return list(csv.DictReader(f))
 
-
 def wilson_ci(successes: int, n: int, z: float = 1.96) -> tuple[float, float]:
-    """Wilson 95% CI for a binomial proportion."""
     if n == 0:
         return (0.0, 1.0)
     p = successes / n
@@ -99,7 +95,6 @@ def render(summaries: list[dict]) -> str:
                    f"{s['total_pre_flight_refusals']:>10}")
     out.append("")
 
-    # Outcome distributions
     out.append("Outcome distributions:")
     for s in summaries:
         out.append(f"  {s['label']}:")

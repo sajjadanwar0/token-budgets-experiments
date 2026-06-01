@@ -10,9 +10,6 @@ try:
 except ImportError:
     _HAVE_LITELLM = False
 
-# -----------------------------------------------------------------------------
-# Constants — match Token Budgets B_0=2,000 uc protocol (paper sec 5.5.2)
-# -----------------------------------------------------------------------------
 MODEL = "claude-haiku-4-5"
 TEMPERATURE = 0.0
 MAX_OUTPUT_TOKENS = 200
@@ -157,12 +154,10 @@ DEFAULT_PROMPTS = {
     ),
 }
 
-
 def estimate_input_byte_length(messages: list[dict], tools: list[dict],
                                system: str) -> int:
     payload = {"system": system, "messages": messages, "tools": tools}
     return len(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
-
 
 def estimate_call_cost_usd(messages: list[dict], tools: list[dict],
                            system: str) -> float:
@@ -170,7 +165,6 @@ def estimate_call_cost_usd(messages: list[dict], tools: list[dict],
     in_cost = MARGIN * in_tokens * PRICE_IN_PER_MTOK_USD / 1_000_000
     out_cost = MAX_OUTPUT_TOKENS * PRICE_OUT_PER_MTOK_USD / 1_000_000
     return in_cost + out_cost
-
 
 @dataclass
 class TrialResult:
@@ -184,7 +178,6 @@ class TrialResult:
     refusal_reservation_uc: int
     elapsed_s: float
     error: str = ""
-
 
 def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False,
                   verbose: bool = False) -> TrialResult:

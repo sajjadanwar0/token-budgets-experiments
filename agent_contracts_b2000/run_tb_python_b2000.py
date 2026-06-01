@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import argparse, csv, json, os, sys, time
 from pathlib import Path
 
@@ -16,14 +15,10 @@ from run_ac_b2000 import (
     estimate_input_byte_length, TrialResult,
 )
 
-
-def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False,
-                  verbose: bool = False) -> TrialResult:
+def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False, verbose: bool = False) -> TrialResult:
     t0 = time.time()
-
     remaining_usd = CAP_USD
     spend_usd = 0.0
-
     system = prompts["system"]
     tools_def = prompts["tools"]
     tool_error = prompts["tool_error"]
@@ -32,6 +27,7 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False,
         {"role": "system", "content": system},
         {"role": "user", "content": prompts["user"]},
     ]
+    
     openai_tools = [{
         "type": "function",
         "function": {
@@ -162,19 +158,17 @@ def main():
             prompts = json.load(f)
 
     if not args.dry_run and not os.environ.get("ANTHROPIC_API_KEY"):
-        print("ERROR: ANTHROPIC_API_KEY not set. Use --dry-run for offline test.",
-              file=sys.stderr)
+        print("ERROR: ANTHROPIC_API_KEY not set. Use --dry-run for offline test.", file=sys.stderr)
         sys.exit(1)
 
     init_messages = [
         {"role": "system", "content": prompts["system"]},
         {"role": "user", "content": prompts["user"]},
     ]
+    
     init_bytes = estimate_input_byte_length(init_messages, prompts["tools"],
                                             prompts["system"])
-    init_estimate_uc = int(round(estimate_call_cost_usd(
-        init_messages, prompts["tools"], prompts["system"]) * UC_PER_USD))
-
+    init_estimate_uc = int(round(estimate_call_cost_usd(init_messages, prompts["tools"], prompts["system"]) * UC_PER_USD))
     cap_uc = int(CAP_USD * UC_PER_USD)
     print(f"TB Python head-to-head, B_0 = {cap_uc} uc (${CAP_USD:.4f})")
     print(f"  Model: {MODEL}, T={TEMPERATURE}, max_output={MAX_OUTPUT_TOKENS}")
@@ -207,12 +201,11 @@ def main():
 
     from collections import Counter
     outcomes = Counter(r.outcome for r in results)
-    print("\n=== Summary ===")
+    print("\n Summary ")
     for k, v in outcomes.most_common():
         print(f"  {k}: {v}/{len(results)}")
     overshoots = sum(1 for r in results if r.cumulative_spend_uc > r.cap_uc)
     print(f"  overshoots (spend > cap): {overshoots}/{len(results)}")
-
 
 if __name__ == "__main__":
     main()

@@ -2,9 +2,7 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::time::Instant;
-
 use serde::{Deserialize, Serialize};
-
 use budget_spike::Budget;
 
 #[derive(Clone, Copy, Debug)]
@@ -610,7 +608,6 @@ async fn run_tc_once(
     let mut total_spent_uc: u64 = 0;
     let mut steps: u64 = 0;
     let mut outcome = "completed_no_cap_hit".to_string();
-    // v32 detail accumulators
     let mut sum_input_tokens: u64 = 0;
     let mut sum_output_tokens: u64 = 0;
     let mut sum_byte_length_estimate: u64 = 0;
@@ -807,6 +804,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             rec.sum_actual_cost_uc,
         )?;
     }
+    
     println!("wrote {} rows to {}", rows.len(), args.output_csv);
     Ok(())
 }

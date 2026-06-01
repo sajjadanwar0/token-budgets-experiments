@@ -10,8 +10,6 @@ impl ReservationReceipt {
     pub(crate) fn new(amount: u64) -> Self {
         Self { micro_cents: amount, consumed: false }
     }
-
-    /// The reserved amount in micro-cents.
     pub fn reserved(&self) -> u64 {
         self.micro_cents
     }
@@ -24,6 +22,7 @@ impl ReservationReceipt {
                 actual,
             });
         }
+        
         let refund_amount = self.micro_cents - actual;
         if refund_amount == 0 {
             Ok(None)

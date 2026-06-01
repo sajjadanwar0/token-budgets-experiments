@@ -12,7 +12,6 @@ except ImportError:
     print("Install anthropic: pip install anthropic>=0.39")
     sys.exit(1)
 
-
 MODEL = "claude-haiku-4-5-20251001"
 ENVELOPE_BYTES_PER_MESSAGE = 64
 
@@ -44,7 +43,6 @@ def long_system_prompt(chars: int = 8000) -> Dict[str, Any]:
         "messages": [{"role": "user", "content": "Hi"}],
     }
 
-
 def multi_turn_history(turns: int = 15, per_turn_chars: int = 500) -> Dict[str, Any]:
     msgs = []
     for i in range(turns):
@@ -52,7 +50,6 @@ def multi_turn_history(turns: int = 15, per_turn_chars: int = 500) -> Dict[str, 
         msgs.append({"role": "assistant", "content": ("A " * (per_turn_chars // 2)) + f"resp {i}"})
     msgs.append({"role": "user", "content": "Final question?"})
     return {"messages": msgs}
-
 
 def multi_tool_results(n_results: int = 10, per_result_chars: int = 300) -> Dict[str, Any]:
     msgs: List[Dict[str, Any]] = [{"role": "user", "content": "Compute something."}]
@@ -79,7 +76,6 @@ def multi_tool_results(n_results: int = 10, per_result_chars: int = 300) -> Dict
         }],
     }
 
-
 def cache_control_breakpoints() -> Dict[str, Any]:
     return {
         "system": [
@@ -90,7 +86,6 @@ def cache_control_breakpoints() -> Dict[str, Any]:
         "messages": [{"role": "user", "content": "Hi"}],
     }
 
-
 def nested_tool_schema(depth: int = 5) -> Dict[str, Any]:
     schema: Dict[str, Any] = {"type": "string"}
     for _ in range(depth):
@@ -99,7 +94,6 @@ def nested_tool_schema(depth: int = 5) -> Dict[str, Any]:
         "messages": [{"role": "user", "content": "Use the tool."}],
         "tools": [{"name": "nested", "description": "nested", "input_schema": schema}],
     }
-
 
 def unicode_dense_tool_desc() -> Dict[str, Any]:
     return {
@@ -123,11 +117,6 @@ ADVERSARIAL_CLASSES = {
 }
 
 def _stringify_content(content: Any) -> str:
-    """Anthropic message content can be a string or a list of typed blocks.
-    Return a UTF-8 string for byte-counting that captures all text. Tool
-    blocks are stringified by their JSON content so they contribute to
-    byte-length. This matches the conservative spirit of byte-length:
-    everything serializable is counted."""
     if isinstance(content, str):
         return content
     if isinstance(content, list):
@@ -143,7 +132,6 @@ def _stringify_content(content: Any) -> str:
                 parts.append(str(block))
         return "\n".join(parts)
     return json.dumps(content, ensure_ascii=False)
-
 
 def byte_length_of_prompt(prompt: Dict[str, Any]) -> int:
     total = 0
@@ -168,7 +156,6 @@ def byte_length_of_prompt(prompt: Dict[str, Any]) -> int:
         total += len(content_str.encode("utf-8"))
     total += len(messages) * ENVELOPE_BYTES_PER_MESSAGE
 
-    # Tools
     for t in prompt.get("tools", []):
         total += len(t.get("name", "").encode("utf-8"))
         total += len(t.get("description", "").encode("utf-8"))
@@ -248,7 +235,6 @@ def run_audit(runs_per_class: int, margin: float, sleep_secs: float = 0.5) -> Li
 
     return results
 
-
 def write_results(results: List[Dict], margin: float) -> None:
     if not results:
         print("No results collected.")
@@ -319,7 +305,7 @@ def write_results(results: List[Dict], margin: float) -> None:
                     f.write(f"  - {class_name}: min margin needed = "
                             f"{max(cms):.4f}x ({len(rows)} runs)\n")
 
-    print("\n=== Wrote results.csv and results.md ===")
+    print("\n  Wrote results.csv and results.md ")
     print(f"Worst min-margin needed across all runs: {worst_margin:.4f}x")
     if worst_margin <= margin:
         print(f"Configured {margin}x margin: ADEQUATE "
@@ -329,16 +315,13 @@ def write_results(results: List[Dict], margin: float) -> None:
               f"(shortfall: {(worst_margin - margin)*100:.1f} pp)")
         print(f"Recommend: safety_margin = {worst_margin + 0.02:.4f}")
 
-
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--runs", type=int, default=5,
-                        help="Runs per class (default 5)")
+    parser.add_argument("--runs", type=int, default=5, help="Runs per class (default 5)")
     parser.add_argument("--margin", type=float, default=1.05,
                         help="AnthropicEstimator safety_margin to test "
                              "(default 1.05, matching src/estimator.rs default)")
-    parser.add_argument("--sleep", type=float, default=0.5,
-                        help="Seconds between requests")
+    parser.add_argument("--sleep", type=float, default=0.5, help="Seconds between requests")
     args = parser.parse_args()
 
     if "ANTHROPIC_API_KEY" not in os.environ:
@@ -347,7 +330,6 @@ def main():
 
     results = run_audit(args.runs, args.margin, args.sleep)
     write_results(results, args.margin)
-
 
 if __name__ == "__main__":
     main()

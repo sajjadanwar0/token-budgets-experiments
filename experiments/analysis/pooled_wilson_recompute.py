@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import argparse
 import csv
 import glob
@@ -8,9 +7,7 @@ import os
 import sys
 from dataclasses import dataclass
 
-
 WILSON_Z = 1.95996398454
-
 
 @dataclass
 class Cell:
@@ -21,7 +18,6 @@ class Cell:
     n_runs: int = 0
     n_overshoot: int = 0
     cell_has_overshoot: bool = False
-
 
 def wilson_interval(k: int, n: int, z: float = WILSON_Z) -> tuple[float, float]:
     if n == 0:
@@ -219,7 +215,7 @@ def main():
         f.writelines(report_blocks)
     print(f"Wrote {args.report}", file=sys.stderr)
 
-    print(f"\n=== POOLED WILSON RECOMPUTATION HEADLINE ===", file=sys.stderr)
+    print(f"\n  POOLED WILSON RECOMPUTATION HEADLINE ", file=sys.stderr)
     for row in output_rows:
         print(f"  {row['file']}:", file=sys.stderr)
         print(f"    raw per-run [{row['raw_per_run_wilson_lower']:.3f}, "

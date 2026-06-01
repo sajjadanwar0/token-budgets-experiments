@@ -3,7 +3,6 @@ use std::fmt;
 pub mod llm_client;
 pub mod tokenizer;
 pub mod receipt;
-
 pub use receipt::{ReservationReceipt, Refund};
 
 #[derive(Debug, PartialEq, Eq)]
