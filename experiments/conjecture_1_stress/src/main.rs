@@ -70,6 +70,7 @@ async fn main() {
 
     for iter_idx in 0..args.iterations {
         let seed = args.base_seed.wrapping_add(iter_idx as u64);
+
         let config = StressConfig {
             tasks: args.tasks,
             ops_per_task: args.ops_per_task,
@@ -89,6 +90,7 @@ async fn main() {
         total_events += report.events_processed;
         let iter_violations = report.violations.len() as u64;
         total_violations += iter_violations;
+
         if iter_violations > 0 {
             violating_seeds.push(seed);
             let mut viol_path = args.output.clone();
@@ -98,7 +100,8 @@ async fn main() {
                 serde_json::to_string_pretty(&report).expect("serialize"),
             )
             .expect("write violation");
-            eprintln!("⚠️  VIOLATION at iter={} seed={}: details → {:?}",
+
+            eprintln!("VIOLATION at iter={} seed={}: details -> {:?}",
                       iter_idx, seed, viol_path);
         }
 
@@ -126,6 +129,7 @@ async fn main() {
     }
 
     let elapsed = start.elapsed();
+
     println!();
     println!("RESULTS");
     println!("Total iterations:    {}", args.iterations);
@@ -134,6 +138,7 @@ async fn main() {
     println!("Violating seeds:     {:?}", &violating_seeds);
     println!("Wall-clock:          {:.2} min", elapsed.as_secs_f64() / 60.0);
     println!();
+
     if total_violations == 0 {
         println!("✅ NO VIOLATIONS observed in {} iterations.", args.iterations);
         println!("   Strong empirical support for Lemma 2 (safety preservation).");
@@ -157,8 +162,11 @@ async fn main() {
         "wall_clock_secs": elapsed.as_secs(),
         "no_violations": total_violations == 0,
     });
+
     let mut summary_path = args.output.clone();
+
     summary_path.push("summary.json");
+
     std::fs::write(&summary_path, serde_json::to_string_pretty(&summary).unwrap())
         .expect("write summary");
     println!("\nSummary: {:?}", summary_path);

@@ -50,7 +50,6 @@ MAX_ITERATIONS = 25
 
 _USAGE_WARNING_PRINTED = False
 
-
 def _get_usage_field(usage, candidate_names: Tuple[str, ...]) -> int:
     for name in candidate_names:
         val = getattr(usage, name, None)
@@ -63,7 +62,6 @@ def _get_usage_field(usage, candidate_names: Tuple[str, ...]) -> int:
         except (KeyError, TypeError):
             pass
     return 0
-
 
 def _extract_token_counts(response) -> Tuple[int, int]:
     global _USAGE_WARNING_PRINTED
@@ -121,14 +119,11 @@ class RunRecord:
     wasted_call_cost_uc: int
     wall_seconds: float
 
-
 def usd_to_uc(usd: float) -> int:
     return int(round(usd * 100_000))
 
-
 def uc_to_usd(uc: int) -> float:
     return uc / 100_000.0
-
 
 def run_one(iteration: int, cap_usd: float, model: str, provider: str) -> RunRecord:
     contract = Contract(
@@ -149,6 +144,7 @@ def run_one(iteration: int, cap_usd: float, model: str, provider: str) -> RunRec
     messages = [{"role": "user", "content": USER_PROMPT}]
 
     t0 = time.time()
+
     try:
         with ContractedLLM(contract) as llm:
             for step in range(MAX_ITERATIONS):
@@ -198,6 +194,7 @@ def run_one(iteration: int, cap_usd: float, model: str, provider: str) -> RunRec
         outcome = f"error:{type(e).__name__}"
 
     elapsed = time.time() - t0
+
     if model.startswith("gpt-4o-mini"):
         rate_in, rate_out = 15.0, 60.0
     elif model.startswith("gpt-4o"):
@@ -229,7 +226,6 @@ def run_one(iteration: int, cap_usd: float, model: str, provider: str) -> RunRec
         wasted_call_cost_uc=0,
         wall_seconds=round(elapsed, 3),
     )
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -275,7 +271,6 @@ def main():
             writer.writerow(asdict(r))
     print(f"\nWrote {args.output_csv}")
 
-    # Summary
     print()
     print("=" * 65)
     print("SUMMARY")
@@ -296,6 +291,7 @@ def main():
     print()
     print("INTERPRETATION")
     print("-" * 65)
+
     if n_overshoot == len(records):
         print("  All runs overshoot the cap. Agent Contracts is behaving like a")
         print("  post-call observer (similar to LiteLLM/AgentGuard in Table 30):")

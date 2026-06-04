@@ -90,6 +90,7 @@ async fn run_react_task(
     task_idx: usize,
 ) -> Result<TaskRecord> {
     let mut budget: Option<TaskBudget> = Some(Budget::new(TASK_BUDGET_NC)?);
+
     let mut messages: Vec<Value> = vec![
         json!({
             "role": "user",
@@ -120,12 +121,15 @@ async fn run_react_task(
             "max_tokens": MAX_TOKENS_PER_ITER,
             "messages": &messages,
         }))?;
+
         let reservation = body.len() as u64 * IN_RATE_NC
             + (MAX_TOKENS_PER_ITER as u64) * OUT_RATE_NC;
 
         let current = budget.take().expect("budget present");
+
         let (after_reserve, receipt) = match current.spend_with_receipt(reservation) {
             Ok(x) => x,
+
             Err(_) => {
                 exhausted = true;
                 budget = Some(Budget::new(0)?);
@@ -139,6 +143,7 @@ async fn run_react_task(
             .header("content-type", "application/json")
             .body(body)
             .send().await;
+
         let resp = match resp {
             Ok(r) if r.status().is_success() => r,
             _ => {
@@ -157,6 +162,7 @@ async fn run_react_task(
             violations += 1;
             receipt.forfeit();
             budget = Some(after_reserve);
+
             continue;
         }
 
@@ -232,7 +238,7 @@ async fn main() -> Result<()> {
         .filter(|r| r.tightest_margin.is_finite()).map(|r| r.tightest_margin).collect();
 
     println!();
-    println!("=== ReAct agent eval summary ===");
+    println!("ReAct agent eval summary");
     println!("Tasks:               {}", records.len());
     println!("Completed:           {} ({:.0}%)", completed_count, 100.0 * completed_count as f64 / records.len() as f64);
     println!("Budget-exhausted:    {} ({:.0}%)", exhausted_count, 100.0 * exhausted_count as f64 / records.len() as f64);
@@ -241,6 +247,7 @@ async fn main() -> Result<()> {
     println!("Total A1 violations: {}", total_violations);
     println!("Total spend:         ${:.4}", total_cost as f64 / 1e9);
     println!("Wall time:           {:.1} min", elapsed.as_secs_f64() / 60.0);
+
     if !tight_margins.is_empty() {
         let tight_min = tight_margins.iter().fold(f64::INFINITY, |a, &b| a.min(b));
         let tight_mean = tight_margins.iter().sum::<f64>() / tight_margins.len() as f64;
@@ -249,6 +256,7 @@ async fn main() -> Result<()> {
 
     let mut csv = File::create("react_agent_results.csv")?;
     writeln!(csv, "task_idx,task_name,iterations,tool_calls,total_reserved_nc,total_actual_nc,completed,exhausted,violations,final_budget_nc,tightest_margin")?;
+
     for r in &records {
         writeln!(csv, "{},\"{}\",{},{},{},{},{},{},{},{},{:.6}",
                  r.task_idx, r.task_name, r.iterations_completed, r.tool_calls,
@@ -256,5 +264,6 @@ async fn main() -> Result<()> {
                  r.budget_exhausted, r.violations, r.final_budget_nc, r.tightest_margin)?;
     }
     println!("Wrote {} rows to react_agent_results.csv", records.len());
+
     Ok(())
 }

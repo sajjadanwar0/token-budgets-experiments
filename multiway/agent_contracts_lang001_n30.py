@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import argparse
 import csv
 import importlib
@@ -46,7 +45,7 @@ MODE_ENUM_NAMES = ["ContractMode", "Mode", "EnforcementMode"]
 
 
 def probe_api():
-    diagnostic_lines = ["=== AGENT-CONTRACTS API PROBE ===\n"]
+    diagnostic_lines = ["AGENT-CONTRACTS API PROBE \n"]
     diagnostic_lines.append("Trying import paths in order:\n")
 
     last_exception = None
@@ -80,11 +79,13 @@ def probe_api():
         raise RuntimeError("".join(diagnostic_lines))
 
     Contract = None
+
     for name in CONTRACT_CLASS_NAMES:
         if hasattr(successful_module, name):
             Contract = getattr(successful_module, name)
             diagnostic_lines.append(f"  Found Contract class as: {path}.{name}\n")
             break
+
     if Contract is None:
         diagnostic_lines.append(f"\nNo Contract class found in {path}.\n")
         diagnostic_lines.append(f"Tried: {CONTRACT_CLASS_NAMES}\n")
@@ -93,14 +94,15 @@ def probe_api():
         raise RuntimeError("".join(diagnostic_lines))
 
     ResourceConstraints = None
+
     for name in CONSTRAINTS_CLASS_NAMES:
         if hasattr(successful_module, name):
             ResourceConstraints = getattr(successful_module, name)
             diagnostic_lines.append(f"  Found Constraints class as: {path}.{name}\n")
             break
 
-    # Look for ContractMode.
     ContractMode = None
+
     for name in MODE_ENUM_NAMES:
         if hasattr(successful_module, name):
             ContractMode = getattr(successful_module, name)
@@ -109,7 +111,6 @@ def probe_api():
 
     print("".join(diagnostic_lines), file=sys.stderr)
     return successful_module, Contract, ResourceConstraints, ContractMode
-
 
 def run_one_trial(api_handle, run_id: int, model: str) -> dict:
     mod, Contract, ResourceConstraints, ContractMode = api_handle
@@ -176,16 +177,13 @@ def run_one_trial(api_handle, run_id: int, model: str) -> dict:
         "harness_version": HARNESS_VERSION, "error_message": error_msg,
     }
 
-
 def main():
-    parser = argparse.ArgumentParser(description=__doc__,
-                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("--existing-n10", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--runs", type=int, default=30)
     parser.add_argument("--model", default="gpt-4o")
-    parser.add_argument("--probe-only", action="store_true",
-                        help="Probe the API and run one trial only; no full sweep")
+    parser.add_argument("--probe-only", action="store_true", help="Probe the API and run one trial only; no full sweep")
     parser.add_argument("--skip-drift-check", action="store_true")
     args = parser.parse_args()
 
@@ -197,18 +195,19 @@ def main():
         api_handle = probe_api()
     except RuntimeError as e:
         print(str(e), file=sys.stderr)
-        print("\n=== PROBE FAILED ===\n", file=sys.stderr)
+        print("\n PROBE FAILED \n", file=sys.stderr)
         print("Please share the diagnostic output above so we can identify\n"
               "the correct import path and class names for your installed\n"
               "ai-agent-contracts version.\n", file=sys.stderr)
         sys.exit(4)
 
-    print("=== API PROBE SUCCEEDED ===\n", file=sys.stderr)
+    print(" API PROBE SUCCEEDED \n", file=sys.stderr)
 
     print("Running probe trial...", file=sys.stderr)
     probe_row = run_one_trial(api_handle, run_id=0, model=args.model)
     if probe_row["outcome"] == "error":
-        print(f"\n=== PROBE TRIAL FAILED ===\n", file=sys.stderr)
+
+        print(f"\n PROBE TRIAL FAILED \n", file=sys.stderr)
         print(f"outcome: {probe_row['outcome']}", file=sys.stderr)
         print(f"error_message:\n{probe_row['error_message']}", file=sys.stderr)
         print(f"\nThe import path worked but the API call failed.\n"
@@ -229,7 +228,6 @@ def main():
               file=sys.stderr)
         sys.exit(0)
 
-    # Full sweep.
     print(f"\nRunning {args.runs} full-sweep trials on {args.model}...",
           file=sys.stderr)
 
@@ -265,13 +263,13 @@ def main():
                 print("Continuing anyway because per-trial errors are now visible.",
                       file=sys.stderr)
 
-    # Write CSV.
     fieldnames = ["run_id", "runtime", "workload", "provider", "outcome",
                   "cap_uc", "total_spent_uc", "overshoot_uc",
                   "structural_undershoot_uc", "wasted_call_cost_uc",
                   "pct_of_cap", "agent_steps", "wall_seconds",
                   "ai_agent_contracts_version", "harness_version",
                   "error_message"]
+
     with open(args.output, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()

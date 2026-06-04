@@ -5,14 +5,11 @@ from typing import Generic, TypeVar, Callable, Any
 
 T = TypeVar("T")
 
-
 class AffineViolation(RuntimeError):
     """Raised when a Budget is used after being consumed."""
 
-
 class BudgetExhausted(RuntimeError):
     """Raised when a spend or split would exceed the cap."""
-
 
 @dataclass
 class Budget:
@@ -37,6 +34,7 @@ class Budget:
     def micro_cents(self) -> int:
         with self._lock:
             self._check_alive()
+
             return self.initial_uc
 
     def spend(self, amount_uc: int) -> "Budget":
@@ -49,6 +47,7 @@ class Budget:
                     f"requested {amount_uc} uc, only {self.initial_uc} available"
                 )
             self._consumed = True
+
             return Budget(initial_uc=self.initial_uc - amount_uc, max_uc=self.max_uc)
 
     def split(self, amount_uc: int) -> tuple["Budget", "Budget"]:
@@ -61,6 +60,7 @@ class Budget:
             self._consumed = True
             taken = Budget(initial_uc=amount_uc, max_uc=self.max_uc)
             kept = Budget(initial_uc=self.initial_uc - amount_uc, max_uc=self.max_uc)
+
             return taken, kept
 
     def merge_with(self, other: "Budget") -> "Budget":
@@ -76,6 +76,7 @@ class Budget:
                 )
             self._consumed = True
             other._consumed = True
+
             return Budget(initial_uc=total, max_uc=self.max_uc)
 
 class BudgetPool:
@@ -102,6 +103,7 @@ class BudgetPool:
                 "auto-forfeited. Call receipt.confirm(...) or "
                 "receipt.forfeit(...) before returning."
             )
+
         return resolved.inner
 
     def _reserve_internal(self, amount_uc: int) -> "ReservationReceipt":
@@ -112,6 +114,7 @@ class BudgetPool:
                 )
             self.available_uc -= amount_uc
             self.outstanding_uc += amount_uc
+
         return ReservationReceipt(self, amount_uc)
 
     def _confirm_internal(self, reserved_uc: int, actual_uc: int) -> None:
@@ -140,6 +143,7 @@ class ReservationReceipt:
             )
         self.pool._confirm_internal(self.reserved_uc, actual_uc)
         self._resolved = True
+
         return ResolvedReceipt(value, _private=_PRIVATE_TOKEN)
 
     def forfeit(self, value: T) -> "ResolvedReceipt[T]":
@@ -147,11 +151,10 @@ class ReservationReceipt:
             raise AffineViolation("receipt already resolved")
         self.pool._forfeit_internal(self.reserved_uc)
         self._resolved = True
+
         return ResolvedReceipt(value, _private=_PRIVATE_TOKEN)
 
-
 _PRIVATE_TOKEN = object()
-
 
 @dataclass
 class ResolvedReceipt(Generic[T]):

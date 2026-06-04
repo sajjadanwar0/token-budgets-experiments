@@ -21,21 +21,21 @@ def make_large_tool_def():
         "input_schema": {"type": "object", "properties": args,
                          "required": list(args.keys())},
     }
+
     return {
         "system": "You are a helpful assistant.",
         "messages": [{"role": "user", "content": "Call complex_op with valid arguments."}],
         "tools": [tool],
     }
 
-
 def make_long_system_prompt():
     sys_text = ("You are a sophisticated AI assistant. " * 200)[:8000]
+
     return {
         "system": sys_text,
         "messages": [{"role": "user", "content": "Hello"}],
         "tools": None,
     }
-
 
 def make_multi_turn_history():
     user_msg = "Please summarise this conversation. " * 15
@@ -43,20 +43,22 @@ def make_multi_turn_history():
     asst_msg = "I have summarised it for you. " * 17
     asst_msg = asst_msg[:500]
     messages = []
+
     for i in range(7):
         messages.append({"role": "user", "content": user_msg})
         messages.append({"role": "assistant", "content": asst_msg})
     messages.append({"role": "user", "content": user_msg})
+
     return {
         "system": "You are a helpful summariser.",
         "messages": messages,
         "tools": None,
     }
 
-
 def make_multi_tool_results():
     result_text = "Result data: " + ("x" * 285)
     messages = [{"role": "user", "content": "Call get_data 10 times sequentially."}]
+
     for i in range(10):
         messages.append({
             "role": "assistant",
@@ -72,6 +74,7 @@ def make_multi_tool_results():
                  "content": result_text}
             ],
         })
+
     tool = {
         "name": "get_data",
         "description": "Fetch data for index i.",
@@ -79,12 +82,12 @@ def make_multi_tool_results():
                          "properties": {"i": {"type": "integer"}},
                          "required": ["i"]},
     }
+
     return {
         "system": "You are a data agent.",
         "messages": messages,
         "tools": [tool],
     }
-
 
 def make_cache_control():
     system_blocks = [
@@ -99,36 +102,36 @@ def make_cache_control():
         "tools": None,
     }
 
-
 def make_nested_tool_schema():
-    schema = {"type": "object",
-              "properties": {"leaf": {"type": "string"}}}
+    schema = {"type": "object", "properties": {"leaf": {"type": "string"}}}
+
     for level in range(5):
         schema = {"type": "object",
                   "properties": {
                       f"level_{level}_a": schema,
                       f"level_{level}_b": schema,
                   }}
+
     tool = {
         "name": "process_nested",
         "description": "Process a deeply nested structure.",
         "input_schema": schema,
     }
+
     return {
         "system": "You are a structured agent.",
         "messages": [{"role": "user", "content": "Call process_nested with sample data."}],
         "tools": [tool],
     }
 
-
 def make_unicode_dense_tool_desc():
     desc = "工具用于处理数据 📊📈📉 复杂的计算流程 🔢🔣 " * 50
     tool = {
         "name": "unicode_tool",
         "description": desc,
-        "input_schema": {"type": "object",
-                         "properties": {"x": {"type": "string"}}},
+        "input_schema": {"type": "object", "properties": {"x": {"type": "string"}}},
     }
+
     return {
         "system": "You are an assistant with Unicode-dense tools.",
         "messages": [{"role": "user", "content": "Call unicode_tool with appropriate input."}],
@@ -152,12 +155,14 @@ def serialize_request_body(payload):
 
 def evaluate_a1(client, class_name, factory, margin, max_retries=5):
     spec = factory()
+
     payload = {
         "model": ANTHROPIC_HAIKU_4_5,
         "max_tokens": 1,
         "system": spec["system"],
         "messages": spec["messages"],
     }
+
     if spec.get("tools"):
         payload["tools"] = spec["tools"]
 
@@ -172,6 +177,7 @@ def evaluate_a1(client, class_name, factory, margin, max_retries=5):
                 "system": spec["system"],
                 "messages": spec["messages"],
             }
+
             if spec.get("tools"):
                 kwargs["tools"] = spec["tools"]
             resp = client.messages.count_tokens(**kwargs)
@@ -220,6 +226,7 @@ def main():
         sys.exit("ERROR: ANTHROPIC_API_KEY not set")
 
     out_dir = os.path.dirname(args.output)
+
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
 
@@ -237,6 +244,7 @@ def main():
 
     rows = []
     cell = 0
+
     for class_name in args.classes:
         factory = ADVERSARIAL_CLASSES[class_name]
         for margin in args.margins:
@@ -256,6 +264,7 @@ def main():
                     time.sleep(args.sleep)
 
     fieldnames = list(rows[0].keys())
+
     with open(args.output, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
@@ -279,7 +288,6 @@ def main():
             n = len(cell_rows)
             print(f"  {holds:>2}/{n:<2}", end="")
         print()
-
 
 if __name__ == "__main__":
     main()

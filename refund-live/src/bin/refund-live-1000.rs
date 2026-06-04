@@ -41,15 +41,24 @@ struct Usage {
 
 fn build_prompt(i: usize) -> String {
     let class = i % 10;
+
     match class {
         0 => format!("What is the capital of country #{}?", i % 200),
+
         1 => format!("Briefly: explain the concept '{}'.", topic(i)),
+
         2 => format!("Define: {}", topic(i)),
+
         3 => format!("List three examples of {}.", topic(i)),
+
         4 => format!("What year was {} invented?", topic(i)),
+
         5 => format!("Is {} larger than {}?", topic(i), topic(i + 1)),
+
         6 => format!("Name one scientist associated with {}.", topic(i)),
+
         7 => format!("Briefly compare {} and {}.", topic(i), topic(i + 1)),
+
         8 => format!("Output JSON: {{\"topic\": \"{}\", \"score\": ?}}", topic(i)),
         _ => format!("Suggest one fact about {}.", topic(i)),
     }
@@ -64,6 +73,7 @@ fn topic(i: usize) -> &'static str {
         "dropout", "batch normalisation", "encoder", "decoder", "perceptron",
         "ImageNet", "BERT", "GPT", "ResNet", "VGG", "AlexNet",
     ];
+
     TOPICS[i % TOPICS.len()]
 }
 
@@ -90,24 +100,33 @@ async fn main() -> Result<()> {
         .unwrap_or_else(|_| "1000".to_string())
         .parse()
         .context("N_CALLS must be a number")?;
+
     let api_key = env::var("ANTHROPIC_API_KEY")
         .context("ANTHROPIC_API_KEY must be set")?;
+
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(60))
         .build()?;
 
     let mut budget: Option<B> = Some(Budget::new(BUDGET_CAP)?);
+
     let mut records: Vec<CallRecord> = Vec::with_capacity(n_calls);
+
     let mut sum_reserved: u128 = 0;
+
     let mut sum_actual: u128 = 0;
+
     let mut sum_refund: u128 = 0;
+
     let mut a1_violations = 0usize;
+
     let mut api_errors = 0usize;
 
     println!(
-        "=== Running {} calls against {}, cap = ${:.2} ===",
+        "Running {} calls against {}, cap = ${:.2}",
         n_calls, MODEL, BUDGET_CAP as f64 / 1e6
     );
+
     println!(
         "{:>4} {:>10} {:>10} {:>10} {:>6} {:>6} {:>6} {:>6}",
         "#", "reserve", "actual", "refund", "in_tok", "out_tok", "ms", "x"
@@ -126,6 +145,7 @@ async fn main() -> Result<()> {
         let reservation = compute_reservation(body.len());
 
         let current = budget.take().expect("budget present");
+
         let (after_reserve, receipt) = match current.spend_with_receipt(reservation) {
             Ok(x) => x,
             Err(e) => {
@@ -146,10 +166,12 @@ async fn main() -> Result<()> {
             .body(body)
             .send()
             .await;
+
         let latency_ms = start.elapsed().as_millis();
 
         let resp = match resp {
             Ok(r) => r,
+
             Err(e) => {
                 api_errors += 1;
                 eprintln!("API error at call {}: {}", i, e);
@@ -158,6 +180,7 @@ async fn main() -> Result<()> {
                 continue;
             }
         };
+
         if !resp.status().is_success() {
             api_errors += 1;
             let status = resp.status();
@@ -165,20 +188,25 @@ async fn main() -> Result<()> {
             eprintln!("API returned {} at call {}: {}", status, i, text);
             receipt.forfeit();
             budget = Some(after_reserve);
+
             continue;
         }
+
         let parsed: AnthropicResp = resp.json().await?;
         let actual = parsed.usage.input_tokens * ANTHROPIC_PER_IN_TOKEN_UC
             + parsed.usage.output_tokens * ANTHROPIC_PER_OUT_TOKEN_UC;
 
         if actual > reservation {
             a1_violations += 1;
+
             println!(
-                "⚠ A1 violation at call {}: actual {} > reserved {}",
+                "A1 violation at call {}: actual {} > reserved {}",
                 i, actual, reservation
             );
+
             receipt.forfeit();
             budget = Some(after_reserve);
+
             continue;
         }
 
@@ -191,6 +219,7 @@ async fn main() -> Result<()> {
         sum_refund += refund_amount as u128;
 
         let ratio = reservation as f64 / actual.max(1) as f64;
+
         records.push(CallRecord {
             idx: i,
             reservation_uc: reservation,
@@ -216,22 +245,31 @@ async fn main() -> Result<()> {
     let final_budget = budget.unwrap();
     let final_value = final_budget.micro_cents();
 
-    // Statistical analysis
     let ratios: Vec<f64> = records.iter().map(|r| r.margin_ratio).collect();
     let mean = ratios.iter().sum::<f64>() / ratios.len().max(1) as f64;
+
     let var = ratios.iter().map(|r| (r - mean).powi(2)).sum::<f64>()
         / ratios.len().max(1) as f64;
+
     let stddev = var.sqrt();
+
     let mut sorted = ratios.clone();
+
     sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
     let median = if !sorted.is_empty() { sorted[sorted.len() / 2] } else { 0.0 };
+
     let p95 = if !sorted.is_empty() { sorted[sorted.len() * 95 / 100] } else { 0.0 };
+
     let p99 = if !sorted.is_empty() { sorted[sorted.len() * 99 / 100] } else { 0.0 };
+
     let min = if !sorted.is_empty() { sorted[0] } else { 0.0 };
+
     let max = if !sorted.is_empty() { sorted[sorted.len() - 1] } else { 0.0 };
 
     println!();
-    println!("=== {}-call summary ===", n_calls);
+
+    println!("{}-call summary", n_calls);
     println!("Run time:         {:.2}s", run_elapsed.as_secs_f64());
     println!("Successful:       {}", records.len());
     println!("A1 violations:    {} ({:.2}%)",
@@ -244,7 +282,7 @@ async fn main() -> Result<()> {
     println!("Total refunded:   ${:.6}", sum_refund as f64 / 1e6);
     println!("Final budget:     ${:.6}", final_value as f64 / 1e6);
     println!();
-    println!("=== A1 margin distribution (reservation / actual) ===");
+    println!("A1 margin distribution (reservation / actual)");
     println!("min:    {:.3}x", min);
     println!("p50:    {:.3}x", median);
     println!("mean:   {:.3}x (stddev {:.3})", mean, stddev);
@@ -254,11 +292,12 @@ async fn main() -> Result<()> {
     println!();
 
     let expected_final = BUDGET_CAP - sum_actual as u64;
+
     if final_value == expected_final {
         println!("✓ Conservation: initial - actual = final (exact, {} uc)", final_value);
     } else {
         println!(
-            "✗ Conservation broken: expected {} got {} (diff {})",
+            "Conservation broken: expected {} got {} (diff {})",
             expected_final, final_value,
             (final_value as i128) - (expected_final as i128)
         );
@@ -266,6 +305,7 @@ async fn main() -> Result<()> {
 
     let mut csv = File::create("refund_live_1000_results.csv")?;
     writeln!(csv, "idx,reservation_uc,actual_uc,refund_uc,input_tokens,output_tokens,latency_ms,margin_ratio")?;
+
     for r in &records {
         writeln!(
             csv,

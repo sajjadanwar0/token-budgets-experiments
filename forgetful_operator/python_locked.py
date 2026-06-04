@@ -6,9 +6,7 @@ import sys
 import time
 from dataclasses import dataclass
 from typing import List, Optional
-
 import httpx
-
 
 LANG001_SYSTEM = (
     "You are a SQL agent. Use the provided sql_query tool to answer "
@@ -84,9 +82,10 @@ async def call_anthropic(client: httpx.AsyncClient, api_key: str,
         "system": prompt_system,
         "messages": [{"role": "user", "content": prompt_user}],
     }
-    r = await client.post("https://api.anthropic.com/v1/messages",
-                          headers=headers, json=payload, timeout=60)
+
+    r = await client.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload, timeout=60)
     r.raise_for_status()
+
     return r.json()
 
 
@@ -129,7 +128,6 @@ async def child(child_id: int, budget: LockedBudget,
         "output_tokens": out_tokens,
     }
 
-
 async def run_trial(trial_id: int, cap_uc: int,
                     api_key: str, client: httpx.AsyncClient,
                     rate_in: float, rate_out: float,
@@ -168,11 +166,9 @@ async def run_trial(trial_id: int, cap_uc: int,
             error=f"{type(e).__name__}: {e}",
         )
 
-
 async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=30)
-    # CHANGED: cap default 100 -> 60
     ap.add_argument("--cap", type=int, default=60)
     ap.add_argument("--output", type=str,
                     default="results/python_locked_anthropic.csv")
@@ -194,10 +190,12 @@ async def main():
         LANG001_SYSTEM + LANG001_USER,
         args.max_output_tokens, args.rate_in, args.rate_out, args.margin,
     )
+
     print(f"Running python_locked: N={args.n}, cap={args.cap} uc")
     print(f"  estimate per child = {estimate} uc")
 
     results: List[TrialResult] = []
+
     async with httpx.AsyncClient() as client:
         for i in range(args.n):
             r = await run_trial(i, args.cap, api_key, client,
@@ -224,7 +222,6 @@ async def main():
     overshoots = sum(1 for r in results if r.overshoot)
     print(f"\nSUMMARY: {overshoots}/{args.n} overshoots")
     print(f"Output: {args.output}")
-
 
 if __name__ == "__main__":
     asyncio.run(main())

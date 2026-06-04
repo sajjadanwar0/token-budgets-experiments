@@ -10,14 +10,7 @@ from pathlib import Path
 from typing import List
 import base64
 import secrets
-
-try:
-    from anthropic import Anthropic
-except ImportError:
-    print("ERROR: 'anthropic' package not installed. Run:")
-    print("    pip install anthropic")
-    sys.exit(1)
-
+from anthropic import Anthropic
 
 SONNET_MODEL = "claude-sonnet-4-5-20250929"
 INPUT_RATE_UC_PER_TOK  = 3
@@ -44,6 +37,7 @@ def _nested_tool_schemas(n: int) -> List[dict]:
                   "Acknowledge in one sentence."
         )
         out.append({"category": "nested_tool_schemas", "prompt_id": f"nts_{i:02d}", "text": prompt})
+
     return out
 
 def _build_wide_schema(depth: int, n_keys: int, salt: int) -> dict:
@@ -117,7 +111,7 @@ class StaticEstimator:
         pass
     @property
     def observed_max(self) -> float:
-        return self.margin  # report the static margin
+        return self.margin
 
 class AdaptiveEstimator:
     def __init__(self, epsilon: float = ADAPTIVE_EPSILON):
@@ -171,20 +165,22 @@ def run_one(estimator_label: str, estimator, prompts: List[dict],
             effective_margin=round(eff_margin, 4),
             observed_max_after=round(estimator.observed_max, 4),
         ))
+
         print(f"  [{estimator_label}] {p['prompt_id']:>10s} "
               f"({p['category']:>22s}): in_tok={in_tok:>4d} chars={chars:>5d} "
               f"ratio={in_tok/max(chars,1):.3f} reserved={reserved_uc} "
               f"billed={billed_uc} margin={eff_margin:.2f}x "
               f"obs_max={estimator.observed_max:.3f}")
         time.sleep(0.2)
-    return reports
 
+    return reports
 
 def summarise(reports: List[EstimatorReport]) -> dict:
     by_est = {}
     for r in reports:
         by_est.setdefault(r.estimator, []).append(r)
     summaries = []
+
     for est, rs in by_est.items():
         margins = [r.effective_margin for r in rs if r.effective_margin != float("inf")]
         a1_viol = sum(1 for r in rs if r.billed_uc > r.reserved_uc)
@@ -200,11 +196,12 @@ def summarise(reports: List[EstimatorReport]) -> dict:
             "median_capital_efficiency": round(statistics.median(cap_eff), 4) if cap_eff else None,
             "final_observed_max": round(rs[-1].observed_max_after, 4) if rs else None,
         })
-    return summaries
 
+    return summaries
 
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("ERROR: ANTHROPIC_API_KEY not set. Source your shell rc file:")
         print("    source ~/.zshrc   # or .bashrc")
@@ -228,16 +225,18 @@ def main():
     print(f"Total calls: {len(all_reports)} (expected {2*len(prompts)})")
 
     results_path = OUT_DIR / "adaptive_adversarial_results.csv"
+
     with open(results_path, "w", newline="") as f:
         if all_reports:
             w = csv.DictWriter(f, fieldnames=list(asdict(all_reports[0]).keys()))
             w.writeheader()
             for r in all_reports:
                 w.writerow(asdict(r))
-    print(f"  -> {results_path} ({len(all_reports)} rows)")
+    print(f" -> {results_path} ({len(all_reports)} rows)")
 
     summary = summarise(all_reports)
     summary_path = OUT_DIR / "adaptive_adversarial_summary.csv"
+
     with open(summary_path, "w", newline="") as f:
         if summary:
             w = csv.DictWriter(f, fieldnames=list(summary[0].keys()))
@@ -247,7 +246,7 @@ def main():
     print(f"  -> {summary_path} ({len(summary)} rows)")
 
     print()
-    print("=== SUMMARY ===")
+    print(" SUMMARY ")
     for s in summary:
         print(f"  {s['estimator']}:")
         print(f"    n_calls = {s['n_calls']}")
@@ -257,6 +256,7 @@ def main():
         print(f"    final observed_max = {s['final_observed_max']}")
 
     adaptive_summary = next((s for s in summary if s["estimator"].startswith("adaptive")), None)
+
     if adaptive_summary and adaptive_summary["final_observed_max"] is not None:
         if adaptive_summary["final_observed_max"] > 1.05:
             print()

@@ -116,7 +116,6 @@ WORKLOAD_SPECS = {
     "arg_hallucination": (ARG_HALLUCINATION_PROMPT, ARG_HALLUCINATION_TOOLS),
 }
 
-
 @dataclass
 class RunRecord:
     run_id: str
@@ -133,7 +132,6 @@ class RunRecord:
     safety_margin: float
     error: str = ""
 
-
 def serialize_request_body(prompt_text: str, tools: list) -> str:
     payload = {
         "model": MODEL,
@@ -144,10 +142,8 @@ def serialize_request_body(prompt_text: str, tools: list) -> str:
 
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
-
 def anthropic_estimator_estimate(prompt_bytes: int, margin: float = SAFETY_MARGIN) -> int:
     return math.ceil(prompt_bytes * margin)
-
 
 def run_one(workload: str, iteration: int, client: anthropic.Anthropic) -> RunRecord:
     prompt_text, tools = WORKLOAD_SPECS[workload]
@@ -224,7 +220,6 @@ def run_one(workload: str, iteration: int, client: anthropic.Anthropic) -> RunRe
         safety_margin=SAFETY_MARGIN,
     )
 
-
 def main():
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("ERROR: ANTHROPIC_API_KEY not set", file=sys.stderr)
@@ -274,6 +269,7 @@ def main():
     print(f"\nResults written to {csv_path}")
 
     valid = [r for r in records if not r.error]
+
     if not valid:
         print("\n!!! No valid runs; check API key and connectivity.")
         return
@@ -308,15 +304,17 @@ def main():
           f"range=[{bt_min:.4f}, {bt_max:.4f}]")
     print()
 
-    # Sanity checks.
+
     print("SANITY CHECKS")
     print("-" * 60)
+
     if est_sd == 0.0:
         print("WARN: est_ratio stdev is exactly 0. Harness may still be wrong.")
     else:
         print(f"OK:   est_ratio has non-zero variance (stdev={est_sd:.4f}).")
 
     matches = sum(1 for r in valid if r.estimator_output_tokens == r.actual_input_tokens)
+
     if matches == len(valid):
         print(f"WARN: estimator_output equals actual_input on every row. "
               f"Likely still computing count_tokens.")
@@ -332,6 +330,7 @@ def main():
     print()
     print("PER-WORKLOAD BREAKDOWN")
     print("-" * 60)
+
     for workload in WORKLOADS:
         wl_records = [r for r in valid if r.workload == workload]
         if not wl_records:

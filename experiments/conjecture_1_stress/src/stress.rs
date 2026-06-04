@@ -60,6 +60,7 @@ pub fn task_loop(
     seed: u64,
 ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> {
     let depth_remaining = config.max_split_depth.saturating_sub(depth);
+
     Box::pin(async move {
         let mut rng = ChaCha8Rng::seed_from_u64(seed);
         let mut budget_opt: Option<Budget> = Some(budget);
@@ -78,6 +79,7 @@ pub fn task_loop(
                         Err(_) => break,
                     }
                 }
+
                 Op::SpendThenSplit => {
                     let amount = rng.gen_range(1..=(cur.available() / 20).max(1));
                     let after_spend = match cur.spend(amount) {
@@ -97,6 +99,7 @@ pub fn task_loop(
                         budget_opt = Some(after_spend);
                     }
                 }
+
                 Op::SplitAndSpawn => {
                     if cur.available() >= 2 {
                         let split_amount = rng.gen_range(1..cur.available());
@@ -119,6 +122,7 @@ pub fn task_loop(
                         budget_opt = Some(cur);
                     }
                 }
+
                 Op::DropNaturally => {
                     drop(cur);
                     return;
@@ -141,6 +145,7 @@ pub async fn run_iteration(
 
     let mut sub_budgets: Vec<Budget> = vec![];
     let mut remaining = Some(root);
+
     for i in 0..config.tasks {
         let cur = remaining.take().expect("remaining present");
         if i == config.tasks - 1 || cur.available() <= per_task {
@@ -158,6 +163,7 @@ pub async fn run_iteration(
 
     let mut handles = vec![];
     let mut task_rng = ChaCha8Rng::seed_from_u64(config.seed);
+
     for (i, b) in sub_budgets.into_iter().enumerate() {
         let task_seed: u64 = task_rng.gen();
         let cfg = StressConfig { seed: config.seed.wrapping_add(i as u64), ..config };

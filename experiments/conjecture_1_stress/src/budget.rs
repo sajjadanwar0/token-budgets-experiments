@@ -1,8 +1,6 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 use tokio::sync::mpsc::UnboundedSender;
-
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
-
 #[derive(Debug, Clone, serde::Serialize)]
 pub enum Event {
     Created { id: u64, capacity: u64, parent: Option<u64> },

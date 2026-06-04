@@ -28,6 +28,7 @@ fn prompts(n: usize) -> Vec<String> {
         "What's the area of a circle with radius {}?",
         "Convert {} kilometers to miles.",
     ];
+
     (0..n).map(|i| templates[i % 10].replace("{}", &(i + 1).to_string())).collect()
 }
 
@@ -69,6 +70,7 @@ async fn run_one(
 
     let resp = match resp {
         Ok(r) if r.status().is_success() => r,
+
         _ => {
             receipt.forfeit();
             return Ok(None);
@@ -110,17 +112,21 @@ async fn main() -> Result<()> {
     let prompts = prompts(n_calls);
     let mut rows: Vec<Row> = Vec::new();
 
-    println!("=== Compare estimators: ByteLength vs Tiktoken ===");
+    println!(" Compare estimators: ByteLength vs Tiktoken ");
     println!("N = {} per estimator", n_calls);
 
     let bl = ByteLength;
+
     println!("\n[1/2] Running ByteLength estimator...");
+
     let start = Instant::now();
+
     for (i, p) in prompts.iter().enumerate() {
         if let Some(r) = run_one(&client, &api_key, &bl, p, i).await? {
             rows.push(r);
         }
     }
+
     println!("  ByteLength done in {:.1} min", start.elapsed().as_secs_f64() / 60.0);
 
     #[cfg(feature = "tiktoken")]
@@ -142,12 +148,16 @@ async fn main() -> Result<()> {
     }
 
     let mut by_est: std::collections::BTreeMap<&str, Vec<&Row>> = Default::default();
+
     for r in &rows {
         by_est.entry(r.estimator).or_default().push(r);
     }
-    println!("\n=== Summary ===");
+
+    println!("\n Summary ");
+
     println!("{:<25} {:>5} {:>10} {:>10} {:>10}",
              "Estimator", "N", "over-res", "p50 marg", "p95 marg");
+
     for (name, rows) in &by_est {
         let n = rows.len() as f64;
         let total_r: u128 = rows.iter().map(|r| r.reservation_nc as u128).sum();
@@ -157,17 +167,21 @@ async fn main() -> Result<()> {
         margins.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let p50 = margins[((n * 0.5) as usize).min(rows.len() - 1)];
         let p95 = margins[((n * 0.95) as usize).min(rows.len() - 1)];
+
         println!("{:<25} {:>5} {:>9.2}x {:>9.2}x {:>9.2}x",
                  name, rows.len(), over_res, p50, p95);
     }
 
     let mut csv = File::create("compare_estimators.csv")?;
     writeln!(csv, "idx,estimator,reservation_nc,actual_nc,input_tokens,output_tokens,margin_ratio")?;
+
     for r in &rows {
         writeln!(csv, "{},{},{},{},{},{},{:.6}",
                  r.idx, r.estimator, r.reservation_nc, r.actual_nc,
                  r.input_tokens, r.output_tokens, r.margin_ratio)?;
     }
+
     println!("\nWrote {} rows to compare_estimators.csv", rows.len());
+
     Ok(())
 }

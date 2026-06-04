@@ -21,6 +21,7 @@ def main():
         summary = json.load(f)
 
     iters = []
+    
     with open(csv_path) as f:
         for row in csv.DictReader(f):
             iters.append({
@@ -37,6 +38,7 @@ def main():
     INITIAL_CAP = 1_000_000
 
     conservation_errors = []
+    
     for r in iters:
         accounted = r["total_spent"] + r["total_dropped"] + r["final_phi"]
         if accounted != INITIAL_CAP:
@@ -85,14 +87,14 @@ def main():
         if max(max_phi) > INITIAL_CAP:
             md.append(f"  ⚠️ max Φ > B₀ — violation present")
         else:
-            md.append(f"  ✓ max Φ ≤ B₀ throughout")
+            md.append(f"  max Φ ≤ B₀ throughout")
 
     md.append("\n## Conservation check (sanity)\n")
     md.append(f"For each iteration, we verify spent + dropped + final_phi = B₀.")
     if not conservation_errors:
-        md.append(f"✓ Conservation holds in all {len(iters):,} iterations.")
+        md.append(f" Conservation holds in all {len(iters):,} iterations.")
     else:
-        md.append(f"❌ Conservation violated in {len(conservation_errors)} iterations:")
+        md.append(f" Conservation violated in {len(conservation_errors)} iterations:")
         for ce in conservation_errors[:10]:
             md.append(f"  - iter={ce['iter']} seed={ce['seed']}: "
                       f"accounted={ce['accounted']}, expected={ce['expected']}, "
@@ -133,7 +135,6 @@ def main():
     print(f"Wrote {out_path}")
     print()
     print(output_md)
-
 
 if __name__ == "__main__":
     main()

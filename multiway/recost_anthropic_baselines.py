@@ -4,22 +4,23 @@ import csv
 import sys
 from typing import Optional
 
-
 HAIKU_TO_SONNET_MULTIPLIER = 3.0
-
 
 def detect_columns(rows: list[dict]) -> tuple[str, Optional[str], str]:
     if not rows:
         print("FATAL: input CSV has 0 rows", file=sys.stderr)
         sys.exit(2)
+
     cols = set(rows[0].keys())
 
     spent_col = None
+
     for candidate in ("total_spent_uc", "spent_uc", "spend_uc",
                       "cost_uc", "total_cost_uc"):
         if candidate in cols:
             spent_col = candidate
             break
+
     if spent_col is None:
         print(
             f"FATAL: cannot find spend column in {sorted(cols)}.\n"
@@ -29,10 +30,12 @@ def detect_columns(rows: list[dict]) -> tuple[str, Optional[str], str]:
         sys.exit(3)
 
     overshoot_col = None
+
     for candidate in ("overshoot_uc", "overshoot", "violation_uc"):
         if candidate in cols:
             overshoot_col = candidate
             break
+
     if overshoot_col is None:
         print(
             f"FATAL: cannot find overshoot column in {sorted(cols)}.",
@@ -41,13 +44,13 @@ def detect_columns(rows: list[dict]) -> tuple[str, Optional[str], str]:
         sys.exit(3)
 
     runtime_col = None
+
     for candidate in ("runtime", "framework", "system", "harness"):
         if candidate in cols:
             runtime_col = candidate
             break
 
     return runtime_col, spent_col, overshoot_col
-
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
@@ -75,8 +78,8 @@ def main():
     cap_col = next((c for c in cap_col_candidates if c in rows[0]), None)
     pct_col_candidates = ("pct_of_cap", "percent_of_cap", "pct_cap")
     pct_col = next((c for c in pct_col_candidates if c in rows[0]), None)
-
     out_rows = []
+
     for row in rows:
         try:
             original_spent = int(float(row[spent_col]))
@@ -110,6 +113,7 @@ def main():
         out_rows.append(new_row)
 
     fieldnames = list(out_rows[0].keys())
+
     with open(args.output, "w", newline="") as f:
         f.write(
             "# Recosted Anthropic head-to-head CSV.\n"
@@ -123,11 +127,13 @@ def main():
         )
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
+
         for r in out_rows:
             w.writerow(r)
 
     print(f"\n RECOSTED PER-RUNTIME SUMMARY (multiplier={args.multiplier}x) ",
           file=sys.stderr)
+
     if runtime_col is None:
         print("(no runtime column; reporting global aggregate only)", file=sys.stderr)
         n = len(out_rows)

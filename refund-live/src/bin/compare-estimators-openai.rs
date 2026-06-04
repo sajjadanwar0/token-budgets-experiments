@@ -28,6 +28,7 @@ fn prompts(n: usize) -> Vec<String> {
         "What's the area of a circle with radius {}?",
         "Convert {} kilometers to miles.",
     ];
+
     (0..n).map(|i| templates[i % 10].replace("{}", &(i + 1).to_string())).collect()
 }
 
@@ -75,6 +76,7 @@ async fn run_one(
             receipt.forfeit();
             return Ok(None);
         }
+
         Err(e) => {
             eprintln!("idx={} request err: {}", idx, e);
             receipt.forfeit();
@@ -83,6 +85,7 @@ async fn run_one(
     };
 
     let parsed: Value = resp.json().await?;
+
     let usage = match parsed.get("usage") {
         Some(u) => u,
         None => {
@@ -90,8 +93,11 @@ async fn run_one(
             return Ok(None);
         }
     };
+
     let in_tok = usage["prompt_tokens"].as_u64().unwrap_or(0);
+
     let out_tok = usage["completion_tokens"].as_u64().unwrap_or(0);
+
     let actual = in_tok * IN_RATE_NC + out_tok * OUT_RATE_NC;
 
     if actual > reservation {
@@ -124,38 +130,46 @@ async fn main() -> Result<()> {
     let prompts = prompts(n_calls);
     let mut rows: Vec<Row> = Vec::new();
 
-    println!("=== Compare estimators (OpenAI gpt-4o-mini): ByteLength vs Tiktoken ===");
+    println!("Compare estimators (OpenAI gpt-4o-mini): ByteLength vs Tiktoken");
     println!("N = {} per estimator, max_tokens = {}", n_calls, MAX_TOKENS);
     println!("Tokenizer match: cl100k_base IS gpt-4o-mini's tokenizer (soundness contract holds).");
 
     let bl = ByteLength;
     println!("\n[1/2] Running ByteLength estimator...");
     let start = Instant::now();
+
     for (i, p) in prompts.iter().enumerate() {
         if let Some(r) = run_one(&client, &api_key, &bl, p, i).await? {
             rows.push(r);
         }
+
         if i % 10 == 9 {
             eprintln!("  ByteLength progress: {}/{}", i + 1, n_calls);
         }
     }
+
     println!("  ByteLength done in {:.1} min", start.elapsed().as_secs_f64() / 60.0);
 
     #[cfg(feature = "tiktoken")]
     {
         let tk = Tiktoken::cl100k_base()?;
         println!("\n[2/2] Running Tiktoken cl100k_base estimator...");
+
         let start = Instant::now();
+
         for (i, p) in prompts.iter().enumerate() {
             if let Some(r) = run_one(&client, &api_key, &tk, p, i).await? {
                 rows.push(r);
             }
+
             if i % 10 == 9 {
                 eprintln!("  Tiktoken progress: {}/{}", i + 1, n_calls);
             }
         }
+
         println!("  Tiktoken done in {:.1} min", start.elapsed().as_secs_f64() / 60.0);
     }
+
     #[cfg(not(feature = "tiktoken"))]
     {
         eprintln!("\n[2/2] SKIPPED: tiktoken feature not enabled.");
@@ -163,12 +177,15 @@ async fn main() -> Result<()> {
     }
 
     let mut by_est: std::collections::BTreeMap<&str, Vec<&Row>> = Default::default();
+
     for r in &rows {
         by_est.entry(r.estimator).or_default().push(r);
     }
-    println!("\n=== Summary (OpenAI gpt-4o-mini, max_tokens={}) ===", MAX_TOKENS);
+
+    println!("\n Summary (OpenAI gpt-4o-mini, max_tokens={}) ", MAX_TOKENS);
     println!("{:<25} {:>5} {:>10} {:>10} {:>10} {:>10}",
              "Estimator", "N", "over-res", "min marg", "p50 marg", "p95 marg");
+
     for (name, rows) in &by_est {
         let n = rows.len() as f64;
         let total_r: u128 = rows.iter().map(|r| r.reservation_nc as u128).sum();
@@ -176,6 +193,7 @@ async fn main() -> Result<()> {
         let over_res = total_r as f64 / total_a.max(1) as f64;
         let mut margins: Vec<f64> = rows.iter().map(|r| r.margin_ratio).collect();
         margins.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
         let p50 = margins[((n * 0.5) as usize).min(rows.len() - 1)];
         let p95 = margins[((n * 0.95) as usize).min(rows.len() - 1)];
         let mn = margins[0];
@@ -185,11 +203,14 @@ async fn main() -> Result<()> {
 
     let mut csv = File::create("compare_estimators_openai.csv")?;
     writeln!(csv, "idx,estimator,reservation_nc,actual_nc,input_tokens,output_tokens,margin_ratio")?;
+
     for r in &rows {
         writeln!(csv, "{},{},{},{},{},{},{:.6}",
                  r.idx, r.estimator, r.reservation_nc, r.actual_nc,
                  r.input_tokens, r.output_tokens, r.margin_ratio)?;
     }
+
     println!("\nWrote {} rows to compare_estimators_openai.csv", rows.len());
+
     Ok(())
 }

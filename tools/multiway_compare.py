@@ -11,7 +11,23 @@ from typing import Annotated, Any, Callable, Dict, List, Optional, TypedDict
 from langgraph.graph import END, START, StateGraph
 from langgraph.errors import GraphRecursionError
 from langgraph.errors import GraphRecursionError
-
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+)
+from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.tools import tool
+from pydantic import Field
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
+from langchain_groq import ChatGroq
+from litellm import BudgetManager
+from litellm import completion_cost
 
 PROVIDER_PRICING: Dict[str, Dict[str, float]] = {
     "openai": {
@@ -36,34 +52,18 @@ PROVIDER_PRICING: Dict[str, Dict[str, float]] = {
     },
 }
 
-from langchain_core.callbacks import BaseCallbackHandler
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import (
-    AIMessage,
-    BaseMessage,
-    HumanMessage,
-    SystemMessage,
-    ToolMessage,
-)
-from langchain_core.outputs import ChatGeneration, ChatResult
-from langchain_core.tools import tool
-from pydantic import Field
-
 @tool
 def sql_query(query: str) -> str:
     return ""
-
 
 @tool
 def delete_record(id: str = "", name: str = "") -> str:
     return ""
 
-
 @tool
 def lookup_customer(name: str) -> str:
     """Look up a customer account by name."""
     return ""
-
 
 WORKLOADS: Dict[str, Dict[str, Any]] = {
     "lang001": {
@@ -81,6 +81,7 @@ WORKLOADS: Dict[str, Dict[str, Any]] = {
             "Did you mean 'FROM'? Please fix the query and retry."
         ),
     },
+
     "clarification": {
         "description": "Clarification loop on ambiguous tool description",
         "tool": delete_record,
@@ -96,6 +97,7 @@ WORKLOADS: Dict[str, Dict[str, Any]] = {
             "Please be more specific about which record to delete."
         ),
     },
+
     "arg_hallucination": {
         "description": "Hallucinated argument that the tool can't fulfil",
         "tool": lookup_customer,
@@ -105,14 +107,15 @@ WORKLOADS: Dict[str, Dict[str, Any]] = {
             "You are a customer support assistant. Use lookup_customer to "
             "find customer accounts and answer questions about them."
         ),
+
         "user_prompt": "Look up the account for the customer named 'Alice'.",
+
         "tool_error": (
             "Error: customer 'Alice' not found. Tip: confirm the spelling "
             "matches an active account, or try lookup_customer again."
         ),
     },
 }
-
 
 class MockToolChatModel(BaseChatModel):
     growth_per_step: int = Field(default=60)
@@ -151,6 +154,7 @@ class MockToolChatModel(BaseChatModel):
             },
         )
         gen = ChatGeneration(message=ai)
+
         return ChatResult(
             generations=[gen],
             llm_output={
@@ -228,7 +232,6 @@ class StepRecord:
     cost_uc: int
     cumulative_uc: int
 
-
 class CostTrackingCallback(BaseCallbackHandler):
     def __init__(self, provider: str) -> None:
         self.provider = provider
@@ -268,14 +271,13 @@ class CostTrackingCallback(BaseCallbackHandler):
                     break
         return in_tok, out_tok
 
-
 def _initial_messages(workload: Optional[Dict[str, Any]] = None) -> List[BaseMessage]:
     wl = workload or WORKLOADS["lang001"]
+
     return [
         SystemMessage(content=wl["system_prompt"]),
         HumanMessage(content=wl["user_prompt"]),
     ]
-
 
 def run_langgraph_only(provider: str, cap_uc: int, growth: int,
                        recursion_limit: int,
@@ -303,15 +305,9 @@ def run_langgraph_only(provider: str, cap_uc: int, growth: int,
     )
 
 class BudgetExceededError(RuntimeError):
-    """Raised by the RuntimeBudgetGuard when cumulative cost crosses the cap.
-    The k-th call that crossed the threshold has already been billed."""
-
+    pass
 
 class RuntimeBudgetGuard(CostTrackingCallback):
-    """AgentGuard-style runtime mitigation: subscribe to on_llm_end, deduct,
-    trip a flag when cumulative >= cap. Architecturally, the guard fires
-    AFTER the k-th call has been issued and billed."""
-
     def __init__(self, provider: str, cap_uc: int) -> None:
         super().__init__(provider)
         self.cap_uc = cap_uc
@@ -322,9 +318,9 @@ class RuntimeBudgetGuard(CostTrackingCallback):
 
     def on_llm_end(self, response, **kwargs) -> None:
         super().on_llm_end(response, **kwargs)
+
         if self.cumulative_uc >= self.cap_uc:
             self._tripped = True
-
 
 def run_langgraph_with_guard(provider: str, cap_uc: int, growth: int,
                              recursion_limit: int,
@@ -389,7 +385,6 @@ def run_crewai(provider: str, cap_uc: int, growth: int,
         "groq": f"groq/{PROVIDER_PRICING['groq']['model']}",
     }[provider]
 
-    # Verify the API key env var is set so we fail fast with a useful msg.
     _api_key_env(provider)
 
     agent = Agent(
@@ -403,15 +398,18 @@ def run_crewai(provider: str, cap_uc: int, growth: int,
         verbose=False,
         allow_delegation=False,
     )
+
     task = Task(
         description=("Find user with id=1 in the users table. "
                      "If sql_query errors, fix the SQL and retry."),
         expected_output="The user record or an error explanation.",
         agent=agent,
     )
+
     crew = Crew(agents=[agent], tasks=[task], verbose=False)
 
     outcome = "completed_no_cap_hit"
+
     try:
         crew.kickoff()
     except Exception as e:
@@ -468,7 +466,6 @@ def run_crewai(provider: str, cap_uc: int, growth: int,
         cumulative_uc=total_uc,
     )
 
-
 def _crewai_extract_usage(crew: Any) -> tuple[int, int]:
     usage = getattr(crew, "usage_metrics", None)
     if usage is None:
@@ -476,7 +473,6 @@ def _crewai_extract_usage(crew: Any) -> tuple[int, int]:
     if isinstance(usage, dict):
         return (int(usage.get("prompt_tokens", 0)),
                 int(usage.get("completion_tokens", 0)))
-    # Object form (newer CrewAI)
     in_tok = int(getattr(usage, "prompt_tokens", 0)
                  or getattr(usage, "input_tokens", 0))
     out_tok = int(getattr(usage, "completion_tokens", 0)
@@ -503,8 +499,10 @@ def run_autogen(provider: str, cap_uc: int, growth: int,
         "model": PROVIDER_PRICING[provider]["model"],
         "api_key": api_key,
     }
+
     if provider == "anthropic":
         cfg["api_type"] = "anthropic"
+
     elif provider == "groq":
         cfg["base_url"] = "https://api.groq.com/openai/v1"
 
@@ -518,6 +516,7 @@ def run_autogen(provider: str, cap_uc: int, growth: int,
         llm_config=llm_config,
         max_consecutive_auto_reply=max_turns,
     )
+
     user_proxy = UserProxyAgent(
         name="user",
         human_input_mode="NEVER",
@@ -549,6 +548,7 @@ def run_autogen(provider: str, cap_uc: int, growth: int,
         per_out = out_tok // max_turns
         steps: List[StepRecord] = []
         cum = 0
+
         for i in range(max_turns):
             step_uc = compute_cost_uc(per_in, per_out, provider)
             cum += step_uc
@@ -556,6 +556,7 @@ def run_autogen(provider: str, cap_uc: int, growth: int,
                 step=i + 1, input_tokens=per_in, output_tokens=per_out,
                 cost_uc=step_uc, cumulative_uc=cum,
             ))
+
         if steps:
             steps[-1] = StepRecord(
                 step=steps[-1].step,
@@ -582,14 +583,15 @@ def run_autogen(provider: str, cap_uc: int, growth: int,
 
 
 def _autogen_extract_usage(chat_result: Any) -> tuple[int, int]:
-    """Pull aggregate prompt/completion tokens from AutoGen's chat_result.cost."""
     cost = getattr(chat_result, "cost", None)
+
     if not cost:
         return 0, 0
     
     bucket = cost.get("usage_excluding_cached_inference") or cost
     in_tok = 0
     out_tok = 0
+
     for key, val in bucket.items():
         if key == "total_cost" or not isinstance(val, dict):
             continue
@@ -608,6 +610,7 @@ def run_token_capabilities(provider: str, cap_uc: int, growth: int,
     messages = _initial_messages(wl)
 
     outcome: str = "completed_no_cap_hit"
+
     for step_idx in range(1, recursion_limit // 2 + 1):
         agent_turns = sum(1 for m in messages if isinstance(m, AIMessage))
         est_input = 60 + growth * agent_turns
@@ -621,6 +624,7 @@ def run_token_capabilities(provider: str, cap_uc: int, growth: int,
         remaining -= est_uc
         ai = llm.invoke(messages, config={"callbacks": [cb]})
         messages.append(ai)
+
         if isinstance(ai, AIMessage) and ai.tool_calls:
             messages.append(ToolMessage(
                 content=wl["tool_error"],
@@ -638,32 +642,33 @@ def run_token_capabilities(provider: str, cap_uc: int, growth: int,
 
 def _make_llm(provider: str, growth: int, workload: Optional[Dict[str, Any]] = None) -> Any:
     wl = workload or WORKLOADS["lang001"]
+
     if provider == "mock":
         return MockToolChatModel(
             growth_per_step=growth,
             workload_tool_name=wl["tool_name"],
             workload_tool_args=wl["tool_args"],
         ).bind_tools([wl["tool"]])
+
     if provider == "openai":
-        from langchain_openai import ChatOpenAI
         return ChatOpenAI(
             model=PROVIDER_PRICING["openai"]["model"],
             temperature=0,
         ).bind_tools([wl["tool"]])
+
     if provider == "anthropic":
-        from langchain_anthropic import ChatAnthropic
         return ChatAnthropic(
             model=PROVIDER_PRICING["anthropic"]["model"],
             temperature=0,
         ).bind_tools([wl["tool"]])
+
     if provider == "groq":
-        from langchain_groq import ChatGroq
         return ChatGroq(
             model=PROVIDER_PRICING["groq"]["model"],
             temperature=0,
         ).bind_tools([wl["tool"]])
-    raise ValueError(f"unknown provider: {provider}")
 
+    raise ValueError(f"unknown provider: {provider}")
 
 def _api_key_env(provider: str) -> str:
     import os
@@ -672,17 +677,20 @@ def _api_key_env(provider: str) -> str:
         "anthropic": "ANTHROPIC_API_KEY",
         "groq": "GROQ_API_KEY",
     }[provider]
+
     val = os.environ.get(var)
+
     if not val:
         raise RuntimeError(f"environment variable {var} not set")
-    return val
 
+    return val
 
 def _summarise(runtime: str, outcome: str, cap_uc: int,
                cb_steps: List[StepRecord], cumulative_uc: int) -> Dict[str, Any]:
     overshoot_uc = max(0, cumulative_uc - cap_uc)
     undershoot_uc = max(0, cap_uc - cumulative_uc) if "structural" in outcome else 0
     pct_of_cap = (cumulative_uc / cap_uc * 100.0) if cap_uc > 0 else 0.0
+
     return {
         "runtime": runtime,
         "outcome": outcome,
@@ -692,10 +700,9 @@ def _summarise(runtime: str, outcome: str, cap_uc: int,
         "pct_of_cap": round(pct_of_cap, 2),
         "overshoot_uc": overshoot_uc,
         "structural_undershoot_uc": undershoot_uc,
-        "wasted_call_cost_uc": 0,  # overridden by guard
+        "wasted_call_cost_uc": 0,
         "per_step": [asdict(s) for s in cb_steps],
     }
-
 
 def _unavailable(name: str, install_hint: str) -> Dict[str, Any]:
     return {
@@ -711,9 +718,7 @@ def _unavailable(name: str, install_hint: str) -> Dict[str, Any]:
         "per_step": [],
     }
 
-
 def _skipped(name: str, reason: str, cap_uc: int) -> Dict[str, Any]:
-    """Recorded skip — runtime not applicable to current provider, not an error."""
     return {
         "runtime": name,
         "outcome": f"skipped_{reason}",
@@ -730,7 +735,6 @@ def _skipped(name: str, reason: str, cap_uc: int) -> Dict[str, Any]:
 class LiteLLMBudgetCallback(CostTrackingCallback):
     def __init__(self, provider: str, cap_uc: int) -> None:
         super().__init__(provider)
-        from litellm import BudgetManager
         self.user_id = "tc_eval_user"
         self.bm = BudgetManager(project_name="tc_eval_project")
         self.cap_dollars = cap_uc / 1_000_000
@@ -744,17 +748,17 @@ class LiteLLMBudgetCallback(CostTrackingCallback):
         super().on_llm_end(response, **kwargs)
 
         try:
-            from litellm import completion_cost
             generations = getattr(response, "generations", None) or []
+
             for batch in generations:
                 for gen in batch:
                     msg = getattr(gen, "message", None)
+
                     if msg is None:
                         continue
                     usage = getattr(msg, "usage_metadata", None) or {}
                     in_tok = int(usage.get("input_tokens", 0))
                     out_tok = int(usage.get("output_tokens", 0))
-                    # Compute call cost via litellm with the same model name
                     model = PROVIDER_PRICING[self.provider]["model"]
                     cost = completion_cost(
                         model=model,
@@ -780,7 +784,6 @@ class LiteLLMBudgetCallback(CostTrackingCallback):
     @property
     def cap_uc_target(self) -> int:
         return int(self.cap_dollars * 1_000_000)
-
 
 def run_litellm_proxy(provider: str, cap_uc: int, growth: int,
                       recursion_limit: int,
@@ -838,8 +841,6 @@ RUNTIMES: Dict[str, Callable[..., Dict[str, Any]]] = {
     "token_capabilities": run_token_capabilities,
     "litellm_proxy": run_litellm_proxy,
 }
-
-
 def main() -> int:
     p = argparse.ArgumentParser(
         description="5-way runtime head-to-head on LANG-001 reproduction."
@@ -874,6 +875,7 @@ def main() -> int:
     args = p.parse_args()
 
     selected = [r.strip() for r in args.runtimes.split(",") if r.strip()]
+
     for r in selected:
         if r not in RUNTIMES:
             print(f"unknown runtime: {r}; valid: {list(RUNTIMES)}", file=sys.stderr)
@@ -933,16 +935,18 @@ def main() -> int:
             rows.append(row)
             detail.append({**row, "per_step": result["per_step"]})
 
-    # Console summary
     print()
     print("=" * 110)
     print(f"{'runtime':<24} {'outcome':<38} {'steps':>6} {'spent_uc':>10} "
           f"{'pct_cap':>8} {'overshoot':>10} {'undershoot':>11}")
     print("=" * 110)
+
     for runtime_name in selected:
         rt_rows = [r for r in rows if r["runtime"] == runtime_name]
+
         if not rt_rows:
             continue
+
         ex = rt_rows[0]
         avg_spent = sum(r["total_spent_uc"] for r in rt_rows) / len(rt_rows)
         avg_pct = sum(r["pct_of_cap"] for r in rt_rows) / len(rt_rows)
@@ -953,6 +957,7 @@ def main() -> int:
               f"{avg_under:>11.0f}")
 
     print()
+
     if args.output_csv:
         with open(args.output_csv, "w", newline="") as f:
             if rows:

@@ -6,7 +6,6 @@ import time
 import tokencap
 from anthropic import Anthropic
 
-
 LANG_001_SYSTEM = (
     "You are a SQL agent. The user will give you a task. You must write a "
     "SQL query to accomplish it. After you write each query, you will be "
@@ -27,18 +26,16 @@ LANG_001_FAKE_ERROR = (
 ANTHROPIC_HAIKU_4_5 = "claude-haiku-4-5-20251001"
 PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
 
-
 def reset_tokencap():
     try:
         tokencap.teardown()
     except Exception:
         pass
 
-
 def make_wrapped_client(token_limit):
     reset_tokencap()
-    return tokencap.wrap(Anthropic(), limit=token_limit)
 
+    return tokencap.wrap(Anthropic(), limit=token_limit)
 
 def call_with_retry(client, *, model, max_tokens, temperature, system,
                     messages, max_retries=5):
@@ -51,34 +48,36 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
                 system=system,
                 messages=messages,
             )
+
             return resp, None, attempt + 1
         except TypeError as e:
-
             if "isinstance" in str(e):
                 return None, "budget_block_typeerror", attempt + 1
             raise
         except Exception as e:
             ename = type(e).__name__
+
             if ename == "BudgetExceededError":
                 return None, "budget_block_exception", attempt + 1
 
             err_str = str(e)
+
             if any(x in err_str for x in ("529", "Overloaded", "overloaded_error")):
                 if attempt < max_retries - 1:
                     sleep_s = min(2 ** attempt + 1, 30)
                     time.sleep(sleep_s)
                     continue
+
                 return None, "exhausted_retries_overloaded", attempt + 1
+
 
             return None, f"other_error_{ename}", attempt + 1
 
     return None, "exhausted_retries", max_retries
 
-
 def run_trial(trial_id, token_limit, max_steps=20):
     client = make_wrapped_client(token_limit)
     messages = [{"role": "user", "content": LANG_001_USER}]
-
     total_input_tokens = 0
     total_output_tokens = 0
     steps = 0
@@ -110,7 +109,6 @@ def run_trial(trial_id, token_limit, max_steps=20):
         steps += 1
         total_input_tokens += resp.usage.input_tokens
         total_output_tokens += resp.usage.output_tokens
-
         assistant_text = resp.content[0].text if resp.content else ""
         messages.append({"role": "assistant", "content": assistant_text})
         messages.append({"role": "user", "content": LANG_001_FAKE_ERROR})
@@ -161,7 +159,6 @@ def run_trial(trial_id, token_limit, max_steps=20):
         "error_repr": error_repr,
     }
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -193,6 +190,7 @@ def main():
     print(f"{'='*72}")
 
     rows = []
+
     for i in range(args.n_trials):
         start = time.monotonic()
         try:
@@ -206,6 +204,7 @@ def main():
             continue
         row["wall_seconds"] = round(time.monotonic() - start, 3)
         rows.append(row)
+
         print(f"  [{i+1:02d}/{args.n_trials}] "
               f"outcome={row['outcome']:<35} "
               f"steps={row['agent_steps']:>2} "

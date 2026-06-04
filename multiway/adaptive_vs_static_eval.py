@@ -127,12 +127,14 @@ def call_with_retry(client, prompt):
             if e.status_code == 529 and attempt < len(OVERLOAD_BACKOFF_S):
                 continue
             raise
+
     raise RuntimeError("Exhausted retries")
 
 
 def reserve_uc(prompt: str, estimator) -> Tuple[int, int]:
     est_input_tok = estimator.estimate(prompt)
     reserved = est_input_tok * INPUT_RATE_UC_PER_TOK + MAX_OUTPUT_TOKENS * OUTPUT_RATE_UC_PER_TOK
+
     return est_input_tok, reserved
 
 def main():
@@ -219,6 +221,7 @@ def main():
             )
 
     by_est: Dict[str, List[dict]] = {}
+
     for r in all_rows:
         by_est.setdefault(r["estimator"], []).append(r)
 
@@ -232,7 +235,9 @@ def main():
                 "median_capital_efficiency",
             ],
         )
+
         writer.writeheader()
+
         for est_name, rows in by_est.items():
             margins = [r["effective_margin"] for r in rows if r["billed_uc"] > 0]
             violations = sum(1 for r in rows if r["billed_uc"] > r["reserved_uc"])
@@ -246,9 +251,10 @@ def main():
                 "a1_violations": violations,
                 "median_capital_efficiency": round(1.0 / statistics.median(margins), 4),
             }
+
             writer.writerow(row)
             print()
-            print(f"=== {est_name} ===")
+            print(f" {est_name} ")
             for k, v in row.items():
                 if k != "estimator":
                     print(f"    {k}: {v}")
@@ -261,7 +267,6 @@ def main():
         "Interpretation: lower effective_margin = tighter reservation "
         "= better capital efficiency, conditional on a1_violations == 0."
     )
-
 
 if __name__ == "__main__":
     main()

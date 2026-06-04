@@ -1,7 +1,7 @@
 [package]
 name        = "refund-live"
 version     = "0.1.0"
-edition     = "2021"
+edition     = "2024"
 description = "Live API experiment runners for the Token Budgets receipt/refund cycle, A1 validation, multi-turn workloads, reasoning-model evaluation, ReAct demo, and estimator comparison."
 
 [workspace]
@@ -61,7 +61,6 @@ path = "src/bin/refund-live-1000.rs"
 [[bin]]
 name = "refund-live-multi"
 path = "src/bin/refund-live-multi.rs"
-
 
 [profile.release]
 opt-level = 3

@@ -32,7 +32,6 @@ LANG001_USER = (
     "Show your reasoning step by step."
 )
 
-
 @dataclass
 class Budget:
     initial_uc: int
@@ -47,11 +46,13 @@ class Budget:
                 f"Insufficient: requested {amount_uc} uc, only {self.initial_uc} available"
             )
         self._consumed = True
+
         return Budget(initial_uc=self.initial_uc - amount_uc, max_uc=self.max_uc)
 
 
 def estimate_uc(prompt_chars: int, max_output_tokens: int) -> int:
     est_input = int(prompt_chars * SAFETY_MARGIN)
+
     return est_input * INPUT_RATE_UC_PER_TOK + max_output_tokens * OUTPUT_RATE_UC_PER_TOK
 
 
@@ -71,8 +72,8 @@ def call_with_retry(client, messages, system, max_tokens):
             if e.status_code == 529 and attempt < len(OVERLOAD_BACKOFF_S):
                 continue
             raise
-    raise RuntimeError("Exhausted retries")
 
+    raise RuntimeError("Exhausted retries")
 
 def run_trial(client, trial_id: int) -> dict:
     cap_uc = CAP_TOKENS * INPUT_RATE_UC_PER_TOK * SAFETY_MARGIN
@@ -117,6 +118,7 @@ def run_trial(client, trial_id: int) -> dict:
         steps += 1
 
         refund = required_uc - actual_uc
+
         if refund > 0:
             budget = Budget(
                 initial_uc=budget.initial_uc + refund,
@@ -126,7 +128,6 @@ def run_trial(client, trial_id: int) -> dict:
         assistant_text = "".join(b.text for b in resp.content if hasattr(b, "text"))
         messages.append({"role": "assistant", "content": assistant_text})
 
-        # Continue the loop with a generic continuation
         messages.append({
             "role": "user",
             "content": "Continue if you have more steps; otherwise summarise.",
@@ -152,7 +153,6 @@ def run_trial(client, trial_id: int) -> dict:
         "retries_total": retries_total,
     }
 
-
 def main():
     if "ANTHROPIC_API_KEY" not in os.environ:
         print("ERROR: export ANTHROPIC_API_KEY=...", file=sys.stderr)
@@ -161,7 +161,7 @@ def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = OUTPUT_DIR / f"tb_sonnet_lang001_cap{CAP_TOKENS}_n30.csv"
     client = anthropic.Anthropic()
-    print(f"=== sonnet LANG-001 cap={CAP_TOKENS} N={N_TRIALS} ===")
+    print(f" sonnet LANG-001 cap={CAP_TOKENS} N={N_TRIALS} ")
     print(f"    -> {out_path}")
 
     fieldnames = [
@@ -184,7 +184,6 @@ def main():
             ref = f" refused@{row['refused_at_step']}" if row["refused_at_step"] != "" else ""
             print(f"steps={row['steps']} billed={row['total_billed_uc']}uc [{ind}]{ref}")
 
-    # Summary
     with open(out_path, "r") as f:
         rows = list(csv.DictReader(f))
         overshoots = sum(int(r["overshoot"]) for r in rows)

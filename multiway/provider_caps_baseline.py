@@ -25,7 +25,6 @@ PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
 MAX_COMPLETION_TOKENS = 200
 TARGET_CAPS = [500, 540, 1000, 2000, 5000]
 
-
 def call_with_retry(client, *, model, max_tokens, temperature, system,
                     messages, max_retries=5):
     for attempt in range(max_retries):
@@ -44,11 +43,9 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
             return None, f"other_error_{type(e).__name__}: {e}"
     return None, "exhausted_retries"
 
-
 def run_trial(trial_id, max_steps=20):
     client = Anthropic()
     messages = [{"role": "user", "content": LANG_001_USER}]
-
     cumulative_spent_uc = 0
     total_input_tokens = 0
     total_output_tokens = 0
@@ -66,6 +63,7 @@ def run_trial(trial_id, max_steps=20):
             system=LANG_001_SYSTEM,
             messages=messages,
         )
+
         if err_class is not None:
             outcome = err_class
             error_repr = err_class
@@ -106,7 +104,6 @@ def run_trial(trial_id, max_steps=20):
         "error_repr": error_repr,
     }
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -135,6 +132,7 @@ def main():
     print(f"{'='*76}")
 
     rows = []
+
     for i in range(args.n_trials):
         start = time.monotonic()
         try:
@@ -152,6 +150,7 @@ def main():
               f"steps={row['agent_steps_executed']:>2} "
               f"spent={row['total_spent_uc']:>5}uc "
               f"over_caps[{'/'.join(str(c) for c in TARGET_CAPS)}]={over_flags}")
+
         if args.sleep > 0:
             time.sleep(args.sleep)
 
@@ -164,8 +163,10 @@ def main():
         print(f"\nWrote {len(rows)} rows -> {args.output}")
 
     n = len(rows)
+
     if n == 0:
         return
+
     mean_steps = sum(r["agent_steps_executed"] for r in rows) / n
     mean_spend = sum(r["total_spent_uc"] for r in rows) / n
     min_spend = min(r["total_spent_uc"] for r in rows)
@@ -177,6 +178,7 @@ def main():
     print(f"  Mean steps executed:    {mean_steps:.2f} (out of max={args.max_steps})")
     print(f"  Spend (uc):             mean={mean_spend:.0f}, min={min_spend}, max={max_spend}")
     print(f"  Overshoot rate vs each target cap:")
+
     for cap in TARGET_CAPS:
         overshoot_count = sum(r[f"over_cap_{cap}"] for r in rows)
         mean_overshoot = sum(max(0, r["total_spent_uc"] - cap) for r in rows) / n

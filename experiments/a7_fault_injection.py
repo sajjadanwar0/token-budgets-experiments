@@ -2,15 +2,8 @@ from __future__ import annotations
 import argparse, csv, math, random, statistics
 from pathlib import Path
 
-
 def load_pair_model(csv_path: Path, cost_col: str, reservation_col: str):
-    """Return (sampler, is_paired=True). Sampler: rng -> (reservation, actual).
 
-    Samples (reservation_uc, actual_uc) as CORRELATED PAIRS from real data,
-    preserving the A1 relationship (reservation conservatively bounds actual).
-    This is the correct model: it isolates the A7 (under-reporting) effect
-    without artificially breaking A1.
-    """
     with csv_path.open(newline="") as f:
         rows = list(csv.DictReader(f))
     pairs = []
@@ -113,7 +106,6 @@ def run_trial(cap: float, k: float, margin: float, sampler, rng,
         "overshoot_pct": max(0.0, (true_spend - cap) / cap * 100.0),
     }
 
-
 def wilson_ci(successes: int, n: int, z: float = 1.96) -> tuple[float, float]:
     if n == 0:
         return (0.0, 1.0)
@@ -123,7 +115,6 @@ def wilson_ci(successes: int, n: int, z: float = 1.96) -> tuple[float, float]:
     centre = (p + z2 / (2 * n)) / denom
     half = (z * math.sqrt(p * (1 - p) / n + z2 / (4 * n * n))) / denom
     return (max(0.0, centre - half), min(1.0, centre + half))
-
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__,
@@ -178,6 +169,7 @@ def main() -> None:
     L.append("-" * 74)
 
     rows_for_interpretation = []
+
     for k in args.k:
         results = [run_trial(args.cap, k, args.margin, sampler, rng,
                              args.reconcile_every, paired)
@@ -195,40 +187,6 @@ def main() -> None:
     L.append("")
     L.append("Interpretation")
     L.append("-" * 74)
-    truthful = next((r for r in rows_for_interpretation if abs(r[0] - 1.0) < 1e-9), None)
-    if truthful and truthful[1] == 0:
-        L.append("At k=1.0 (truthful provider, A7 holds): 0 overshoot, confirming")
-        L.append("the cap-respecting property under the stated assumption.")
-    worst = max(rows_for_interpretation, key=lambda r: r[0])
-    if worst[0] > 1.0:
-        L.append(f"At k={worst[0]:.1f} (provider under-reports {worst[0]:.0f}x): "
-                 f"{worst[1]}/{args.trials} trials overshoot, mean "
-                 f"{worst[2]:.1f}% over cap.")
-        L.append("The discipline cannot detect this: it only sees reported")
-        L.append("charges, so the ledger admits calls the true cost has already")
-        L.append("exhausted. This is the A7 trust-boundary limitation conceded")
-        L.append("in the limitations section, now quantified.")
-    if args.reconcile_every:
-        L.append("")
-        L.append(f"With reconciliation every {args.reconcile_every} calls, the")
-        L.append("ledger is corrected against ground truth, bounding overshoot to")
-        L.append("at most the spend between two reconciliation points. Compare the")
-        L.append("overshoot column here against the no-reconciliation run to see")
-        L.append("the mitigation effect.")
-    L.append("")
-    L.append("Paragraph for the paper (section 8.6 / threats):")
-    L.append("-" * 74)
-    L.append("  To quantify the A7 (charge-truthfulness) trust boundary, we ran a")
-    L.append(f"  fault-injection experiment ({args.trials} trials per condition,")
-    L.append(f"  cap {args.cap:.0f} uc) simulating a provider that under-reports")
-    L.append("  usage by a factor k. At k=1 the discipline is cap-respecting")
-    L.append("  (0 overshoot). At k=[worst k], it overshoots on [N]/[trials]")
-    L.append("  sessions by a mean of [X]%, undetectably, because the ledger")
-    L.append("  observes only reported charges. This confirms A7 as a genuine")
-    L.append("  limitation shared with all client-side accounting; [if you ran")
-    L.append("  --reconcile-every:] periodic ground-truth reconciliation bounds")
-    L.append("  the overshoot to the inter-reconciliation window.")
-
     txt = "\n".join(L)
     print(txt)
     args.output.write_text(txt + "\n")

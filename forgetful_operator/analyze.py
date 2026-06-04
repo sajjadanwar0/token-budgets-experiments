@@ -4,7 +4,6 @@ import math
 import os
 from typing import List, Tuple
 
-
 def wilson_95_ci(k: int, n: int) -> Tuple[float, float]:
     if n == 0:
         return (0.0, 0.0)
@@ -14,7 +13,6 @@ def wilson_95_ci(k: int, n: int) -> Tuple[float, float]:
     center = (p + z * z / (2 * n)) / denom
     halfw = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
     return (max(0.0, center - halfw), min(1.0, center + halfw))
-
 
 def fisher_exact_2x2(a: int, b: int, c: int, d: int) -> float:
     n = a + b + c + d
@@ -42,12 +40,14 @@ def fisher_exact_2x2(a: int, b: int, c: int, d: int) -> float:
         lp = hyper_logp(x)
         if lp <= obs_logp + 1e-12:
             p_sum += math.exp(lp)
+
     return min(1.0, p_sum)
 
 
 def read_csv(path: str) -> List[dict]:
     if not os.path.exists(path):
         return []
+
     with open(path) as f:
         return list(csv.DictReader(f))
 
@@ -101,6 +101,7 @@ def main():
     ]
 
     summaries = []
+
     for name, path in conds:
         rows = read_csv(path)
         s = summarise(rows, name)
@@ -108,6 +109,7 @@ def main():
 
     p_racy_vs_locked = None
     p_racy_vs_rust = None
+
     if summaries[0]["n_trials"] > 0 and summaries[1]["n_trials"] > 0:
         a = summaries[0]["overshoots"]
         b = summaries[0]["n_trials"] - a
@@ -145,7 +147,6 @@ def main():
         print(f"  Fisher's exact, racy vs rust:   p = {p_racy_vs_rust:.4g}")
     print()
 
-    # Write summary CSV
     summary_path = os.path.join(args.results_dir, "summary.csv")
     with open(summary_path, "w", newline="") as f:
         w = csv.writer(f)

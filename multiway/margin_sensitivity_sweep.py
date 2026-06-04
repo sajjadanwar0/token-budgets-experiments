@@ -4,8 +4,9 @@ import os
 import sys
 import time
 import json
-
 from anthropic import Anthropic
+import math
+
 
 LANG_001_SYSTEM = (
     "You are a SQL agent. The user will give you a task. You must write a "
@@ -29,7 +30,6 @@ PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
 
 MAX_COMPLETION_TOKENS = 100
 
-
 def serialize_request_body(messages, system, max_completion_tokens):
     payload = {
         "model": ANTHROPIC_HAIKU_4_5,
@@ -40,16 +40,15 @@ def serialize_request_body(messages, system, max_completion_tokens):
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 def predict_cost_bytelen(messages, system, max_completion_tokens, margin):
-    import math
     request_body = serialize_request_body(messages, system, max_completion_tokens)
     byte_len = len(request_body.encode("utf-8"))
     predicted_input_uc = math.ceil(byte_len * margin * PRICING_UC_PER_TOKEN["input"])
     predicted_output_uc = max_completion_tokens * PRICING_UC_PER_TOKEN["output"]
+
     return predicted_input_uc + predicted_output_uc
 
 
-def call_with_retry(client, *, model, max_tokens, temperature, system,
-                    messages, max_retries=5):
+def call_with_retry(client, *, model, max_tokens, temperature, system, messages, max_retries=5):
     for attempt in range(max_retries):
         try:
             return client.messages.create(
@@ -67,8 +66,8 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
                     continue
                 return None, "exhausted_retries_overloaded", attempt + 1
             return None, f"other_error_{type(e).__name__}: {e}", attempt + 1
-    return None, "exhausted_retries", max_retries
 
+    return None, "exhausted_retries", max_retries
 
 def run_trial(trial_id, cap_uc, margin, max_steps=20):
     client = Anthropic()
@@ -115,7 +114,9 @@ def run_trial(trial_id, cap_uc, margin, max_steps=20):
             actual_input * PRICING_UC_PER_TOKEN["input"]
             + actual_output * PRICING_UC_PER_TOKEN["output"]
         )
+
         refund = predicted_uc - actual_cost
+
         if refund > 0:
             remaining_uc += refund
 
@@ -159,7 +160,6 @@ def run_trial(trial_id, cap_uc, margin, max_steps=20):
         "error_repr": error_repr,
     }
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -176,6 +176,7 @@ def main():
         sys.exit("ERROR: ANTHROPIC_API_KEY not set")
 
     out_dir = os.path.dirname(args.output)
+
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
 
@@ -190,6 +191,7 @@ def main():
     print(f"{'='*76}")
 
     rows = []
+
     for i in range(args.n_trials):
         start = time.monotonic()
         try:
@@ -209,11 +211,13 @@ def main():
               f"spent={row['total_spent_uc']:>5}uc "
               f"over={row['overshoot_uc']:>4}uc "
               f"capeff={row['capital_efficiency']:.2f}")
+
         if args.sleep > 0:
             time.sleep(args.sleep)
 
     if rows:
         fieldnames = list(rows[0].keys())
+
         with open(args.output, "w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=fieldnames)
             w.writeheader()
@@ -233,6 +237,7 @@ def main():
     print(f"{'='*76}")
     print(f"  Refused:               {refused}/{n}")
     print(f"  Dollar-overshoot:      {overshoots}/{n}")
+
     if spending:
         mean_steps = sum(r["agent_steps"] for r in spending) / len(spending)
         mean_spent = sum(r["total_spent_uc"] for r in spending) / len(spending)

@@ -71,7 +71,6 @@ class BudgetState:
         self.spent_micro_cents += amount
         return True
 
-
 @dataclass
 class RunResult:
     provider: str
@@ -106,9 +105,9 @@ def estimate_cost_uc(
         return int(base_estimate * 2.0)
     return base_estimate
 
-
 def actual_cost_uc(model: str, input_tokens: int, output_tokens: int) -> int:
     p = PRICING[model]
+
     return int(
         input_tokens * p["input_uc_per_token"]
         + output_tokens * p["output_uc_per_token"]
@@ -125,6 +124,7 @@ def call_anthropic(model: str, messages: list, max_tokens: int = 200):
     )
     text = response.content[0].text
     usage = response.usage
+
     return {
         "text": text,
         "input_tokens": usage.input_tokens,
@@ -142,6 +142,7 @@ def call_openai(model: str, messages: list, max_tokens: int = 200):
     )
     text = response.choices[0].message.content
     usage = response.usage
+
     return {
         "text": text,
         "input_tokens": usage.prompt_tokens,
@@ -156,7 +157,6 @@ def run_agent_loop(
         max_retries: int = 4,
         max_tokens_per_call: int = 200,
 ) -> RunResult:
-
     budget = BudgetState(cap_micro_cents=cap_uc)
     messages: list = [
         {"role": "user", "content": "My Python script fails with: "
@@ -179,6 +179,7 @@ def run_agent_loop(
             estimated_total_uc = estimate
 
             n_attempted += 1
+
             if not budget.can_spend(estimate):
                 if n_completed > 0:
                     mid_loop_fired = True
@@ -200,6 +201,7 @@ def run_agent_loop(
                 model, resp["input_tokens"], resp["output_tokens"]
             )
             ok = budget.spend(actual)
+
             if not ok:
                 error_msg = (
                     f"A1 VIOLATION: actual {actual}uc > available "
@@ -210,6 +212,7 @@ def run_agent_loop(
             messages.append({"role": "assistant", "content": resp["text"]})
 
             text_lower = resp["text"].lower()
+
             if any(phrase in text_lower for phrase in [
                 "let me know if", "please provide",
                 "could you share", "what version of python",
@@ -265,6 +268,7 @@ def main():
         print("ERROR: ANTHROPIC_API_KEY not set. Use --skip-anthropic.",
               file=sys.stderr)
         sys.exit(2)
+
     if not args.skip_openai and not os.getenv("OPENAI_API_KEY"):
         print("ERROR: OPENAI_API_KEY not set. Use --skip-openai.",
               file=sys.stderr)
@@ -301,6 +305,7 @@ def main():
                     ) else "completed"
                 ))
             )
+
             err = f" err={r.error}" if r.error else ""
             print(f"  run {run_idx + 1:02d}/{args.n}: {tag} "
                   f"calls_attempted={r.n_calls_attempted} "
@@ -319,6 +324,7 @@ def main():
         print(f"Wrote {len(results)} rows to {args.output_csv}")
 
     summary = {}
+
     for cell in cells_to_run:
         key = f"{cell['provider']}/{cell['model']}"
         cell_results = [
@@ -372,7 +378,8 @@ def main():
     with open(args.output_json, "w") as f:
         json.dump(summary, f, indent=2, default=str)
     print(f"Wrote summary to {args.output_json}")
-    print("\n=== SUMMARY ===")
+    print("\n SUMMARY ")
+
     for k, v in summary.items():
         if k == "headline_total":
             print(f"\nTOTAL: {v['n_mid_loop_fired']}/{v['n_total']} mid-loop, "
@@ -380,7 +387,6 @@ def main():
                   f"${v['total_actual_spent_usd']} API cost")
         else:
             print(f"{k}: {v['headline']}")
-
 
 if __name__ == "__main__":
     main()

@@ -22,16 +22,19 @@ impl Provider {
                 "claude-sonnet-4-6" => Rates { per_in_token_uc: 3, per_out_token_uc: 15 },
                 _ => Rates { per_in_token_uc: 3, per_out_token_uc: 15 },
             },
+
             Provider::OpenAI { model } => match *model {
                 "gpt-4o-mini" => Rates { per_in_token_uc: 0, per_out_token_uc: 1 }, // ~$0.15/M, ~$0.60/M
                 "gpt-4o" => Rates { per_in_token_uc: 2, per_out_token_uc: 10 },
                 _ => Rates { per_in_token_uc: 1, per_out_token_uc: 5 },
             },
+
             Provider::Gemini { model } => match *model {
                 "gemini-2.0-flash" => Rates { per_in_token_uc: 0, per_out_token_uc: 0 }, // approx
                 "gemini-2.5-pro" => Rates { per_in_token_uc: 1, per_out_token_uc: 5 },
                 _ => Rates { per_in_token_uc: 1, per_out_token_uc: 5 },
             },
+
             Provider::VLLM { .. } => Rates { per_in_token_uc: 0, per_out_token_uc: 0 }, // self-hosted
         }
     }
@@ -39,11 +42,14 @@ impl Provider {
     pub fn endpoint(&self) -> String {
         match self {
             Provider::Anthropic { .. } => "https://api.anthropic.com/v1/messages".to_string(),
+
             Provider::OpenAI { .. } => "https://api.openai.com/v1/chat/completions".to_string(),
+
             Provider::Gemini { model } => format!(
                 "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent",
                 model
             ),
+
             Provider::VLLM { endpoint, .. } => format!("{}/v1/chat/completions", endpoint),
         }
     }
@@ -51,8 +57,11 @@ impl Provider {
     pub fn auth_header(&self) -> &'static str {
         match self {
             Provider::Anthropic { .. } => "x-api-key",
+
             Provider::OpenAI { .. } => "Authorization",
+
             Provider::Gemini { .. } => "x-goog-api-key",
+
             Provider::VLLM { .. } => "Authorization",
         }
     }
@@ -64,11 +73,13 @@ impl Provider {
                 "max_tokens": max_tokens,
                 "messages": [{"role": "user", "content": prompt}],
             }),
+
             Provider::OpenAI { model } | Provider::VLLM { model, .. } => serde_json::json!({
                 "model": model,
                 "max_tokens": max_tokens,
                 "messages": [{"role": "user", "content": prompt}],
             }),
+
             Provider::Gemini { .. } => serde_json::json!({
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {"maxOutputTokens": max_tokens},
@@ -85,6 +96,7 @@ impl Provider {
                     usage.get("output_tokens")?.as_u64()?,
                 ))
             }
+
             Provider::OpenAI { .. } | Provider::VLLM { .. } => {
                 let usage = response.get("usage")?;
                 Some((
@@ -92,6 +104,7 @@ impl Provider {
                     usage.get("completion_tokens")?.as_u64()?,
                 ))
             }
+
             Provider::Gemini { .. } => {
                 let meta = response.get("usageMetadata")?;
                 Some((

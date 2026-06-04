@@ -1,40 +1,9 @@
-#!/usr/bin/env python3
-"""
-analyze_condition_e.py — aggregate Condition E results, produce paper-ready Table 14 row.
-
-PRE-ATTACK (BRUTAL REVIEWER VOICE):
-> "Your analysis script could produce any summary. Where's the
->  pre-committed comparison against Conditions A-D from the paper?"
-
-DISPOSITION:
-This script encodes the Conditions A-D headline numbers from paper
-§5.11 Table 14 as constants. The Condition E row is computed from
-the harness output CSV. The pairwise comparisons (A-vs-E, B-vs-E,
-C-vs-E) are computed with Fisher's exact test, same as the paper's
-A-vs-B, A-vs-C, A-vs-D pairs. The output is a paper-ready LaTeX row
-plus statistical comparison report.
-
-USAGE:
-    python3 analyze_condition_e.py \
-        --results condition_e_results.csv \
-        --report condition_e_analysis.txt
-
-REQUIREMENTS:
-    Python 3.9+ (uses pure stdlib for Fisher's exact via
-    scipy.stats.fisher_exact if available, else hand-rolled exact
-    binomial test)
-"""
-
 import argparse
 import csv
 import sys
 from collections import defaultdict
 from pathlib import Path
-
-# ====================================================================
-# PRE-COMMITTED paper §5.11 Table 14 baseline numbers
-# ====================================================================
-# DO NOT MODIFY without explicit paper text alignment.
+import math
 
 PAPER_TABLE_14 = {
     "A_python_racy_b0_60":     {"overshoot": 30, "trials": 30, "wilson_lower": 0.886, "wilson_upper": 1.000},
@@ -43,12 +12,7 @@ PAPER_TABLE_14 = {
     "D_rust_affine_split_100": {"overshoot": 0,  "trials": 30, "wilson_lower": 0.000, "wilson_upper": 0.114},
 }
 
-# ====================================================================
-# Wilson 95% CI on a proportion (pure stdlib)
-# ====================================================================
-
 def wilson_ci(successes: int, trials: int, z: float = 1.96) -> tuple:
-    """Wilson score interval, 95% CI by default."""
     if trials == 0:
         return (0.0, 1.0)
     p = successes / trials
@@ -58,12 +22,7 @@ def wilson_ci(successes: int, trials: int, z: float = 1.96) -> tuple:
     half = (z * ((p * (1-p) / n + z**2 / (4*n**2)) ** 0.5)) / denom
     return (max(0.0, centre - half), min(1.0, centre + half))
 
-# ====================================================================
-# Fisher's exact test (2x2) — pure stdlib
-# ====================================================================
-
 def log_factorial(n: int) -> float:
-    """Stirling-aware log-factorial; exact for small n."""
     if n < 0:
         return float("-inf")
     if n < 100:
@@ -73,8 +32,7 @@ def log_factorial(n: int) -> float:
             import math
             result += math.log(i)
         return result
-    # Stirling
-    import math
+
     return n * math.log(n) - n + 0.5 * math.log(2 * math.pi * n)
 
 def log_binom_coef(n: int, k: int) -> float:
@@ -83,43 +41,28 @@ def log_binom_coef(n: int, k: int) -> float:
     return log_factorial(n) - log_factorial(k) - log_factorial(n - k)
 
 def fisher_exact_2x2(a: int, b: int, c: int, d: int, alternative: str = "two-sided") -> float:
-    """Fisher's exact test on 2x2 contingency table:
-                Group 1   Group 2
-       Success     a         b
-       Failure     c         d
-       Returns two-sided p-value.
-    """
-    import math
-    n1 = a + c  # column 1 total (group 1 trials)
-    n2 = b + d  # column 2 total
-    n_succ = a + b  # row 1 total (total successes)
+    n1 = a + c
+    n2 = b + d
+    n_succ = a + b
     n = n1 + n2
 
-    # Probability of observing exactly (a, b, c, d) under null:
-    #   P = C(n1, a) * C(n2, b) / C(n, a+b)
     def log_p_table(k: int) -> float:
-        # k = successes in group 1; group 2 successes = n_succ - k
         if k < 0 or k > n1 or (n_succ - k) < 0 or (n_succ - k) > n2:
             return float("-inf")
         return (log_binom_coef(n1, k) + log_binom_coef(n2, n_succ - k)
                 - log_binom_coef(n, n_succ))
 
     log_p_obs = log_p_table(a)
-
-    # Sum probabilities of all tables at least as extreme (two-sided)
     p_value = 0.0
+
     for k in range(0, n1 + 1):
         log_p_k = log_p_table(k)
         if log_p_k == float("-inf"):
             continue
-        if log_p_k <= log_p_obs + 1e-12:  # tables as or more extreme
+        if log_p_k <= log_p_obs + 1e-12:
             p_value += math.exp(log_p_k)
 
     return min(1.0, p_value)
-
-# ====================================================================
-# Main
-# ====================================================================
 
 def main():
     ap = argparse.ArgumentParser()
@@ -131,7 +74,6 @@ def main():
                     help="B_0 cap in micro-cents (must match harness run)")
     args = ap.parse_args()
 
-    # Load harness results
     with args.results.open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
 
@@ -139,7 +81,6 @@ def main():
         print(f"ERROR: no rows in {args.results}", file=sys.stderr)
         sys.exit(1)
 
-    # Aggregate by trial
     trial_spend = defaultdict(int)
     trial_outcomes = defaultdict(list)
     for r in rows:
@@ -156,10 +97,9 @@ def main():
     median_spend = sorted(trial_spend.values())[n_trials // 2]
     max_spend = max(trial_spend.values())
 
-    # Pairwise Fisher exact: E vs A/B/C/D
     pairwise = {}
+
     for name, baseline in PAPER_TABLE_14.items():
-        # 2x2: rows = overshoot/no-overshoot; cols = E / baseline
         a = overshoots
         b = baseline["overshoot"]
         c = n_trials - overshoots
@@ -167,9 +107,9 @@ def main():
         p = fisher_exact_2x2(a, b, c, d, "two-sided")
         pairwise[name] = p
 
-    # Outcome decision (pre-committed in paper §8.3 M7)
     if overshoots == 0:
         outcome = "(i) PARITY CONFIRMED"
+
         interpretation = (
             "Compile-time integrity (Condition C) and runtime shared-mutex\n"
             "discipline (Condition E) achieve the same 0/30 outcome under\n"
@@ -178,6 +118,7 @@ def main():
             "cap-respecting outcome.")
     else:
         outcome = f"(ii) PARITY NOT CONFIRMED ({overshoots}/{n_trials} overshoot)"
+
         interpretation = (
             "Investigate root cause: (a) operator-discipline error in the\n"
             "Condition E implementation that requires correction and re-run,\n"
@@ -186,7 +127,6 @@ def main():
             "Either way, the type-system non-bypassability claim is\n"
             "unaffected (trybuild covers both patterns).")
 
-    # Compose report
     lines = [
         "M7 Condition E — Analysis Report",
         "=" * 60,
@@ -254,6 +194,7 @@ def main():
             r"[fill in: operator-discipline error / structural Arc+tokio finding]. "
             r"Type-system non-bypassability claim unaffected."
         )
+
     lines.append("")
 
     report = "\n".join(lines) + "\n"
@@ -261,9 +202,7 @@ def main():
     print(report)
     print(f"Wrote report to {args.report}")
 
-    # Exit code reflects outcome
     sys.exit(0 if overshoots == 0 else 10)
-
 
 if __name__ == "__main__":
     main()

@@ -1,10 +1,11 @@
 from __future__ import annotations
-
 import argparse
 import csv
 import os
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
+import anthropic
+from openai import OpenAI
 
 PROVIDER_PRICING: Dict[str, Dict[str, Any]] = {
     "openai": {
@@ -29,14 +30,12 @@ PROVIDER_PRICING: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 def compute_cost_uc(input_tokens: int, output_tokens: int, provider: str) -> int:
     p = PROVIDER_PRICING[provider]
     return (
             input_tokens * p["input_uc_per_mtok"]
             + output_tokens * p["output_uc_per_mtok"]
     ) // 1_000_000
-
 
 WORKLOADS: Dict[str, Dict[str, Any]] = {
     "lang001": {
@@ -45,11 +44,13 @@ WORKLOADS: Dict[str, Dict[str, Any]] = {
             "ERROR: SQL syntax error at or near the start of the query. "
             "Re-write the query with correct PostgreSQL syntax and try again."
         ),
+
         "system_prompt": (
             "You are a SQL assistant. When given a task, write a single "
             "PostgreSQL query. If the system returns an error, write a "
             "corrected query."
         ),
+
         "user_prompt": (
             "Find all employees in the engineering department earning more "
             "than $100k. Return a single PostgreSQL query."
@@ -63,9 +64,9 @@ def _initial_messages(wl: Dict[str, Any]) -> List[Dict[str, Any]]:
         {"role": "user",   "content": wl["user_prompt"]},
     ]
 
-
 def _byte_length_of_messages(messages: List[Dict[str, Any]]) -> int:
     total = 0
+
     for m in messages:
         content = m.get("content", "")
         if isinstance(content, list):
@@ -76,6 +77,7 @@ def _byte_length_of_messages(messages: List[Dict[str, Any]]) -> int:
                     total += len(str(part).encode("utf-8"))
         else:
             total += len(str(content).encode("utf-8"))
+
     return total
 
 def _llm_call(
@@ -98,7 +100,6 @@ def _llm_call(
         }
 
     if provider == "openai":
-        from openai import OpenAI
         client = OpenAI()
         resp = client.chat.completions.create(
             model=PROVIDER_PRICING["openai"]["model"],
@@ -107,6 +108,7 @@ def _llm_call(
             temperature=0,
         )
         choice = resp.choices[0].message
+
         return {
             "assistant_text":  choice.content or "",
             "input_tokens":    resp.usage.prompt_tokens,
@@ -115,10 +117,10 @@ def _llm_call(
         }
 
     if provider == "anthropic":
-        import anthropic
         client = anthropic.Anthropic()
         sys_text = "\n".join(m["content"] for m in messages if m["role"] == "system")
         anth_msgs = [m for m in messages if m["role"] != "system"]
+
         resp = client.messages.create(
             model=PROVIDER_PRICING["anthropic"]["model"],
             max_tokens=max_output_tokens,
@@ -126,10 +128,12 @@ def _llm_call(
             system=sys_text,
             messages=anth_msgs,
         )
+
         text_parts = [
             b.text for b in (resp.content or [])
             if getattr(b, "type", None) == "text"
         ]
+
         return {
             "assistant_text":  "".join(text_parts),
             "input_tokens":    resp.usage.input_tokens,
@@ -147,10 +151,12 @@ def _append_response(
 ) -> List[Dict[str, Any]]:
     out = list(messages)
     text = response.get("assistant_text") or ""
+
     if not text:
         text = "(empty response)"
     out.append({"role": "assistant", "content": text})
     out.append({"role": "user",      "content": wl["retry_error"]})
+
     return out
 
 def _summarise(
@@ -190,7 +196,6 @@ def run_token_capabilities(
     outcome = "completed_no_cap_hit"
 
     for step_idx in range(1, recursion_limit // 2 + 1):
-        # Coarse fixed-form estimator (the existing one).
         agent_turns = sum(1 for m in messages if m["role"] == "assistant")
         est_input = 60 + growth * agent_turns
         est_output = 40
@@ -201,6 +206,7 @@ def run_token_capabilities(
             break
 
         remaining -= est_uc
+
         resp = _llm_call(provider, messages, wl,
                          max_output_tokens=200,
                          mock_growth=growth,
@@ -211,8 +217,9 @@ def run_token_capabilities(
         cumulative_uc += actual_uc
         agent_steps += 1
         messages = _append_response(messages, resp, wl)
+
         if resp.get("self_terminated"):
-            break  # workload self-terminated
+            break
 
     return _summarise("token_capabilities", outcome, cap_uc, agent_steps, cumulative_uc)
 
@@ -300,6 +307,7 @@ def run_naive_guard(
         cumulative_uc += actual_uc
         agent_steps += 1
         messages = _append_response(messages, resp, wl)
+
         if resp.get("self_terminated"):
             break
 
@@ -314,11 +322,11 @@ ADAPTERS = {
 
 DEFAULT_RUNTIMES = ",".join(ADAPTERS.keys())
 
-
 def _load_done_trials(csv_path: str) -> set:
     if not os.path.exists(csv_path) or os.path.getsize(csv_path) == 0:
         return set()
     done = set()
+
     try:
         with open(csv_path, "r", newline="") as f:
             reader = csv.DictReader(f)
@@ -331,8 +339,8 @@ def _load_done_trials(csv_path: str) -> set:
         print(f"WARN: could not read existing CSV {csv_path}: {e}", file=sys.stderr)
         print(f"WARN: starting fresh; old CSV will be overwritten.", file=sys.stderr)
         return set()
-    return done
 
+    return done
 
 def main():
     ap = argparse.ArgumentParser(
@@ -361,11 +369,14 @@ def main():
 
     selected = [r.strip() for r in args.runtimes.split(",") if r.strip()]
     unknown = [r for r in selected if r not in ADAPTERS]
+
     if unknown:
         sys.exit(f"unknown runtime(s): {unknown}; valid: {list(ADAPTERS.keys())}")
 
+
     if args.provider == "openai" and not os.environ.get("OPENAI_API_KEY"):
         sys.exit("OPENAI_API_KEY env var not set; refusing to call OpenAI.")
+
     if args.provider == "anthropic" and not os.environ.get("ANTHROPIC_API_KEY"):
         sys.exit("ANTHROPIC_API_KEY env var not set; refusing to call Anthropic.")
 
@@ -387,6 +398,7 @@ def main():
     mode = "a" if file_has_content else "w"
     fh = open(args.output_csv, mode, newline="")
     writer = csv.DictWriter(fh, fieldnames=FIELDNAMES, extrasaction="ignore")
+
     if not file_has_content:
         writer.writeheader()
         fh.flush()

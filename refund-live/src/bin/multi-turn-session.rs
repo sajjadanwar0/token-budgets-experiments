@@ -35,6 +35,7 @@ fn scenarios() -> Vec<Scenario> {
             "Summarize the full itinerary in 3 sentences.",
             "Top piece of advice from everything we covered.",
         ]},
+
         Scenario { name: "code_debug", turns: vec![
             "I have a Python function for longest palindrome substring but it returns wrong answers sometimes. def longest_palindrome(s): start=0; end=0; for i in range(len(s)): for j in range(i,len(s)): if s[i:j]==s[i:j][::-1] and j-i>end-start: start,end=i,j; return s[start:end]. What's wrong?",
             "Why does it not find palindromes correctly in 'babad'?",
@@ -49,6 +50,7 @@ fn scenarios() -> Vec<Scenario> {
             "Write 3 representative test cases.",
             "Final summary of what we covered.",
         ]},
+
         Scenario { name: "rust_learning", turns: vec![
             "Teach me Rust ownership in 3 sentences.",
             "Show me a simple example of move semantics.",
@@ -63,6 +65,7 @@ fn scenarios() -> Vec<Scenario> {
             "Recap the 5 most important rules.",
             "What's the most common newbie mistake?",
         ]},
+
         Scenario { name: "podcast_brainstorm", turns: vec![
             "Brainstorm 10 podcast names for a tech-and-philosophy show.",
             "Make them more clever, less obvious.",
@@ -77,6 +80,7 @@ fn scenarios() -> Vec<Scenario> {
             "Launch plan for week 1.",
             "Recap the final brand identity.",
         ]},
+
         Scenario { name: "essay_revision", turns: vec![
             "Write a 150-word intro paragraph about climate adaptation.",
             "Make it more formal in tone.",
@@ -91,6 +95,7 @@ fn scenarios() -> Vec<Scenario> {
             "Final version, polished.",
             "One-sentence summary of the paragraph's argument.",
         ]},
+
         Scenario { name: "math_problem", turns: vec![
             "Solve: if x + y = 10 and x*y = 21, what are x and y?",
             "Walk me through the steps.",
@@ -105,6 +110,7 @@ fn scenarios() -> Vec<Scenario> {
             "Give one application of Vieta in real life.",
             "Summarize what we learned.",
         ]},
+
         Scenario { name: "tech_compare", turns: vec![
             "Compare Python and JavaScript for backend development.",
             "Focus specifically on async/concurrency models.",
@@ -119,6 +125,7 @@ fn scenarios() -> Vec<Scenario> {
             "Best fit for a data-processing pipeline?",
             "Final recommendation framework: when to pick which.",
         ]},
+
         Scenario { name: "recipe_iter", turns: vec![
             "Suggest a weeknight dinner using chicken, rice, and lemons.",
             "How long does it take?",
@@ -222,12 +229,14 @@ async fn main() -> Result<()> {
 
             let resp = match resp {
                 Ok(r) if r.status().is_success() => r,
+
                 Ok(r) => {
                     eprintln!("S{} T{} HTTP {}", session_idx, turn_idx, r.status());
                     receipt.forfeit();
                     budget = Some(after_reserve);
                     continue;
                 }
+
                 Err(e) => {
                     eprintln!("S{} T{} err: {}", session_idx, turn_idx, e);
                     receipt.forfeit();
@@ -254,6 +263,7 @@ async fn main() -> Result<()> {
                     margin_ratio: reservation as f64 / actual.max(1) as f64,
                     violated: true, latency_ms,
                 });
+
                 continue;
             }
 
@@ -302,7 +312,7 @@ async fn main() -> Result<()> {
     let exhausted_count = sessions.iter().filter(|s| s.exhausted_early).count();
 
     println!();
-    println!("=== Multi-turn session aggregate ===");
+    println!("Multi-turn session aggregate");
     println!("Wall time:           {:.1} min", elapsed.as_secs_f64() / 60.0);
     println!("Sessions:            {} (target {})", sessions.len(), n_sessions);
     println!("Turns completed:     {} (across all sessions)", total_turns);
@@ -314,7 +324,9 @@ async fn main() -> Result<()> {
     println!();
 
     println!("Per-scenario stats:");
+
     let scenario_names: Vec<&str> = scenarios.iter().map(|s| s.name).collect();
+
     for sn in scenario_names {
         let subs: Vec<&SessionSummary> = sessions.iter().filter(|s| s.scenario == sn).collect();
         if subs.is_empty() { continue; }
@@ -327,6 +339,7 @@ async fn main() -> Result<()> {
 
     let mut s_csv = File::create("multi_turn_sessions.csv")?;
     writeln!(s_csv, "idx,scenario,turns_completed,turns_attempted,total_reserved_nc,total_actual_nc,total_refund_nc,final_budget_nc,violations,exhausted_early")?;
+
     for s in &sessions {
         writeln!(s_csv, "{},{},{},{},{},{},{},{},{},{}",
                  s.idx, s.scenario, s.turns_completed, s.turns_attempted,
@@ -336,6 +349,7 @@ async fn main() -> Result<()> {
 
     let mut t_csv = File::create("multi_turn_turns.csv")?;
     writeln!(t_csv, "session_idx,turn_idx,scenario,reservation_nc,actual_nc,refund_nc,input_tokens,output_tokens,body_bytes,margin_ratio,violated,latency_ms")?;
+
     for t in &all_turns {
         writeln!(t_csv, "{},{},{},{},{},{},{},{},{},{:.6},{},{}",
                  t.session_idx, t.turn_idx, t.scenario, t.reservation_nc, t.actual_nc, t.refund_nc,

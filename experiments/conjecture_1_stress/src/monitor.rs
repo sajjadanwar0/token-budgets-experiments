@@ -67,6 +67,7 @@ impl Monitor {
         }
 
         let accounted = phi + self.total_spent + self.total_dropped;
+
         if accounted > self.b0 {
             self.violations.push(Violation {
                 event_index: self.events_processed,
@@ -90,28 +91,30 @@ impl Monitor {
                 Event::Created { id, capacity, parent: _ } => {
                     self.live.insert(id, capacity);
                 }
+
                 Event::Spend { id, amount, remaining } => {
-                    // The id is reused (same Budget conceptually); update its
-                    // ledger entry to remaining.
                     self.live.insert(id, remaining);
                     self.total_spent += amount;
                 }
+
                 Event::Split { parent, child_a, child_b, cap_a, cap_b } => {
-                    // Parent dies, children take its capacity
                     self.live.remove(&parent);
                     self.live.insert(child_a, cap_a);
                     self.live.insert(child_b, cap_b);
                 }
+
                 Event::Merge { result, capacity, consumed_a, consumed_b } => {
                     self.live.remove(&consumed_a);
                     self.live.remove(&consumed_b);
                     self.live.insert(result, capacity);
                 }
+
                 Event::Dropped { id, available_at_drop } => {
                     self.live.remove(&id);
                     self.total_dropped += available_at_drop;
                 }
             }
+
             self.check_and_record(&repr);
         }
 

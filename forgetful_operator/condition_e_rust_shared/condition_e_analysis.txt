@@ -27,13 +27,3 @@ INTERPRETATION (per paper §8.3 M7 pre-registration):
   non-bypassability the trybuild evidence covers, not the
   cap-respecting outcome.
 
-============================================================
-PAPER-READY TABLE 14 ROW (drop into §5.11):
-
-% Add this row to Table 14:
-\textbf{E: Rust shared $\mathit{Arc\langle Mutex\langle Budget\rangle\rangle}$ (60 uc, pre-flight + lock)} & 0/30 & [0.000, 0.114] & 1 & 2\% & \\
-
-PAPER-READY §8.3 M7 STATUS LINE (prepend to M7 paragraph):
-
-\textbf{EXECUTED [DATE], outcome (i)}: 0/30 overshoot confirms parity with Condition B. Allocation-vs-integrity confound closed.
-

@@ -39,7 +39,6 @@ SONNET_OUTPUT_USD_PER_TOK = 15.0 / 1_000_000
 OUT_DIR = Path(__file__).resolve().parent / "sweep_results"
 OUT_PATH = OUT_DIR / "agent_contracts_lang001_cap540_n30_anthropic.csv"
 
-
 @dataclass
 class TrialResult:
     trial_id: int
@@ -58,15 +57,12 @@ class TrialResult:
     response_truncated: str
     wall_time_s: float
 
-
 def estimate_input_cost_usd(prompt: str) -> float:
     approx_tokens = len(prompt.encode("utf-8")) / 3.5
     return approx_tokens * SONNET_INPUT_USD_PER_TOK
 
-
 def estimate_output_cost_usd(max_tokens: int) -> float:
     return max_tokens * SONNET_OUTPUT_USD_PER_TOK
-
 
 def build_contract_spec(cap_usd: float):
     if AC_AVAILABLE:
@@ -82,7 +78,6 @@ def build_contract_spec(cap_usd: float):
         )
     else:
         return {"cap_usd": cap_usd}
-
 
 def run_one_trial(trial_id: int, contract) -> TrialResult:
     if AC_AVAILABLE:
@@ -149,7 +144,6 @@ def run_one_trial(trial_id: int, contract) -> TrialResult:
         wall_time_s=round(wall, 3),
     )
 
-
 def main():
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("ERROR: ANTHROPIC_API_KEY not set. source ~/.zshrc first.")
@@ -158,7 +152,7 @@ def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     contract = build_contract_spec(CAP_USD)
 
-    print("=== AC vs TB head-to-head (MANUAL enforcement bypass) ===")
+    print(" AC vs TB head-to-head (MANUAL enforcement bypass) ")
     print(f"    framework: ai-agent-contracts v0.3.1 spec types, manual enforcement")
     print(f"    model:     {MODEL_LITELLM}")
     print(f"    cap:       540 uc (${CAP_USD:.6f})")
@@ -192,8 +186,11 @@ def main():
             writer.writerow(asdict(row))
             f.flush()
             if row.overshoot == 1: overshoots += 1
+
             if row.refused_pre_flight == 1: refused_pf += 1
+
             if row.n_calls > 0: completed += 1
+
             tag = "REFUSED-PF" if row.refused_pre_flight else \
                 ("OVER" if row.overshoot else "ok")
             print(f"calls={row.n_calls} cost=${row.total_cost_usd:.6f} [{tag}]")

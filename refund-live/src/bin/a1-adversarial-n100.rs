@@ -39,6 +39,7 @@ fn build_prompt(class: &str, idx: usize) -> String {
             }
             out
         }
+
         "emoji_dense" => {
             const EMOJI_POOL: &[&str] = &[
                 "🚀", "🌟", "🎯", "🔥", "💫", "🌈", "🎨", "🎭", "🎪", "🎢",
@@ -49,6 +50,7 @@ fn build_prompt(class: &str, idx: usize) -> String {
             let start = idx % EMOJI_POOL.len();
             (0..count).map(|k| EMOJI_POOL[(start + k) % EMOJI_POOL.len()]).collect()
         }
+
         "repeated_rare" => {
             const RARE: &[&str] = &[
                 "supercalifragilisticexpialidocious",
@@ -66,6 +68,7 @@ fn build_prompt(class: &str, idx: usize) -> String {
             let reps = 10 + (idx % 20);
             (0..reps).map(|_| format!("{} ", word)).collect()
         }
+
         "long_output" => {
             const TOPICS: &[&str] = &[
                 "the history of computing", "the discovery of penicillin",
@@ -76,6 +79,7 @@ fn build_prompt(class: &str, idx: usize) -> String {
             ];
             format!("Write a 500-word essay about {}.", TOPICS[idx % TOPICS.len()])
         }
+
         "mixed_scripts" => {
             const FRAGMENTS: &[&str] = &[
                 "Hello world.", "مرحبا بالعالم.", "שלום עולם.", "नमस्ते दुनिया.", "你好世界",
@@ -84,12 +88,14 @@ fn build_prompt(class: &str, idx: usize) -> String {
             let count = 3 + (idx % 5);
             let start = idx % FRAGMENTS.len();
             let mut out = String::from("Translate or interpret: ");
+
             for k in 0..count {
                 out.push_str(FRAGMENTS[(start + k) % FRAGMENTS.len()]);
                 out.push(' ');
             }
             out
         }
+
         "json_dense" => {
             let depth = 5 + (idx % 10);
             let mut s = String::from("Parse this JSON: ");
@@ -98,10 +104,12 @@ fn build_prompt(class: &str, idx: usize) -> String {
             for _ in 0..depth { s.push('}'); }
             s
         }
+
         "whitespace_pad" => {
             let pad = 100 + (idx % 200);
             format!("{}word{}", " ".repeat(pad), idx)
         }
+
         "code_heavy" => {
             let n = 10 + (idx % 50);
             format!(
@@ -109,11 +117,13 @@ fn build_prompt(class: &str, idx: usize) -> String {
                 i = idx, indent = "    ", n = n
             )
         }
+
         "long_prompt" => {
             let reps = 100 + (idx % 100);
             "Summarise the following text: ".to_string()
                 + &"This is a sample sentence that will be repeated many times. ".repeat(reps)
         }
+
         "tool_format" => {
             format!(
                 r#"<function_calls><invoke name="search_{}"><parameter name="q">query {}</parameter></invoke></function_calls>"#,
@@ -147,6 +157,7 @@ async fn main() -> Result<()> {
         per_class_min_margin.insert(class, f64::INFINITY);
 
         println!("\n=== Class: {} (N={}) ===", class, N_PER_CLASS);
+
         for i in 0..N_PER_CLASS {
             let prompt = build_prompt(class, i);
             let req = serde_json::json!({
@@ -175,6 +186,7 @@ async fn main() -> Result<()> {
                     continue;
                 }
             };
+
             let parsed: Resp = match resp.json().await {
                 Ok(p) => p,
                 Err(e) => { eprintln!("  [{}] parse err: {}", i, e); continue; }
@@ -189,7 +201,9 @@ async fn main() -> Result<()> {
                 *per_class_violations.get_mut(class).unwrap() += 1;
                 println!("  [{}] ⚠ VIOLATION reserve={} actual={}", i, reservation, actual);
             }
+
             let cur_min = per_class_min_margin.get_mut(class).unwrap();
+
             if margin < *cur_min { *cur_min = margin; }
 
             all_records.push((class.to_string(), i, reservation, actual, margin, violated));
@@ -207,7 +221,7 @@ async fn main() -> Result<()> {
                  class, v, N_PER_CLASS, 100.0 * v as f64 / N_PER_CLASS as f64, m);
     }
 
-    println!("\n=== Aggregate ===");
+    println!("\n Aggregate ");
     let total = all_records.len();
     let total_v: usize = per_class_violations.values().sum();
     let global_min = per_class_min_margin.values().fold(f64::INFINITY, |a, b| a.min(*b));
@@ -217,6 +231,7 @@ async fn main() -> Result<()> {
     println!();
     println!("Per-class breakdown:");
     println!("{:>20} {:>10} {:>10} {:>12}", "class", "violations", "min_margin", "rate");
+
     for &class in CLASSES {
         let v = per_class_violations[class];
         let m = per_class_min_margin[class];
@@ -227,8 +242,8 @@ async fn main() -> Result<()> {
     println!();
     println!("Statistical interpretation (Clopper-Pearson):");
     println!("  N={}, observed violations k, 95% CI upper bound on true rate:", total);
+
     if total_v == 0 {
-        // For k=0: upper = 1 - 0.05^(1/n)
         let upper = 1.0 - 0.05_f64.powf(1.0 / total as f64);
         println!("  k=0 → upper bound = {:.4}% (rule of 3 / exact)", upper * 100.0);
     } else {
@@ -240,6 +255,7 @@ async fn main() -> Result<()> {
     for (cls, i, res, act, mar, vio) in &all_records {
         writeln!(csv, "{},{},{},{},{:.6},{}", cls, i, res, act, mar, vio)?;
     }
+
     println!("\nWrote {} rows to a1_adversarial_n100_results.csv", all_records.len());
 
     Ok(())

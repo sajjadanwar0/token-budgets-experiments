@@ -43,6 +43,7 @@ def predict_cost_uc(client, messages, system, max_completion_tokens):
         input_tokens * PRICING_UC_PER_TOKEN["input"]
         + max_completion_tokens * PRICING_UC_PER_TOKEN["output"]
     )
+
     return predicted_uc, input_tokens, latency_ms, None
 
 def call_with_retry(client, *, model, max_tokens, temperature, system,
@@ -66,11 +67,9 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
             return None, f"other_error_{type(e).__name__}: {e}", attempt + 1
     return None, "exhausted_retries", max_retries
 
-
 def run_trial(trial_id, cap_uc, max_steps=20):
     client = Anthropic()
     messages = [{"role": "user", "content": LANG_001_USER}]
-
     remaining_uc = cap_uc
     total_input_tokens = 0
     total_output_tokens = 0
@@ -126,6 +125,7 @@ def run_trial(trial_id, cap_uc, max_steps=20):
             + actual_output * PRICING_UC_PER_TOKEN["output"]
         )
         refund = predicted_uc - actual_cost
+
         if refund > 0:
             remaining_uc += refund
 
@@ -143,6 +143,7 @@ def run_trial(trial_id, cap_uc, max_steps=20):
     )
     overshoot_uc = max(0, actual_total_cost_uc - cap_uc)
     reserved_total = cap_uc - remaining_uc
+
     if reserved_total > 0:
         capital_efficiency = actual_total_cost_uc / reserved_total
     else:
@@ -205,6 +206,7 @@ def main():
     print(f"{'='*76}")
 
     rows = []
+
     for i in range(args.n_trials):
         start = time.monotonic()
         try:
@@ -218,6 +220,7 @@ def main():
             continue
         row["wall_seconds"] = round(time.monotonic() - start, 3)
         rows.append(row)
+
         print(f"  [{i+1:02d}/{args.n_trials}] "
               f"outcome={row['outcome'][:35]:<35} "
               f"steps={row['agent_steps']:>2} "
@@ -249,6 +252,7 @@ def main():
     overshoots = sum(1 for r in rows if r["overshoot_uc"] > 0)
 
     spending = [r for r in rows if r["agent_steps"] > 0]
+
     if spending:
         mean_steps = sum(r["agent_steps"] for r in spending) / len(spending)
         mean_spent = sum(r["total_spent_uc"] for r in spending) / len(spending)
@@ -269,6 +273,7 @@ def main():
     print(f"  Reached max_steps:              {maxsteps}/{n}")
     print(f"  Other errors:                   {other}/{n}")
     print(f"  Dollar-overshoot trials:        {overshoots}/{n}")
+
     if spending:
         print(f"  ---")
         print(f"  Spending trials (>0 steps):     {len(spending)}/{n}")

@@ -14,7 +14,6 @@ def wilson_ci(k, n, alpha=0.05):
     half = (z / denom) * math.sqrt(phat * (1 - phat) / n + z * z / (4 * n * n))
     return (max(0.0, center - half), min(1.0, center + half))
 
-
 def bootstrap_rate_ci(outcomes, B=10000, alpha=0.05, seed=42):
     if not outcomes:
         return (0.0, 0.0)
@@ -27,8 +26,8 @@ def bootstrap_rate_ci(outcomes, B=10000, alpha=0.05, seed=42):
     rates.sort()
     lo_idx = int(B * alpha / 2)
     hi_idx = int(B * (1 - alpha / 2))
-    return (rates[lo_idx], rates[hi_idx])
 
+    return (rates[lo_idx], rates[hi_idx])
 
 def bootstrap_diff_ci(outcomes_a, outcomes_b, B=10000, alpha=0.05, seed=42):
     if not outcomes_a or not outcomes_b:
@@ -43,8 +42,8 @@ def bootstrap_diff_ci(outcomes_a, outcomes_b, B=10000, alpha=0.05, seed=42):
     diffs.sort()
     lo_idx = int(B * alpha / 2)
     hi_idx = int(B * (1 - alpha / 2))
-    return (diffs[lo_idx], diffs[hi_idx])
 
+    return (diffs[lo_idx], diffs[hi_idx])
 
 def main():
     if len(sys.argv) < 2:
@@ -68,6 +67,7 @@ def main():
     print()
 
     rows = []
+
     for rt in sorted(by_runtime.keys()):
         outcomes = by_runtime[rt]
         n = len(outcomes)
@@ -85,6 +85,7 @@ def main():
     print("=" * 88)
     print(f"{'runtime':25s}  {'k/n':>6s}  {'rate':>6s}  {'Wilson 95% CI':>22s}  {'Bootstrap 95% CI':>22s}")
     print("=" * 88)
+
     for r in rows:
         print(f"{r['runtime']:25s}  {r['k']:3d}/{r['n']:<3d}  "
               f"{r['rate']:6.3f}  [{r['wilson_lo']:5.3f}, {r['wilson_hi']:5.3f}]      "

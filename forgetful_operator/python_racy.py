@@ -6,9 +6,7 @@ import sys
 import time
 from dataclasses import dataclass
 from typing import List, Optional
-
 import httpx
-
 
 LANG001_SYSTEM = (
     "You are a SQL agent. Use the provided sql_query tool to answer "
@@ -51,16 +49,10 @@ def estimate_uc_byte_length(prompt: str, max_output_tokens: int,
                             rate_in_per_mtok: float,
                             rate_out_per_mtok: float,
                             margin: float = 0.5) -> int:
-    """Tighter estimator (margin=0.5) -- byte-length is over-counting
-    English tokens by ~4x already; 0.5x gives an estimate ~2x actual,
-    which is still A1-sound but tight enough that 3*actual can exceed
-    a cap that admits estimate<cap individually.
-    """
     input_tokens_est = int(margin * len(prompt))
     in_uc = int(input_tokens_est * rate_in_per_mtok / 10)
     out_uc = int(max_output_tokens * rate_out_per_mtok / 10)
     return in_uc + out_uc
-
 
 async def call_anthropic(client: httpx.AsyncClient, api_key: str,
                          prompt_system: str, prompt_user: str,
@@ -77,11 +69,11 @@ async def call_anthropic(client: httpx.AsyncClient, api_key: str,
         "system": prompt_system,
         "messages": [{"role": "user", "content": prompt_user}],
     }
-    r = await client.post("https://api.anthropic.com/v1/messages",
-                          headers=headers, json=payload, timeout=60)
-    r.raise_for_status()
-    return r.json()
 
+    r = await client.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload, timeout=60)
+    r.raise_for_status()
+
+    return r.json()
 
 async def child(child_id: int, budget: RacyBudget,
                 api_key: str, client: httpx.AsyncClient,
@@ -119,13 +111,13 @@ async def child(child_id: int, budget: RacyBudget,
         "output_tokens": out_tokens,
     }
 
-
 async def run_trial(trial_id: int, cap_uc: int,
                     api_key: str, client: httpx.AsyncClient,
                     rate_in: float, rate_out: float,
                     max_output_tokens: int, margin: float) -> TrialResult:
     t0 = time.monotonic()
     budget = RacyBudget(cap_uc=cap_uc)
+
     try:
         results = await asyncio.gather(
             child(0, budget, api_key, client, rate_in, rate_out,
@@ -135,6 +127,7 @@ async def run_trial(trial_id: int, cap_uc: int,
             child(2, budget, api_key, client, rate_in, rate_out,
                   max_output_tokens, margin),
         )
+
         admitted = sum(1 for r in results if r["admitted"])
         completed = sum(1 for r in results if r.get("actual_uc", 0) > 0)
         return TrialResult(
@@ -158,25 +151,19 @@ async def run_trial(trial_id: int, cap_uc: int,
             error=f"{type(e).__name__}: {e}",
         )
 
-
 async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=30)
-    # CHANGED: cap default 100 -> 60
-    ap.add_argument("--cap", type=int, default=60,
-                    help="parent budget in micro-cents")
-    ap.add_argument("--output", type=str,
-                    default="results/python_racy_anthropic.csv")
+    ap.add_argument("--cap", type=int, default=60, help="parent budget in micro-cents")
+    ap.add_argument("--output", type=str, default="results/python_racy_anthropic.csv")
     ap.add_argument("--rate-in", type=float, default=1.0)
     ap.add_argument("--rate-out", type=float, default=5.0)
-    # NEW knobs:
-    ap.add_argument("--max-output-tokens", type=int, default=30,
-                    help="per-call max_tokens (CHANGED from 200 default)")
-    ap.add_argument("--margin", type=float, default=0.5,
-                    help="byte-length-to-token margin (CHANGED from 2.0)")
+    ap.add_argument("--max-output-tokens", type=int, default=30, help="per-call max_tokens (CHANGED from 200 default)")
+    ap.add_argument("--margin", type=float, default=0.5, help="byte-length-to-token margin (CHANGED from 2.0)")
     args = ap.parse_args()
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
+
     if not api_key:
         print("ERROR: ANTHROPIC_API_KEY not set", file=sys.stderr)
         sys.exit(1)
@@ -220,7 +207,6 @@ async def main():
     overshoots = sum(1 for r in results if r.overshoot)
     print(f"\nSUMMARY: {overshoots}/{args.n} overshoots")
     print(f"Output: {args.output}")
-
 
 if __name__ == "__main__":
     asyncio.run(main())

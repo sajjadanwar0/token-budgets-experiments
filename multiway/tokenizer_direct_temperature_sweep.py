@@ -26,7 +26,6 @@ ANTHROPIC_HAIKU_4_5 = "claude-haiku-4-5-20251001"
 PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
 MAX_COMPLETION_TOKENS = 200
 
-
 def predict_cost_uc(client, messages, system, max_completion_tokens):
     start = time.monotonic()
     try:
@@ -44,8 +43,8 @@ def predict_cost_uc(client, messages, system, max_completion_tokens):
         input_tokens * PRICING_UC_PER_TOKEN["input"]
         + max_completion_tokens * PRICING_UC_PER_TOKEN["output"]
     )
-    return predicted_uc, input_tokens, latency_ms, None
 
+    return predicted_uc, input_tokens, latency_ms, None
 
 def call_with_retry(client, *, model, max_tokens, temperature, system,
                     messages, max_retries=5):
@@ -66,13 +65,12 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
                     continue
                 return None, "exhausted_retries_overloaded", attempt + 1
             return None, f"other_error_{type(e).__name__}: {e}", attempt + 1
-    return None, "exhausted_retries", max_retries
 
+    return None, "exhausted_retries", max_retries
 
 def run_trial(trial_id, cap_uc, temperature, max_steps=20):
     client = Anthropic()
     messages = [{"role": "user", "content": LANG_001_USER}]
-
     remaining_uc = cap_uc
     total_input_tokens = 0
     total_output_tokens = 0
@@ -125,6 +123,7 @@ def run_trial(trial_id, cap_uc, temperature, max_steps=20):
             + actual_output * PRICING_UC_PER_TOKEN["output"]
         )
         refund = predicted_uc - actual_cost
+
         if refund > 0:
             remaining_uc += refund
 
@@ -141,6 +140,7 @@ def run_trial(trial_id, cap_uc, temperature, max_steps=20):
         total_input_tokens * PRICING_UC_PER_TOKEN["input"]
         + total_output_tokens * PRICING_UC_PER_TOKEN["output"]
     )
+
     overshoot_uc = max(0, actual_total_cost_uc - cap_uc)
 
     return {
@@ -163,7 +163,6 @@ def run_trial(trial_id, cap_uc, temperature, max_steps=20):
         "error_repr": error_repr,
     }
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -179,6 +178,7 @@ def main():
         sys.exit("ERROR: ANTHROPIC_API_KEY not set")
 
     out_dir = os.path.dirname(args.output)
+
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
 
@@ -192,6 +192,7 @@ def main():
     print(f"{'='*76}")
 
     rows = []
+
     for i in range(args.n_trials):
         start = time.monotonic()
         try:
@@ -210,6 +211,7 @@ def main():
               f"spent={row['total_spent_uc']:>5}uc "
               f"over={row['overshoot_uc']:>4}uc "
               f"out_toks={row['output_tokens_per_step']}")
+
         if args.sleep > 0:
             time.sleep(args.sleep)
 
@@ -234,6 +236,7 @@ def main():
     print(f"SUMMARY: T={args.temperature}, cap={args.cap_uc}uc, N={n}")
     print(f"{'='*76}")
     print(f"  Overshoot:        {overshoots}/{n}")
+
     if spending:
         mean_steps = sum(r["agent_steps"] for r in spending) / len(spending)
         mean_spent = sum(r["total_spent_uc"] for r in spending) / len(spending)
@@ -248,7 +251,6 @@ def main():
                   f"mean={mean_o:.0f}, sd={sd_o:.0f}, "
                   f"min={min(all_outputs)}, max={max(all_outputs)}")
     print(f"{'='*76}")
-
 
 if __name__ == "__main__":
     main()

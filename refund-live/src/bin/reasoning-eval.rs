@@ -35,20 +35,24 @@ fn workload_prompt(name: &str) -> Result<&'static str> {
              leaves Station B (240 km away) at 9:30 AM travelling toward A at 100 km/h. \
              At what time and how far from Station A do they meet? Show all work."
         ),
+
         "integral" => Ok(
             "Compute the definite integral of (3x^2 + 2x - 5) sin(x) from 0 to pi. \
              Show every integration-by-parts step and verify by differentiation."
         ),
+
         "optimisation" => Ok(
             "A farmer has 800 meters of fencing and wants to enclose a rectangular field \
              along a straight river so that no fence is needed on the river side. What \
              dimensions maximise the area? Verify by computing the second derivative."
         ),
+
         "sequence" => Ok(
             "Find the closed form for the sequence a_n defined by a_0 = 1, a_1 = 3, \
              a_n = 4 a_{n-1} - 4 a_{n-2}. Verify by substitution into the recurrence \
              and by checking the first five terms."
         ),
+
         other => Err(anyhow!("unknown workload: {}. Choose one of: \
                               train-meeting, integral, optimisation, sequence", other)),
     }
@@ -105,6 +109,7 @@ impl ProviderConfig {
             other       => Err(anyhow!("unknown provider: {}", other)),
         }
     }
+
     fn label(&self) -> &'static str {
         match self {
             Self::Anthropic => "anthropic_sonnet_thinking",
@@ -112,6 +117,7 @@ impl ProviderConfig {
             Self::DeepSeek  => "deepseek_r1",
         }
     }
+
     fn default_reasoning_uc(&self) -> u64 {
         match self {
             Self::Anthropic => DEFAULT_ANTHROPIC_REASONING_UC,
@@ -142,8 +148,10 @@ async fn call_anthropic(client: &reqwest::Client, api_key: &str, prompt: &str, m
         "system": REASONING_WORKLOAD_SYSTEM,
         "messages": [{"role": "user", "content": prompt}],
     });
+
     let mut retries = 0u32;
     let attempts: Vec<u64> = std::iter::once(0u64).chain(OVERLOAD_BACKOFF_S.iter().copied()).collect();
+
     for (idx, backoff) in attempts.iter().enumerate() {
         if *backoff > 0 { sleep(Duration::from_secs(*backoff)).await; }
         let resp = client.post("https://api.anthropic.com/v1/messages")
@@ -151,17 +159,22 @@ async fn call_anthropic(client: &reqwest::Client, api_key: &str, prompt: &str, m
             .header("anthropic-version", "2023-06-01")
             .header("content-type", "application/json")
             .json(&body).send().await.context("anthropic POST")?;
+
         if resp.status().as_u16() == 529 && idx < attempts.len() - 1 { retries += 1; continue; }
+
         if !resp.status().is_success() {
             let txt = resp.text().await.unwrap_or_default();
             return Err(anyhow!("anthropic non-2xx: {}", txt));
         }
         let parsed: AnthropicResponse = resp.json().await.context("anthropic decode")?;
+
         let visible = parsed.content.iter()
             .filter_map(|b| if b.ty == "text" { b.text.clone() } else { None })
             .collect::<Vec<_>>().join("");
+
         return Ok((visible, parsed.usage.input_tokens, parsed.usage.output_tokens, 0, retries));
     }
+
     Err(anyhow!("exhausted retries"))
 }
 
@@ -176,27 +189,37 @@ async fn call_openai_oseries(client: &reqwest::Client, api_key: &str, prompt: &s
         ],
         "reasoning_effort": "medium",
     });
+
     let mut retries = 0u32;
     let attempts: Vec<u64> = std::iter::once(0u64).chain(OVERLOAD_BACKOFF_S.iter().copied()).collect();
+
     for (idx, backoff) in attempts.iter().enumerate() {
         if *backoff > 0 { sleep(Duration::from_secs(*backoff)).await; }
+
         let resp = client.post("https://api.openai.com/v1/chat/completions")
             .header("authorization", format!("Bearer {}", api_key))
             .header("content-type", "application/json")
             .json(&body).send().await.context("openai POST")?;
+
         if resp.status().as_u16() == 429 && idx < attempts.len() - 1 { retries += 1; continue; }
+
         if !resp.status().is_success() {
             let txt = resp.text().await.unwrap_or_default();
             return Err(anyhow!("openai non-2xx: {}", txt));
         }
+
         let parsed: OpenAIResponse = resp.json().await.context("openai decode")?;
+
         let visible = parsed.choices.into_iter().filter_map(|c| c.message.content)
             .collect::<Vec<_>>().join("\n");
+
         let reasoning_tokens = parsed.usage.completion_tokens_details
             .map(|d| d.reasoning_tokens).unwrap_or(0);
+
         return Ok((visible, parsed.usage.prompt_tokens, parsed.usage.completion_tokens,
                    reasoning_tokens, retries));
     }
+
     Err(anyhow!("exhausted retries"))
 }
 
@@ -211,27 +234,37 @@ async fn call_deepseek(client: &reqwest::Client, api_key: &str, prompt: &str, ma
         ],
         "max_tokens": max_output_tokens + 2000,
     });
+
     let mut retries = 0u32;
+
     let attempts: Vec<u64> = std::iter::once(0u64).chain(OVERLOAD_BACKOFF_S.iter().copied()).collect();
+
     for (idx, backoff) in attempts.iter().enumerate() {
         if *backoff > 0 { sleep(Duration::from_secs(*backoff)).await; }
         let resp = client.post("https://api.deepseek.com/v1/chat/completions")
             .header("authorization", format!("Bearer {}", api_key))
             .header("content-type", "application/json")
             .json(&body).send().await.context("deepseek POST")?;
+
         if resp.status().as_u16() == 429 && idx < attempts.len() - 1 { retries += 1; continue; }
+
         if !resp.status().is_success() {
             let txt = resp.text().await.unwrap_or_default();
             return Err(anyhow!("deepseek non-2xx: {}", txt));
         }
+
         let parsed: OpenAIResponse = resp.json().await.context("deepseek decode")?;
+
         let visible = parsed.choices.into_iter().filter_map(|c| c.message.content)
             .collect::<Vec<_>>().join("\n");
+
         let reasoning_tokens = parsed.usage.completion_tokens_details
             .map(|d| d.reasoning_tokens).unwrap_or(0);
+
         return Ok((visible, parsed.usage.prompt_tokens, parsed.usage.completion_tokens,
                    reasoning_tokens, retries));
     }
+
     Err(anyhow!("exhausted retries"))
 }
 
@@ -246,6 +279,7 @@ struct Config {
 
 async fn run_trial(cfg: &Config, client: &reqwest::Client, trial_id: usize) -> Result<TrialResult> {
     let mint = BudgetMint::take_authority();
+
     let mut budget = Budget::<CAP_UC_LOOSE>::mint(&mint, cfg.cap_uc)
         .map_err(|e| anyhow!("budget mint failed: {:?}", e))?;
 
@@ -270,8 +304,10 @@ async fn run_trial(cfg: &Config, client: &reqwest::Client, trial_id: usize) -> R
     let mut prompt = workload_prompt(&cfg.workload)?.to_string();
 
     for step in 0..MAX_STEPS_PER_TRIAL {
+
         let visible_uc = (prompt.len() as u64) * 2 * rates.input_per_tok_uc
             + (MAX_OUTPUT_TOKENS as u64) * rates.output_per_tok_uc;
+
         let per_call_reserve = visible_uc + cfg.reasoning_uc;
 
         match budget.spend(per_call_reserve) {
@@ -279,6 +315,7 @@ async fn run_trial(cfg: &Config, client: &reqwest::Client, trial_id: usize) -> R
                 budget = new_budget;
                 total_reserved_uc += per_call_reserve;
             }
+
             Err(e) => {
                 refused_at = step as i32;
                 refused_reason = format!("{:?}", e);
@@ -312,6 +349,7 @@ async fn run_trial(cfg: &Config, client: &reqwest::Client, trial_id: usize) -> R
                     response_text.chars().take(500).collect::<String>()
                 );
             }
+
             Err(e) => {
                 refused_at = step as i32;
                 refused_reason = format!("api_error: {}", e);
@@ -353,6 +391,7 @@ async fn main() -> Result<()> {
     let mut reasoning_uc_override: Option<u64> = None;
 
     let mut i = 1;
+
     while i < args.len() {
         match args[i].as_str() {
             "--provider"     => { provider_str = args[i+1].clone(); i += 2; }
@@ -381,18 +420,21 @@ async fn main() -> Result<()> {
 
     let out_dir = PathBuf::from("../multiway/sweep_results");
     std::fs::create_dir_all(&out_dir)?;
+
     let out_path = out_dir.join(format!(
         "reasoning_eval_v2_{}_{}_{}_resv{}_n{}.csv",
         cfg.provider.label(),
         cfg.workload.replace('-', "_"),
         cfg.cap_mode_label, reasoning_uc, n_trials
     ));
+
     let file = File::create(&out_path)?;
+
     let mut writer = csv::Writer::from_writer(file);
 
     let client = reqwest::Client::builder().timeout(Duration::from_secs(120)).build()?;
 
-    println!("=== reasoning-eval v2 ===");
+    println!("reasoning-eval");
     println!("    provider:                  {}", cfg.provider.label());
     println!("    workload:                  {}", cfg.workload);
     println!("    cap_uc:                    {} uc ({})", cfg.cap_uc, cap_mode_label);
@@ -403,6 +445,7 @@ async fn main() -> Result<()> {
 
     let mut overshoots = 0;
     let mut a1_violations = 0;
+
     for trial in 0..n_trials {
         print!("    trial {}/{} ", trial + 1, n_trials);
         let row = run_trial(&cfg, &client, trial).await?;
@@ -411,12 +454,17 @@ async fn main() -> Result<()> {
         let refused_msg = if row.refused_at_step >= 0 {
             format!(" refused@{}", row.refused_at_step)
         } else { String::new() };
+
         println!("steps={} billed={} reserved={} [{}] [{}]{}",
                  row.steps, row.total_billed_uc, row.total_reserved_uc,
                  osh, a1, refused_msg);
+
         if row.overshoot == 1     { overshoots    += 1; }
+
         if row.a1_violation == 1  { a1_violations += 1; }
+
         writer.serialize(&row)?;
+
         writer.flush()?;
     }
 
@@ -425,5 +473,6 @@ async fn main() -> Result<()> {
     println!("    dollar overshoots:    {}/{}", overshoots, n_trials);
     println!("    A1 violations:        {}/{}", a1_violations, n_trials);
     println!("    CSV:                  {:?}", out_path);
+
     Ok(())
 }

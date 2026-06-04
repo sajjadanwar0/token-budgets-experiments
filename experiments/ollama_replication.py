@@ -8,6 +8,11 @@ import time
 from dataclasses import dataclass, asdict, fields
 from pathlib import Path
 from typing import List
+from langchain_ollama import ChatOllama
+from langgraph.prebuilt import create_react_agent
+from langchain_core.tools import tool
+from langchain_core.callbacks import BaseCallbackHandler
+import requests
 
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 MODEL = "llama3.2:latest"
@@ -46,34 +51,11 @@ class RunRecord:
     wall_clock_s: float
     error: str = ""
 
-
 def synth_cost_uc(in_tok: int, out_tok: int) -> float:
     return (in_tok * PRICE_INPUT_PER_MTOK_UC / 1_000_000.0
             + out_tok * PRICE_OUTPUT_PER_MTOK_UC / 1_000_000.0)
 
-
-def check_prereqs():
-    try:
-        import requests
-    except ImportError:
-        sys.exit("ERROR: pip install requests")
-    try:
-        resp = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=3)
-        models = [m["name"] for m in resp.json().get("models", [])]
-        if MODEL not in models:
-            sys.exit(f"ERROR: model {MODEL} not found in Ollama. "
-                     f"Run: ollama pull {MODEL}")
-    except Exception as e:
-        sys.exit(f"ERROR: cannot reach Ollama at {OLLAMA_BASE_URL}: {e}")
-    print(f"OK: Ollama is up, {MODEL} is available.")
-
-
 def run_langgraph(iteration: int, cap_uc: int) -> RunRecord:
-    from langchain_ollama import ChatOllama
-    from langgraph.prebuilt import create_react_agent
-    from langchain_core.tools import tool
-    from langchain_core.callbacks import BaseCallbackHandler
-
     @tool
     def execute_sql(query: str) -> str:
         return TOOL_ERROR_MESSAGE
@@ -122,11 +104,6 @@ def run_langgraph(iteration: int, cap_uc: int) -> RunRecord:
 
 
 def run_langgraph_agentguard(iteration: int, cap_uc: int) -> RunRecord:
-    from langchain_ollama import ChatOllama
-    from langgraph.prebuilt import create_react_agent
-    from langchain_core.tools import tool
-    from langchain_core.callbacks import BaseCallbackHandler
-
     @tool
     def execute_sql(query: str) -> str:
         return TOOL_ERROR_MESSAGE
@@ -148,6 +125,7 @@ def run_langgraph_agentguard(iteration: int, cap_uc: int) -> RunRecord:
             except (AttributeError, IndexError, TypeError):
                 pass
             cum = synth_cost_uc(in_tok, out_tok)
+
             if cum > cap_uc and not cap_hit:
                 cap_hit = True
 
@@ -169,6 +147,7 @@ def run_langgraph_agentguard(iteration: int, cap_uc: int) -> RunRecord:
     elapsed = time.time() - t0
 
     cost = synth_cost_uc(in_tok, out_tok)
+
     return RunRecord(
         run_id=f"langgraph_agentguard_{iteration:02d}",
         runtime="langgraph_agentguard", provider="ollama", workload="lang001",
@@ -179,14 +158,8 @@ def run_langgraph_agentguard(iteration: int, cap_uc: int) -> RunRecord:
         outcome=outcome, wall_clock_s=round(elapsed, 2),
     )
 
-
 def run_token_budgets(iteration: int, cap_uc: int) -> RunRecord:
-    from langchain_ollama import ChatOllama
-    from langchain_core.tools import tool
-    from langchain_core.callbacks import BaseCallbackHandler
-
     SAFETY_MARGIN = 1.0
-
     @tool
     def execute_sql(query: str) -> str:
         return TOOL_ERROR_MESSAGE
@@ -268,6 +241,7 @@ def run_token_budgets(iteration: int, cap_uc: int) -> RunRecord:
 
     elapsed = time.time() - t0
     cost = synth_cost_uc(in_tok, out_tok)
+
     return RunRecord(
         run_id=f"token_budgets_{iteration:02d}",
         runtime="token_budgets", provider="ollama", workload="lang001",
@@ -278,7 +252,6 @@ def run_token_budgets(iteration: int, cap_uc: int) -> RunRecord:
         outcome=outcome, wall_clock_s=round(elapsed, 2),
     )
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--cap-uc", type=int, default=100,
@@ -286,9 +259,8 @@ def main():
     parser.add_argument("--n-runs", type=int, default=N_RUNS)
     args = parser.parse_args()
 
-    check_prereqs()
 
-    print(f"\nOllama LANG-001 replication (CORRECTED v2)")
+    print(f"\nOllama LANG-001 replication")
     print(f"  Model: {MODEL}    Cap: {args.cap_uc} uc    Runs: {args.n_runs} per runtime\n")
 
     all_records: List[RunRecord] = []
@@ -297,7 +269,7 @@ def main():
         ("langgraph_agentguard", run_langgraph_agentguard),
         ("token_budgets", run_token_budgets),
     ]:
-        print(f"=== {runtime_name} ===")
+        print(f"{runtime_name}")
         for i in range(args.n_runs):
             print(f"  run {i+1}/{args.n_runs}...", end=" ", flush=True)
             try:
@@ -318,6 +290,7 @@ def main():
                 ))
 
     csv_path = OUTPUT_DIR / "ollama_lang001_n10.csv"
+
     with open(csv_path, "w", newline="") as f:
         if all_records:
             writer = csv.DictWriter(f, fieldnames=[fld.name for fld in fields(all_records[0])])
@@ -329,6 +302,7 @@ def main():
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)
+
     for runtime_name in ["langgraph", "langgraph_agentguard", "token_budgets"]:
         runs = [r for r in all_records if r.runtime == runtime_name and not r.error]
         if not runs:

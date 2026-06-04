@@ -9,12 +9,11 @@ def load_outcomes(path: str, limit: int | None = None) -> list[str]:
     outcomes = [r["outcome"] for r in rows]
     if limit:
         outcomes = outcomes[:limit]
-    return outcomes
 
+    return outcomes
 
 def count_budget_violations(outcomes: list[str]) -> int:
     return sum(1 for o in outcomes if "budget_violation" in o)
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -32,6 +31,7 @@ def main():
     if len(n10_outcomes) != 10:
         print(f"WARNING: N=10 CSV has {len(n10_outcomes)} rows, expected 10",
               file=sys.stderr)
+
     if len(n30_outcomes) != 30:
         print(f"WARNING: N=30 CSV has {len(n30_outcomes)} rows, expected 30",
               file=sys.stderr)
@@ -39,14 +39,14 @@ def main():
     n10_violations = count_budget_violations(n10_outcomes)
     n30_first10_violations = count_budget_violations(n30_outcomes[:10])
     n30_total_violations = count_budget_violations(n30_outcomes)
-    n30_overshoot = sum(1 for _ in n30_outcomes if False)  # placeholder
-    # Properly count overshoot from the file
+
     with open(args.n30, newline="") as f:
         n30_rows = list(csv.DictReader(f))
+
     n30_overshoot = sum(1 for r in n30_rows
                         if int(r.get("overshoot_uc", 0)) > 0)
 
-    print("=== AGENT CONTRACTS DRIFT VERIFICATION ===\n")
+    print("AGENT CONTRACTS DRIFT VERIFICATION \n")
     print(f"  N=10 outcomes:               {dict_count(n10_outcomes)}")
     print(f"  N=30 first-10 outcomes:      {dict_count(n30_outcomes[:10])}")
     print(f"  N=30 full outcomes:          {dict_count(n30_outcomes)}")
@@ -71,21 +71,19 @@ def main():
     print(f"\nPASS: outcome distribution agrees within tolerance.")
     print(f"      N=30 is comparable to N=10; safe to publish.")
 
-    # Headline for Table 7
+
     if n30_overshoot == 0:
-        print(f"\n=== TABLE 7 HEADLINE ===")
+        print(f"\n TABLE 7 HEADLINE ")
         print(f"  Agent Contracts row:  0/30 overshoot")
         print(f"  Wilson 95% CI per-run: [0.000, 0.114]")
         print(f"  (matches the TB row's N and CI; remove the 'n=10 v1 supplementary "
               f"harness' footnote)")
-
 
 def dict_count(outcomes: list[str]) -> dict[str, int]:
     counts: dict[str, int] = {}
     for o in outcomes:
         counts[o] = counts.get(o, 0) + 1
     return counts
-
 
 if __name__ == "__main__":
     main()

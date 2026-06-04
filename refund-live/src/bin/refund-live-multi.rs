@@ -164,15 +164,24 @@ struct CallRecord {
 
 fn build_prompt(i: usize) -> String {
     let class = i % 10;
+
     match class {
         0 => format!("What is the capital of country #{}?", i % 200),
+
         1 => format!("Briefly: explain the concept '{}'.", topic(i)),
+
         2 => format!("Define: {}", topic(i)),
+
         3 => format!("List three examples of {}.", topic(i)),
+
         4 => format!("What year was {} invented?", topic(i)),
+
         5 => format!("Is {} larger than {}?", topic(i), topic(i + 1)),
+
         6 => format!("Name one scientist associated with {}.", topic(i)),
+
         7 => format!("Briefly compare {} and {}.", topic(i), topic(i + 1)),
+
         8 => format!("Output JSON: {{\"topic\": \"{}\", \"score\": ?}}", topic(i)),
         _ => format!("Suggest one fact about {}.", topic(i)),
     }
@@ -187,6 +196,7 @@ fn topic(i: usize) -> &'static str {
         "dropout", "batch normalisation", "encoder", "decoder", "perceptron",
         "ImageNet", "BERT", "GPT", "ResNet", "VGG", "AlexNet",
     ];
+
     TOPICS[i % TOPICS.len()]
 }
 
@@ -194,8 +204,11 @@ fn topic(i: usize) -> &'static str {
 async fn main() -> Result<()> {
     let provider_str = env::var("PROVIDER")
         .context("PROVIDER must be set (anthropic | openai | gemini | ollama)")?;
+
     let provider = Provider::from_env(&provider_str)?;
+
     let max_tokens: u32 = env::var("MAX_TOKENS").unwrap_or_else(|_| "1024".to_string()).parse()?;
+
     let n_calls: usize = env::var("N_CALLS").unwrap_or_else(|_| "300".to_string()).parse()?;
 
     let api_key = if provider.requires_auth() {
@@ -211,17 +224,25 @@ async fn main() -> Result<()> {
         .timeout(Duration::from_secs(180))
         .build()?;
 
-    println!("=== Provider: {} | model: {} | max_tokens: {} | N: {} ===",
+    println!(" Provider: {} | model: {} | max_tokens: {} | N: {} ",
              provider.name(), provider.model_id(), max_tokens, n_calls);
+
     println!("Endpoint: {}", provider.endpoint());
+
     println!("Rates: {} nc/in_tok, {} nc/out_tok", in_rate_nc, out_rate_nc);
 
     let mut budget: Option<B> = Some(Budget::new(BUDGET_CAP)?);
+
     let mut records: Vec<CallRecord> = Vec::with_capacity(n_calls);
+
     let mut sum_r = 0u128;
+
     let mut sum_a = 0u128;
+
     let mut sum_f = 0u128;
+
     let mut violations = 0usize;
+
     let mut api_errors = 0usize;
 
     let run_start = Instant::now();
@@ -231,12 +252,14 @@ async fn main() -> Result<()> {
         let req_value = provider.build_request(&prompt, max_tokens);
         let body = serde_json::to_string(&req_value)?;
         let body_bytes = body.len() as u64;
+
         let reservation = body_bytes
             .checked_mul(in_rate_nc)
             .and_then(|v| v.checked_add((max_tokens as u64).checked_mul(out_rate_nc)?))
             .context("reservation overflow")?;
 
         let current = budget.take().expect("budget present");
+
         let (after_reserve, receipt) = match current.spend_with_receipt(reservation) {
             Ok(x) => x,
             Err(e) => {
@@ -246,6 +269,7 @@ async fn main() -> Result<()> {
         };
 
         let mut req_builder = client.post(&provider.endpoint()).body(body);
+
         if provider.requires_auth() {
             req_builder = provider.add_auth(req_builder, &api_key);
         } else {
@@ -254,7 +278,9 @@ async fn main() -> Result<()> {
 
         let start = Instant::now();
         let resp = match req_builder.send().await {
+
             Ok(r) => r,
+
             Err(e) => {
                 api_errors += 1;
                 eprintln!("API error at call {}: {}", i, e);
@@ -263,6 +289,7 @@ async fn main() -> Result<()> {
                 continue;
             }
         };
+
         let latency_ms = start.elapsed().as_millis();
 
         if !resp.status().is_success() {
@@ -270,12 +297,15 @@ async fn main() -> Result<()> {
             eprintln!("API status {} at call {}", resp.status(), i);
             receipt.forfeit();
             budget = Some(after_reserve);
+
             continue;
         }
 
         let parsed: Value = resp.json().await?;
+
         let (in_tok, out_tok) = match provider.parse_usage(&parsed) {
             Some(x) => x,
+
             None => {
                 api_errors += 1;
                 eprintln!("usage parse failed at call {}: {}", i,
@@ -283,6 +313,7 @@ async fn main() -> Result<()> {
                         .chars().take(300).collect::<String>());
                 receipt.forfeit();
                 budget = Some(after_reserve);
+
                 continue;
             }
         };
@@ -293,15 +324,17 @@ async fn main() -> Result<()> {
 
         if actual > reservation {
             violations += 1;
-            println!("⚠ A1 VIOLATION call {}: reserve={} actual={} in={} out={}",
+            println!("A1 VIOLATION call {}: reserve={} actual={} in={} out={}",
                      i, reservation, actual, in_tok, out_tok);
             receipt.forfeit();
             budget = Some(after_reserve);
+
             continue;
         }
 
         let refund = receipt.confirm(actual)?;
         let refund_amount = refund.amount();
+
         budget = Some(refund.apply_to(after_reserve)?);
 
         sum_r += reservation as u128;
@@ -323,15 +356,21 @@ async fn main() -> Result<()> {
     }
 
     let elapsed = run_start.elapsed();
+
     let mut ratios: Vec<f64> = records.iter().map(|r| r.margin_ratio).collect();
     ratios.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
     let n = ratios.len();
+
     let pct = |p: f64| -> f64 { if n == 0 { 0.0 } else { ratios[((n as f64 * p) as usize).min(n - 1)] } };
+
     let mean = ratios.iter().sum::<f64>() / n.max(1) as f64;
+
     let capped = records.iter().filter(|r| r.output_capped).count();
 
     println!();
-    println!("=== Summary: {} | mt={} | N={} ===", provider.name(), max_tokens, n_calls);
+
+    println!("Summary: {} | mt={} | N={}", provider.name(), max_tokens, n_calls);
     println!("Wall time:        {:.1} min", elapsed.as_secs_f64() / 60.0);
     println!("Successful:       {} ({} capped)", records.len(), capped);
     println!("A1 violations:    {}", violations);
@@ -343,14 +382,19 @@ async fn main() -> Result<()> {
     let csv_path = format!("refund_live_{}_{}_{}.csv",
         provider.name().replace('-', "_").replace('.', "_"),
         max_tokens, n_calls);
+
     let mut csv = File::create(&csv_path)?;
+
     writeln!(csv, "idx,reservation_nc,actual_nc,refund_nc,input_tokens,output_tokens,latency_ms,margin_ratio,output_capped")?;
+
     for r in &records {
         writeln!(csv, "{},{},{},{},{},{},{},{:.6},{}",
                  r.idx, r.reservation_nc, r.actual_nc, r.refund_nc,
                  r.input_tokens, r.output_tokens, r.latency_ms, r.margin_ratio,
                  r.output_capped)?;
     }
+
     println!("Wrote {} rows to {}", records.len(), csv_path);
+
     Ok(())
 }

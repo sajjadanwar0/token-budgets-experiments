@@ -70,7 +70,6 @@ def summarize(label: str, rows: list[dict]) -> dict:
         "total_pre_flight_refusals": refusals,
     }
 
-
 def render(summaries: list[dict]) -> str:
     out = []
     out.append("=" * 75)
@@ -127,7 +126,6 @@ def render(summaries: list[dict]) -> str:
 
     return "\n".join(out)
 
-
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--ac", required=True, type=Path)
@@ -147,7 +145,6 @@ def main():
     print(txt)
     args.output.write_text(txt + "\n")
     print(f"\nWrote summary to {args.output.resolve()}")
-
 
 if __name__ == "__main__":
     main()

@@ -6,6 +6,7 @@ use std::env;
 use std::time::Duration;
 use tiktoken_rs::o200k_base;
 use tokio::time::sleep;
+use std::collections::BTreeMap;
 
 #[derive(Parser)]
 #[command(version, about = "A1 re-run on Anthropic")]
@@ -205,7 +206,6 @@ fn make_tools() -> Vec<ToolDef> {
 }
 
 const TOOL_PROMPTS: &[(&str, &str)] = &[
-    // (class, user_prompt)
     ("sql_retry", "Find the top 5 customers by total revenue in the last 30 days. Include their customer ID, name, and total. Format the result as a markdown table."),
     ("sql_retry", "How many orders shipped to California addresses in Q3 2024, and what was the average order value? Show the breakdown by month."),
     ("sql_retry", "List all products that have less than 10 units in inventory and have been ordered at least once in the past week. Sort by units remaining ascending."),
@@ -264,6 +264,7 @@ async fn one_call(
         let text = resp.text().await.unwrap_or_default();
         anyhow::bail!("Anthropic API error {status}: {text}");
     }
+
     let parsed: AnthropicResponse = resp.json().await
         .context("response JSON parse failed")?;
 
@@ -298,6 +299,7 @@ async fn run_cell_1_plain(
     eprintln!("\n=== Cell 1: plain-text prompts, no tools ===");
 
     let mut id = 0;
+
     for (cls, corpus) in [
         ("plain_short",  PLAIN_SHORT),
         ("plain_medium", PLAIN_MEDIUM),
@@ -306,18 +308,23 @@ async fn run_cell_1_plain(
         for i in 0..cli.n_per_class {
             let prompt = corpus[i % corpus.len()];
             id += 1;
+
             eprint!("  cell=1 id={:<3} class={:<12} ... ", id, cls);
+
             match one_call(client, api_key, cli, "cell_1_plain", id, cls, prompt, None).await {
                 Ok(m) => {
                     eprintln!("bytes={} tokens={} bt={:.3} k_byte={:.3}",
                         m.request_body_bytes, m.anthropic_input_tokens, m.bt_ratio, m.k_byte);
                     out.push(m);
                 }
+
                 Err(e) => eprintln!("ERROR: {e}"),
             }
+
             sleep(Duration::from_millis(cli.delay_ms)).await;
         }
     }
+
     Ok(())
 }
 
@@ -328,15 +335,18 @@ async fn run_cell_2_tools(
     tools: &[ToolDef],
     out: &mut Vec<Measurement>,
 ) -> Result<()> {
-    eprintln!("\n=== Cell 2: tool-augmented prompts (records both byte & tiktoken estimators) ===");
+    eprintln!("\n Cell 2: tool-augmented prompts (records both byte & tiktoken estimators) ");
 
     let mut id = 0;
-    // 10 distinct prompts in TOOL_PROMPTS; repeat across N runs
+
     let total = cli.n_per_class * 3;
+
     for i in 0..total {
         let (cls, prompt) = TOOL_PROMPTS[i % TOOL_PROMPTS.len()];
         id += 1;
+
         eprint!("  cell=2 id={:<3} class={:<18} ... ", id, cls);
+
         match one_call(client, api_key, cli, "cell_2_tools", id, cls, prompt, Some(tools)).await {
             Ok(m) => {
                 eprintln!("bytes={} tikt={} actual={} bt={:.3} k_byte={:.3} k_tikt={:.3}",
@@ -346,21 +356,24 @@ async fn run_cell_2_tools(
                     m.bt_ratio, m.k_byte, m.k_tiktoken);
                 out.push(m);
             }
+
             Err(e) => eprintln!("ERROR: {e}"),
         }
+
         sleep(Duration::from_millis(cli.delay_ms)).await;
     }
+
     Ok(())
 }
 
 fn summarize(measurements: &[Measurement]) {
-    use std::collections::BTreeMap;
     let mut by_cell: BTreeMap<String, Vec<&Measurement>> = BTreeMap::new();
+
     for m in measurements {
         by_cell.entry(m.cell.clone()).or_default().push(m);
     }
 
-    eprintln!("\n\n================== SUMMARY ==================\n");
+    eprintln!("\n\n SUMMARY \n");
     for (cell, ms) in &by_cell {
         let n = ms.len();
         if n == 0 { continue; }
@@ -407,13 +420,15 @@ async fn main() -> Result<()> {
     run_cell_1_plain(&client, &api_key, &cli, &mut measurements).await?;
     run_cell_2_tools(&client, &api_key, &cli, &tools, &mut measurements).await?;
 
-    // Write CSV
     let mut wtr = csv::Writer::from_path(&cli.output)
         .context("failed to open output CSV")?;
+
     for m in &measurements {
         wtr.serialize(m)?;
     }
+
     wtr.flush()?;
+
     eprintln!("\nWrote {} rows to {}", measurements.len(), cli.output);
 
     summarize(&measurements);

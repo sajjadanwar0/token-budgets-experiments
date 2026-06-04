@@ -50,7 +50,6 @@ ANTHROPIC_HAIKU_4_5 = "claude-haiku-4-5-20251001"
 PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
 MAX_COMPLETION_TOKENS = 200
 
-
 def predict_cost_uc(client, messages, system, max_completion_tokens):
     start = time.monotonic()
     try:
@@ -68,8 +67,8 @@ def predict_cost_uc(client, messages, system, max_completion_tokens):
         input_tokens * PRICING_UC_PER_TOKEN["input"]
         + max_completion_tokens * PRICING_UC_PER_TOKEN["output"]
     )
-    return predicted_uc, input_tokens, latency_ms, None
 
+    return predicted_uc, input_tokens, latency_ms, None
 
 def call_with_retry(client, *, model, max_tokens, temperature, system,
                     messages, max_retries=5):
@@ -90,21 +89,19 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
                     continue
                 return None, "exhausted_retries_overloaded", attempt + 1
             return None, f"other_error_{type(e).__name__}: {e}", attempt + 1
-    return None, "exhausted_retries", max_retries
 
+    return None, "exhausted_retries", max_retries
 
 def run_trial(trial_id, workload_name, cap_uc, max_steps=20):
     wl = WORKLOADS[workload_name]
     client = Anthropic()
     messages = [{"role": "user", "content": wl["user"]}]
-
     remaining_uc = cap_uc
     total_input_tokens = 0
     total_output_tokens = 0
     steps = 0
     outcome = "max_steps_reached"
     error_repr = ""
-
     count_tokens_calls = 0
     total_count_tokens_latency_ms = 0.0
 
@@ -154,6 +151,7 @@ def run_trial(trial_id, workload_name, cap_uc, max_steps=20):
             + actual_output * PRICING_UC_PER_TOKEN["output"]
         )
         refund = predicted_uc - actual_cost
+
         if refund > 0:
             remaining_uc += refund
 
@@ -172,6 +170,7 @@ def run_trial(trial_id, workload_name, cap_uc, max_steps=20):
     overshoot_uc = max(0, actual_total_cost_uc - cap_uc)
 
     reserved_total = cap_uc - remaining_uc
+
     if reserved_total > 0:
         capital_efficiency = actual_total_cost_uc / reserved_total
     else:
@@ -204,7 +203,6 @@ def run_trial(trial_id, workload_name, cap_uc, max_steps=20):
         "error_repr": error_repr,
     }
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -235,6 +233,7 @@ def main():
     print(f"{'='*76}")
 
     rows = []
+
     for i in range(args.n_trials):
         start = time.monotonic()
         try:
@@ -278,6 +277,7 @@ def main():
     print(f"{'='*76}")
     print(f"  Refused:               {refused}/{n}")
     print(f"  Dollar-overshoot:      {overshoots}/{n}")
+
     if spending:
         mean_steps = sum(r["agent_steps"] for r in spending) / len(spending)
         mean_spent = sum(r["total_spent_uc"] for r in spending) / len(spending)
@@ -288,11 +288,11 @@ def main():
         print(f"  Mean capital eff:      {mean_capeff:.1%}")
 
     total_ct_calls = sum(r["count_tokens_calls"] for r in rows)
+
     if total_ct_calls > 0:
         mean_ct_latency = sum(r["count_tokens_total_latency_ms"] for r in rows) / total_ct_calls
         print(f"  Mean ct_lat per call:  {mean_ct_latency:.0f} ms")
     print(f"{'='*76}")
-
 
 if __name__ == "__main__":
     main()

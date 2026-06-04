@@ -5,7 +5,6 @@ import math
 import os
 import sys
 import time
-
 from anthropic import Anthropic
 
 WORKLOADS = {
@@ -60,7 +59,6 @@ PRICING_UC_PER_TOKEN = {"input": 1, "output": 5}
 MAX_COMPLETION_TOKENS = 200
 SAFETY_MARGIN = 2.0
 
-
 def serialize_request_body(model, max_tokens, system, messages):
     payload = {
         "model": model,
@@ -68,8 +66,8 @@ def serialize_request_body(model, max_tokens, system, messages):
         "system": system,
         "messages": messages,
     }
-    return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
 def predict_cost_bytelen(system, messages, max_completion_tokens, margin):
     body = serialize_request_body(
@@ -79,7 +77,6 @@ def predict_cost_bytelen(system, messages, max_completion_tokens, margin):
     predicted_input_uc = math.ceil(input_byte_len * margin)
     predicted_output_uc = max_completion_tokens * PRICING_UC_PER_TOKEN["output"]
     return predicted_input_uc + predicted_output_uc, input_byte_len
-
 
 def call_with_retry(client, *, model, max_tokens, temperature, system,
                     messages, max_retries=5):
@@ -91,14 +88,15 @@ def call_with_retry(client, *, model, max_tokens, temperature, system,
             ), None
         except Exception as e:
             err_str = str(e)
+
             if any(x in err_str for x in ("529", "Overloaded", "overloaded_error")):
                 if attempt < max_retries - 1:
                     time.sleep(min(2 ** attempt + 1, 30))
                     continue
                 return None, "exhausted_retries_overloaded"
             return None, f"other_error_{type(e).__name__}: {e}"
-    return None, "exhausted_retries"
 
+    return None, "exhausted_retries"
 
 def run_trial(trial_id, cap_uc, workload_name, max_steps=20):
     wl = WORKLOADS[workload_name]
@@ -135,6 +133,7 @@ def run_trial(trial_id, cap_uc, workload_name, max_steps=20):
             system=wl["system"],
             messages=messages,
         )
+
         if err_class is not None:
             outcome = err_class
             error_repr = err_class
@@ -145,6 +144,7 @@ def run_trial(trial_id, cap_uc, workload_name, max_steps=20):
         actual_cost = (actual_input * PRICING_UC_PER_TOKEN["input"]
                        + actual_output * PRICING_UC_PER_TOKEN["output"])
         refund = predicted_uc - actual_cost
+
         if refund > 0:
             remaining_uc += refund
 
@@ -185,7 +185,6 @@ def run_trial(trial_id, cap_uc, workload_name, max_steps=20):
         "error_repr": error_repr,
     }
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -201,6 +200,7 @@ def main():
         sys.exit("ERROR: ANTHROPIC_API_KEY not set")
 
     out_dir = os.path.dirname(args.output)
+
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
 
@@ -215,6 +215,7 @@ def main():
     print(f"{'='*76}")
 
     rows = []
+
     for i in range(args.n_trials):
         start = time.monotonic()
         try:
@@ -227,11 +228,13 @@ def main():
             continue
         row["wall_seconds"] = round(time.monotonic() - start, 3)
         rows.append(row)
+
         print(f"  [{i+1:02d}/{args.n_trials}] "
               f"outcome={row['outcome'][:30]:<30} "
               f"steps={row['agent_steps']:>2} "
               f"spent={row['total_spent_uc']:>5}uc "
               f"over={row['overshoot_uc']:>4}uc")
+
         if args.sleep > 0:
             time.sleep(args.sleep)
 
@@ -244,8 +247,10 @@ def main():
         print(f"\nWrote {len(rows)} rows -> {args.output}")
 
     n = len(rows)
+
     if n == 0:
         return
+
     overshoots = sum(1 for r in rows if r["overshoot_uc"] > 0)
     mean_spend = sum(r["total_spent_uc"] for r in rows) / n
     mean_steps = sum(r["agent_steps"] for r in rows) / n

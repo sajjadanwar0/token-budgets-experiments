@@ -5,7 +5,6 @@ use std::env;
 use std::path::PathBuf;
 use std::time::Instant;
 use tokio::task::JoinHandle;
-
 use token_budgets::{Budget, BudgetMint};
 
 type B = Budget<10_000>;
@@ -157,7 +156,6 @@ async fn run_trial(
 ) -> TrialResult {
     let t0 = Instant::now();
 
-    // Mint the parent budget via the capability gate.
     let parent_budget = match B::mint(mint, cap_uc) {
         Ok(b) => b,
         Err(e) => {
@@ -171,6 +169,7 @@ async fn run_trial(
     };
 
     let per_child = cap_uc / 3;
+
     let (b1, rest_after_first) = match parent_budget.split(per_child) {
         Ok(t) => t,
         Err(e) => {
@@ -199,10 +198,12 @@ async fn run_trial(
         b1, api_key.clone(), client.clone(),
         rate_in, rate_out, max_output_tokens, margin,
     ));
+
     let h2: JoinHandle<Result<(u64, bool)>> = tokio::spawn(child(
         b2, api_key.clone(), client.clone(),
         rate_in, rate_out, max_output_tokens, margin,
     ));
+
     let h3: JoinHandle<Result<(u64, bool)>> = tokio::spawn(child(
         b3, api_key.clone(), client.clone(),
         rate_in, rate_out, max_output_tokens, margin,
@@ -276,14 +277,17 @@ async fn main() -> Result<()> {
         "Running rust_affine_split: N={}, cap={} uc",
         args.n, args.cap
     );
+
     println!(
         "  estimate per child = {} uc, sub-budget per child = {} uc",
         estimate, sub_budget
     );
+
     println!(
         "  pre-flight check inside spawned task: estimate <= sub-budget? {} ({} <= {})",
         estimate <= sub_budget, estimate, sub_budget
     );
+
     if estimate > sub_budget {
         println!("  (all children will be refused; this is the discipline's");
         println!("   refusal-to-operate regime, structurally correct)");
@@ -315,6 +319,7 @@ async fn main() -> Result<()> {
         }
         wtr.serialize(&r)?;
     }
+
     wtr.flush()?;
 
     println!("\nSUMMARY: {}/{} overshoots", overshoots, args.n);

@@ -2,6 +2,7 @@
 name = "forgetful_operator_compile_fail"
 version = "0.1.0"
 edition = "2024"
+authors = ["Sajjad Khan"]
 
 [dependencies]
 token-budgets = { path = "../../../token-budgets", features = ["system-authority"] }

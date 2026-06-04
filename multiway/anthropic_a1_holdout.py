@@ -196,7 +196,6 @@ Return the full implementation 加上 unit tests.""",
     "aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa",
 ]
 
-
 def main():
     if "ANTHROPIC_API_KEY" not in os.environ:
         sys.exit("ERROR: Set ANTHROPIC_API_KEY environment variable")
@@ -206,10 +205,13 @@ def main():
     corpus = []
     for prompt in CJK_PROMPTS:
         corpus.append(("CJK_heavy", prompt))
+
     for prompt in CODE_PROMPTS:
         corpus.append(("code_heavy", prompt))
+
     for prompt in MATH_PROMPTS:
         corpus.append(("math_heavy", prompt))
+
     for prompt in MIXED_PROMPTS:
         corpus.append(("mixed_edge", prompt))
 
@@ -273,7 +275,6 @@ def main():
         print(f"  {cat:<14} {c['ok']:>2}/{c['n']:>2} A1 satisfied   "
               f"ratio min={min(rs):.2f} mean={sum(rs) / len(rs):.2f} max={max(rs):.2f}")
 
-    # Overall
     total_n = len(rows)
     total_ok = sum(1 for r in rows if r["a1_satisfied"])
     overall_ratios = [r["ratio"] for r in rows]
