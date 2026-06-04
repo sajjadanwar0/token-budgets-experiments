@@ -95,6 +95,24 @@ python3 tools/multiway_compare.py --provider openai --workload lang001 --runs 30
 - Live-API re-runs are subject to model nondeterminism; expect +/-1/30 variation
   on overshoot rates where the runtime cannot be fully pinned.
 
+
+## Citation
+
+```bibtex
+@misc{khan2026tokenbudgets,
+  title         = {Token Budgets: An Empirical Catalog of 63 LLM-Agent
+                   Budget-Overrun Incidents, with an Affine-Typed Rust
+                   Mitigation as a Case Study},
+  author        = {Khan, Sajjad},
+  year          = {2026},
+  eprint        = {2606.04056},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.SE},
+  doi           = {10.48550/arXiv.2606.04056},
+  url           = {https://arxiv.org/abs/2606.04056}
+}
+```
+
 ## License
 
-Dual MIT/Apache-2.0.
+Paper: CC BY 4.0 (arXiv). Code: see the repository `LICENSE` file.
