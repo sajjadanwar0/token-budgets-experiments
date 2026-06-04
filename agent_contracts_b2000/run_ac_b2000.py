@@ -378,7 +378,7 @@ def main():
 
     from collections import Counter
     outcomes = Counter(r.outcome for r in results)
-    print("\n=== Summary ===")
+    print("\nSummary")
     for k, v in outcomes.most_common():
         print(f"  {k}: {v}/{len(results)}")
     overshoots = sum(1 for r in results if r.cumulative_spend_uc > r.cap_uc)
