@@ -1,6 +1,7 @@
 from __future__ import annotations
 import argparse, csv, json, os, sys, time
 from pathlib import Path
+from collections import Counter
 
 try:
     import litellm
@@ -43,6 +44,7 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False, verbose: 
 
     for step in range(MAX_AGENT_STEPS):
         estimate_usd = estimate_call_cost_usd(messages, tools_def, system)
+
         if estimate_usd > remaining_usd:
             pre_flight_refusals = 1
             refusal_reservation_uc = int(round(estimate_usd * UC_PER_USD))
@@ -69,11 +71,13 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False, verbose: 
                     tools=openai_tools,
                     tool_choice="auto",
                 )
+
                 input_tokens = resp.usage.prompt_tokens
                 output_tokens = resp.usage.completion_tokens
                 msg = resp.choices[0].message
                 tool_calls = getattr(msg, "tool_calls", None) or []
                 is_tool_use = len(tool_calls) > 0
+
                 if is_tool_use:
                     tc = tool_calls[0]
                     tool_call_id = tc.id
@@ -117,6 +121,7 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False, verbose: 
                 },
             }],
         })
+
         messages.append({
             "role": "tool",
             "tool_call_id": tool_call_id,
@@ -141,7 +146,6 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False, verbose: 
         elapsed_s=time.time() - t0,
     )
 
-
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--trials", type=int, default=30)
@@ -153,6 +157,7 @@ def main():
     args = p.parse_args()
 
     prompts = DEFAULT_PROMPTS
+
     if args.prompts:
         with open(args.prompts) as f:
             prompts = json.load(f)
@@ -179,9 +184,11 @@ def main():
     print()
 
     results = []
+
     for i in range(args.trials):
         r = run_one_trial(i, prompts, dry_run=args.dry_run, verbose=args.verbose)
         results.append(r)
+
         if not args.quiet:
             err_tag = f" err={r.error[:60]!r}" if r.error else ""
             print(f"  trial {i:3d}: {r.outcome:22s} "
@@ -192,6 +199,7 @@ def main():
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
+
     with out.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(results[0].__dict__.keys()))
         w.writeheader()
@@ -199,9 +207,9 @@ def main():
             w.writerow(r.__dict__)
     print(f"\nWrote {len(results)} rows to {out.resolve()}")
 
-    from collections import Counter
     outcomes = Counter(r.outcome for r in results)
     print("\n Summary ")
+
     for k, v in outcomes.most_common():
         print(f"  {k}: {v}/{len(results)}")
     overshoots = sum(1 for r in results if r.cumulative_spend_uc > r.cap_uc)

@@ -3,6 +3,7 @@ import argparse, csv, json, os, sys, time
 from dataclasses import dataclass
 from pathlib import Path
 import agent_contracts as ac
+from collections import Counter
 
 try:
     import litellm
@@ -157,6 +158,7 @@ DEFAULT_PROMPTS = {
 def estimate_input_byte_length(messages: list[dict], tools: list[dict],
                                system: str) -> int:
     payload = {"system": system, "messages": messages, "tools": tools}
+
     return len(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
 
 def estimate_call_cost_usd(messages: list[dict], tools: list[dict],
@@ -199,6 +201,7 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False,
         {"role": "system", "content": system},
         {"role": "user", "content": prompts["user"]},
     ]
+
     openai_tools = [{
         "type": "function",
         "function": {
@@ -215,6 +218,7 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False,
     for step in range(MAX_AGENT_STEPS):
         estimate_usd = estimate_call_cost_usd(messages, tools_def, system)
         remaining_usd = monitor.get_remaining_cost()
+
         if estimate_usd > remaining_usd:
             pre_flight_refusals = 1
             refusal_reservation_uc = int(round(estimate_usd * UC_PER_USD))
@@ -291,6 +295,7 @@ def run_one_trial(trial_id: int, prompts: dict, dry_run: bool = False,
                 },
             }],
         })
+
         messages.append({
             "role": "tool",
             "tool_call_id": tool_call_id,
@@ -356,6 +361,7 @@ def main():
     print()
 
     results = []
+
     for i in range(args.trials):
         r = run_one_trial(i, prompts, dry_run=args.dry_run, verbose=args.verbose)
         results.append(r)
@@ -369,21 +375,21 @@ def main():
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
+
     with out.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(results[0].__dict__.keys()))
         w.writeheader()
+
         for r in results:
             w.writerow(r.__dict__)
     print(f"\nWrote {len(results)} rows to {out.resolve()}")
 
-    from collections import Counter
     outcomes = Counter(r.outcome for r in results)
     print("\nSummary")
     for k, v in outcomes.most_common():
         print(f"  {k}: {v}/{len(results)}")
     overshoots = sum(1 for r in results if r.cumulative_spend_uc > r.cap_uc)
     print(f"  overshoots (spend > cap): {overshoots}/{len(results)}")
-
 
 if __name__ == "__main__":
     main()
